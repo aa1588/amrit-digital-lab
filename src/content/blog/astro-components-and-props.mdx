@@ -1,0 +1,91 @@
+---
+title: 'Astro Components and Props'
+description: 'Deep dive into creating reusable components in Astro and passing data with props.'
+pubDate: 2024-01-22
+author: 'Dan'
+tags: ['astro', 'components', 'tutorial']
+series: 'Astro Fundamentals'
+seriesOrder: 2
+---
+
+Now that you understand the basics of Astro, let's explore how to create reusable components and work with props.
+
+## Creating Components
+
+Astro components are the building blocks of your application. They're similar to components in other frameworks but with some unique features.
+
+```astro
+---
+// Component script (runs at build time)
+const greeting = "Hello";
+---
+
+<div class="card">
+  <h2>{greeting} from Astro!</h2>
+</div>
+
+<style>
+  .card {
+    padding: 1rem;
+    border: 1px solid #ccc;
+  }
+</style>
+```
+
+## Working with Props
+
+Props allow you to pass data to components:
+
+```astro
+---
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = 'Default description' } = Astro.props;
+---
+
+<article>
+  <h2>{title}</h2>
+  {description && <p>{description}</p>}
+</article>
+```
+
+## Component Composition
+
+Build complex UIs by composing smaller components:
+
+```astro
+---
+import Card from './Card.astro';
+import Button from './Button.astro';
+---
+
+<Card title="My Card">
+  <p>Some content here</p>
+  <Button text="Click me" />
+</Card>
+```
+
+## Slots
+
+Slots let you pass content to components:
+
+```astro
+---
+// Layout.astro
+---
+<div class="layout">
+  <header>
+    <slot name="header" />
+  </header>
+  <main>
+    <slot />
+  </main>
+</div>
+```
+
+## Conclusion
+
+Components and props are fundamental to building maintainable Astro applications. Practice creating reusable components to improve your workflow.

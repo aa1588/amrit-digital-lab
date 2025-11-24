@@ -1,0 +1,97 @@
+---
+---
+
+<button class="copy-button" aria-label="Copy code to clipboard">
+  <svg class="copy-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+    <path d="M5.75 4.75H10.25V1.75H5.75V4.75ZM4.5 1.75C4.5 1.05964 5.05964 0.5 5.75 0.5H10.25C10.9404 0.5 11.5 1.05964 11.5 1.75V4.75H13.25C13.9404 4.75 14.5 5.30964 14.5 6V13.25C14.5 13.9404 13.9404 14.5 13.25 14.5H2.75C2.05964 14.5 1.5 13.9404 1.5 13.25V6C1.5 5.30964 2.05964 4.75 2.75 4.75H4.5V1.75Z" stroke="currentColor" stroke-width="1.5"/>
+  </svg>
+  <svg class="check-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+    <path d="M13.25 4.75L6 12L2.75 8.75" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+</button>
+
+<style>
+  .copy-button {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    padding: 0.5rem;
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-secondary);
+  }
+
+  .copy-button:hover {
+    background: var(--color-bg);
+    color: var(--color-text);
+    border-color: var(--color-primary);
+  }
+
+  .check-icon {
+    display: none;
+  }
+
+  .copy-button.copied .copy-icon {
+    display: none;
+  }
+
+  .copy-button.copied .check-icon {
+    display: block;
+    color: #22863a;
+  }
+
+  :global(pre:hover) .copy-button {
+    opacity: 1;
+  }
+</style>
+
+<script>
+  function setupCopyButtons() {
+    const codeBlocks = document.querySelectorAll('pre');
+    
+    codeBlocks.forEach((pre) => {
+      // Skip if button already exists
+      if (pre.querySelector('.copy-button')) return;
+      
+      // Make pre relative for absolute positioning
+      pre.style.position = 'relative';
+      
+      // Create and add button
+      const button = document.querySelector('.copy-button')?.cloneNode(true) as HTMLElement;
+      if (!button) return;
+      
+      pre.appendChild(button);
+      
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+        
+        const text = code.textContent || '';
+        
+        try {
+          await navigator.clipboard.writeText(text);
+          button.classList.add('copied');
+          
+          setTimeout(() => {
+            button.classList.remove('copied');
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+        }
+      });
+    });
+  }
+
+  // Run on page load
+  setupCopyButtons();
+  
+  // Run after navigation (for SPA-like behavior)
+  document.addEventListener('astro:page-load', setupCopyButtons);
+</script>

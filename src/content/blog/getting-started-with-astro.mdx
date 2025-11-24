@@ -1,0 +1,52 @@
+---
+title: 'Getting Started with Astro'
+description: 'Learn how to build fast, content-focused websites with Astro, the modern static site generator.'
+pubDate: 2024-01-15
+author: 'Dan'
+tags: ['astro', 'web development', 'tutorial']
+series: 'Astro Fundamentals'
+seriesOrder: 1
+---
+
+Astro is a modern static site generator that delivers lightning-fast performance by shipping zero JavaScript by default. It's perfect for content-focused websites like blogs, documentation, and marketing sites.
+
+## Why Choose Astro?
+
+Astro stands out for several reasons:
+
+- **Zero JS by Default**: Astro ships zero JavaScript to the browser by default, making your sites incredibly fast.
+- **Component Islands**: Use components from React, Vue, Svelte, or any other framework, all in the same project.
+- **Content Collections**: Built-in support for managing your content with type safety.
+- **SEO Friendly**: Static HTML output means great SEO out of the box.
+
+## Getting Started
+
+Creating a new Astro project is simple:
+
+```bash
+npm create astro@latest
+```
+
+Follow the prompts, and you'll have a new project ready in seconds.
+
+## Building Your First Page
+
+Astro uses `.astro` files, which combine HTML, CSS, and JavaScript in a single file:
+
+```astro
+---
+const greeting = "Hello, Astro!";
+---
+
+<h1>{greeting}</h1>
+
+<style>
+  h1 {
+    color: blue;
+  }
+</style>
+```
+
+## Conclusion
+
+Astro is an excellent choice for building modern, fast websites. Its focus on performance and developer experience makes it a joy to work with.

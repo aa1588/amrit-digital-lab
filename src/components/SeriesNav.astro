@@ -1,0 +1,183 @@
+---
+import { getCollection } from 'astro:content';
+
+interface Props {
+  currentSlug: string;
+  seriesName: string;
+}
+
+const { currentSlug, seriesName } = Astro.props;
+
+const allPosts = await getCollection('blog');
+const seriesPosts = allPosts
+  .filter(post => post.data.series === seriesName && !post.data.draft)
+  .sort((a, b) => (a.data.seriesOrder || 0) - (b.data.seriesOrder || 0));
+
+const currentIndex = seriesPosts.findIndex(post => post.slug === currentSlug);
+const prevPost = currentIndex > 0 ? seriesPosts[currentIndex - 1] : null;
+const nextPost = currentIndex < seriesPosts.length - 1 ? seriesPosts[currentIndex + 1] : null;
+---
+
+{seriesPosts.length > 1 && (
+  <div class="series-nav">
+    <div class="series-header">
+      <h3>📚 Series: {seriesName}</h3>
+      <p>Part {currentIndex + 1} of {seriesPosts.length}</p>
+    </div>
+    
+    <div class="series-posts">
+      {seriesPosts.map((post, index) => (
+        <a 
+          href={`/blog/${post.slug}`}
+          class:list={['series-item', { active: post.slug === currentSlug }]}
+        >
+          <span class="series-number">{index + 1}</span>
+          <span class="series-title">{post.data.title}</span>
+        </a>
+      ))}
+    </div>
+
+    <div class="series-navigation">
+      {prevPost && (
+        <a href={`/blog/${prevPost.slug}`} class="nav-link prev">
+          <span class="nav-label">← Previous</span>
+          <span class="nav-title">{prevPost.data.title}</span>
+        </a>
+      )}
+      {nextPost && (
+        <a href={`/blog/${nextPost.slug}`} class="nav-link next">
+          <span class="nav-label">Next →</span>
+          <span class="nav-title">{nextPost.data.title}</span>
+        </a>
+      )}
+    </div>
+  </div>
+)}
+
+<style>
+  .series-nav {
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 2rem 0;
+  }
+
+  .series-header {
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .series-header h3 {
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+    color: var(--color-text);
+  }
+
+  .series-header p {
+    color: var(--color-text-secondary);
+    font-size: 0.8rem;
+  }
+
+  .series-posts {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin-bottom: 1rem;
+  }
+
+  .series-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem;
+    border-radius: 6px;
+    color: var(--color-text);
+    transition: background-color 0.2s;
+  }
+
+  .series-item:hover {
+    background: var(--color-bg-secondary);
+    text-decoration: none;
+  }
+
+  .series-item.active {
+    background: var(--color-primary);
+    color: white;
+    font-weight: 600;
+  }
+
+  .series-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background: var(--color-bg-secondary);
+    border-radius: 50%;
+    font-size: 0.8rem;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .series-item.active .series-number {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+  }
+
+  .series-title {
+    flex: 1;
+    font-size: 0.875rem;
+  }
+
+  .series-navigation {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .nav-link {
+    display: flex;
+    flex-direction: column;
+    padding: 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+
+  .nav-link:hover {
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow);
+    text-decoration: none;
+  }
+
+  .nav-link.next {
+    text-align: right;
+    margin-left: auto;
+  }
+
+  .nav-label {
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 0.25rem;
+  }
+
+  .nav-title {
+    font-weight: 600;
+    color: var(--color-text);
+    font-size: 0.875rem;
+  }
+
+  @media (max-width: 640px) {
+    .series-navigation {
+      grid-template-columns: 1fr;
+    }
+    
+    .nav-link.next {
+      margin-left: 0;
+    }
+  }
+</style>

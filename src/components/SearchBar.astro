@@ -1,0 +1,73 @@
+---
+---
+
+<div class="search-container">
+  <input 
+    type="text" 
+    id="search-input" 
+    placeholder="Search posts..." 
+    aria-label="Search posts"
+  />
+  <svg class="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+    <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
+  </svg>
+</div>
+
+<style>
+  .search-container {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+  }
+
+  #search-input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-size: 1rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  #search-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 0.875rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-text-secondary);
+    pointer-events: none;
+  }
+</style>
+
+<script>
+  const searchInput = document.getElementById('search-input') as HTMLInputElement;
+  
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      const searchTerm = (e.target as HTMLInputElement).value.toLowerCase();
+      const posts = document.querySelectorAll('.blog-card');
+      
+      posts.forEach((post) => {
+        const title = post.querySelector('h3')?.textContent?.toLowerCase() || '';
+        const description = post.querySelector('.description')?.textContent?.toLowerCase() || '';
+        const tags = Array.from(post.querySelectorAll('.tag')).map(tag => tag.textContent?.toLowerCase() || '').join(' ');
+        
+        const matches = title.includes(searchTerm) || description.includes(searchTerm) || tags.includes(searchTerm);
+        
+        if (matches) {
+          (post as HTMLElement).style.display = '';
+        } else {
+          (post as HTMLElement).style.display = 'none';
+        }
+      });
+    });
+  }
+</script>

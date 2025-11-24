@@ -1,0 +1,71 @@
+---
+title: 'Modern JavaScript Features You Should Know'
+description: 'Explore the latest JavaScript features that will make your code cleaner and more efficient.'
+pubDate: 2024-02-20
+author: 'Dan'
+tags: ['javascript', 'es6', 'programming']
+series: 'JavaScript Mastery'
+seriesOrder: 1
+---
+
+JavaScript has evolved significantly over the years. Let's explore some modern features that every developer should know.
+
+## Optional Chaining
+
+Optional chaining (`?.`) allows you to safely access nested properties:
+
+```javascript
+const user = {
+  profile: {
+    name: 'John'
+  }
+};
+
+// Old way
+const email = user && user.profile && user.profile.email;
+
+// New way
+const email = user?.profile?.email;
+```
+
+## Nullish Coalescing
+
+The nullish coalescing operator (`??`) provides a better way to set default values:
+
+```javascript
+const value = null ?? 'default'; // 'default'
+const value2 = 0 ?? 'default';   // 0 (not 'default'!)
+```
+
+## Array Methods
+
+Modern array methods make data manipulation easier:
+
+```javascript
+const numbers = [1, 2, 3, 4, 5];
+
+// Find
+const found = numbers.find(n => n > 3); // 4
+
+// Filter
+const filtered = numbers.filter(n => n % 2 === 0); // [2, 4]
+
+// Map
+const doubled = numbers.map(n => n * 2); // [2, 4, 6, 8, 10]
+```
+
+## Destructuring
+
+Destructuring makes extracting values from objects and arrays cleaner:
+
+```javascript
+const person = { name: 'Alice', age: 30, city: 'NYC' };
+const { name, age } = person;
+
+const colors = ['red', 'green', 'blue'];
+const [first, second] = colors;
+```
+
+## Conclusion
+
+These modern JavaScript features help write cleaner, more maintainable code. Start incorporating them into your projects today!
