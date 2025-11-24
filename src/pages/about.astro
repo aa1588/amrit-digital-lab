@@ -9,6 +9,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         <div class="intro-content">
           <h1>Namaste</h1>
           <p class="greeting">I'm Amrit Adhikari.</p>
+          <p class="email">reachouttoamrit@gmail.com</p>
           <div class="social-links">
             <a href="https://www.linkedin.com/in/amrit-adhikari1/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
@@ -42,7 +43,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           My journey with computers began long before I ever knew what a "software engineer" was. I grew up in a <a href="https://www.google.com/search?q=pokhara+nepal" target="_blank" rel="noopener noreferrer" class="pokhara-link">small town</a> in <span class="nepal">🇳🇵</span>, and when I was around 10, my mom (a teacher) enrolled me in a private school that happened to have a computer lab. It wasn't fancy by any means, but for me it was magic. I still remember the curiosity it sparked.
         </p>
         <p>
-          I'm grateful that my parents supported my decision to continue studying Computer Science in the United States. I came here at the age of 19 with a dream, which completely changed the direction of my life. I completed both my bachelor's and master's degrees in Computer Science at the <a href="https://www.unt.edu/index.html" target="_blank" rel="noopener noreferrer" class="unt-link">University of North Texas</a>. A lot of people ask if school taught me everything. The truth is, most of my real experience came from self learning. Late nights, online tutorials, experimenting with tools, getting stuck, getting unstuck, and repeating that cycle endlessly.
+          I'm grateful that my parents supported my decision to continue studying Computer Science in the United States. I came here at the age of 19 with a dream, which completely changed the direction of my life. I completed both my bachelor's and master's degrees in Computer Science at the <a href="https://www.unt.edu/index.html" target="_blank" rel="noopener noreferrer" class="unt-link">University of North Texas</a>. School gave me a start, but a lot of my real learning happened on my own; late nights, online tutorials, experimenting, getting stuck, and slowly figuring things out.
         </p>
 
         <h2>My Path as a Developer</h2>
@@ -63,12 +64,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           One of my biggest dreams early on was to work at a big company and build software that actually impacts people. In 2021, I got the chance to do exactly that when I joined <a href="https://www.americanexpress.com/en-us/company/" target="_blank" rel="noopener noreferrer" class="amex-link">American Express</a> as a Software Engineer. It felt surreal at the time. Like checking off a box I had been staring at for years.
         </p>
         <p>
-          What keeps me moving is the simple satisfaction of fixing things and understanding them a little better — in life and in code.
+          What keeps me moving is the simple satisfaction of fixing things and understanding them a little better (in life and in code).
         </p>
 
         <h2>Life Outside Tech</h2>
         <p>
-          Outside of coding, I'm a pretty simple person. I like evening walks and early morning runs. They clear my head and help me reset. I'm not someone you'll find at parties or loud places. I'm usually happiest in quiet routines, working on myself and staying consistent with the things that make me feel grounded.
+          Away from work, I usually take a walk or go for an early run. It's how I reset and find some calm.
         </p>
 
         <h2>What I Believe</h2>
@@ -81,7 +82,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           <li>Everything else can be figured out along the way</li>
         </ul>
         <p>
-          More than anything, I want people reading this to walk away with something positive. Whether that's a bit of motivation, a sense of connection, or just the thought that anyone can build a life in tech if they stay curious and keep moving.
+          More than anything, I want people reading this to walk away with something positive. Whether that's a bit of motivation or a sense of connection. And if you ever feel like you're figuring things out as you go, trust me, you're not alone.
         </p>
       </div>
     </div>
@@ -124,7 +125,19 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     font-size: 1.375rem;
     font-weight: 400;
     line-height: 1.6;
+    margin-bottom: 0.5rem;
+  }
+
+  .email {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 1rem;
+    color: #6b7280;
     margin-bottom: 1.5rem;
+    letter-spacing: 0.02em;
+  }
+
+  [data-theme="dark"] .email {
+    color: #9ca3af;
   }
 
   .social-links {
