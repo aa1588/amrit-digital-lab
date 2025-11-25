@@ -3,6 +3,7 @@ import BaseLayout from './BaseLayout.astro';
 import SeriesNav from '../components/SeriesNav.astro';
 import CopyCodeButton from '../components/CopyCodeButton.astro';
 import Comments from '../components/Comments.astro';
+import ShareButtons from '../components/ShareButtons.astro';
 import { calculateReadingTime } from '../utils/readingTime';
 
 interface Props {
@@ -26,6 +27,9 @@ const formattedDate = new Date(pubDate).toLocaleDateString('en-US', {
 // Get the rendered content for reading time calculation
 const content = await Astro.slots.render('default');
 const readingTime = calculateReadingTime(content);
+
+// Get the full URL for sharing
+const currentUrl = new URL(Astro.url.pathname, Astro.site).toString();
 ---
 
 <BaseLayout title={title} description={description} image={image} article={true}>
@@ -78,6 +82,8 @@ const readingTime = calculateReadingTime(content);
       <div class="prose">
         <slot />
       </div>
+
+      <ShareButtons title={title} url={currentUrl} />
 
       {series && <SeriesNav currentSlug={slug} seriesName={series} />}
     </div>
