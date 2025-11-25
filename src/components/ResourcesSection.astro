@@ -1,0 +1,237 @@
+---
+// Resources section for presentations, slides, and other materials
+const resources = [
+  {
+    title: 'Spring Boot Microservices Presentation',
+    description: 'Slides from my workshop on building microservices with Spring Boot',
+    link: 'https://docs.google.com/presentation/d/your-presentation-id',
+    type: 'Slides',
+    icon: '📊'
+  },
+  {
+    title: 'Docker & Kubernetes Guide',
+    description: 'Complete guide and cheat sheet for containerization',
+    link: 'https://github.com/yourusername/docker-k8s-guide',
+    type: 'GitHub',
+    icon: '📚'
+  },
+  {
+    title: 'Tech Talk Recording',
+    description: 'Video recording of my presentation at Tech Conference 2024',
+    link: 'https://youtube.com/watch?v=your-video-id',
+    type: 'Video',
+    icon: '🎥'
+  },
+  {
+    title: 'Code Samples Repository',
+    description: 'Collection of code examples and demos from my talks',
+    link: 'https://github.com/yourusername/code-samples',
+    type: 'GitHub',
+    icon: '💻'
+  }
+];
+---
+
+<div class="resources-section">
+  <div class="resources-header">
+    <h2>Resources & Materials</h2>
+    <p class="resources-subtitle">Presentations, slides, and materials from my talks and workshops</p>
+  </div>
+
+  <div class="resources-grid">
+    {resources.map((resource) => (
+      <a href={resource.link} target="_blank" rel="noopener noreferrer" class="resource-card">
+        <div class="resource-icon">{resource.icon}</div>
+        <div class="resource-content">
+          <div class="resource-header-row">
+            <h3>{resource.title}</h3>
+            <span class="resource-type">{resource.type}</span>
+          </div>
+          <p class="resource-description">{resource.description}</p>
+        </div>
+        <div class="resource-link-text">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M7 17L17 7M17 7H7M17 7V17"/>
+          </svg>
+        </div>
+      </a>
+    ))}
+  </div>
+</div>
+
+<style>
+  .resources-section {
+    margin-top: 5rem;
+    padding-top: 3rem;
+    border-top: 2px solid var(--color-border);
+  }
+
+  .resources-header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  .resources-header h2 {
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: 0.75rem;
+    letter-spacing: -0.02em;
+  }
+
+  .resources-subtitle {
+    font-size: 1.125rem;
+    color: var(--color-text-secondary);
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  .resources-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .resource-card {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.25rem 1.5rem;
+    background: var(--color-bg);
+    border-bottom: 1px solid var(--color-border);
+    transition: all 0.2s ease;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .resource-card:first-child {
+    border-top: 1px solid var(--color-border);
+    border-radius: 12px 12px 0 0;
+  }
+
+  .resource-card:last-child {
+    border-radius: 0 0 12px 12px;
+  }
+
+  .resource-card:hover {
+    background: var(--color-bg-secondary);
+    padding-left: 2rem;
+  }
+
+  .resource-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+
+  .resource-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .resource-header-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .resource-card h3 {
+    font-size: 1.0625rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  .resource-type {
+    display: inline-block;
+    padding: 0.125rem 0.5rem;
+    background: var(--color-bg-secondary);
+    color: var(--color-text-secondary);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+  }
+
+  .resource-description {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  .resource-link-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-primary);
+    margin-left: auto;
+    flex-shrink: 0;
+    transition: gap 0.2s ease;
+  }
+
+  .resource-card:hover .resource-link-text {
+    gap: 0.5rem;
+  }
+
+  .resource-link-text svg {
+    transition: transform 0.2s ease;
+  }
+
+  .resource-card:hover .resource-link-text svg {
+    transform: translate(2px, -2px);
+  }
+
+  @media (max-width: 768px) {
+    .resources-section {
+      margin-top: 3rem;
+      padding-top: 2rem;
+    }
+
+    .resources-header {
+      margin-bottom: 2rem;
+    }
+
+    .resources-header h2 {
+      font-size: 1.75rem;
+    }
+
+    .resources-subtitle {
+      font-size: 1rem;
+    }
+
+    .resource-card {
+      padding: 1rem 1.25rem;
+      gap: 1rem;
+    }
+
+    .resource-card:hover {
+      padding-left: 1.25rem;
+    }
+
+    .resource-icon {
+      font-size: 1.5rem;
+    }
+
+    .resource-card h3 {
+      font-size: 0.9375rem;
+    }
+
+    .resource-description {
+      font-size: 0.8125rem;
+    }
+
+    .resource-link-text {
+      display: none;
+    }
+  }
+</style>
