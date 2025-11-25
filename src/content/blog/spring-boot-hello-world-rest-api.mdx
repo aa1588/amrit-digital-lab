@@ -7,7 +7,13 @@ tags: ['java', 'spring boot', 'rest api', 'tutorial']
 draft: false
 ---
 
+import Alert from '../../components/Alert.astro';
+
 Spring Boot makes it incredibly easy to create production-ready REST APIs. In this tutorial, we'll build a simple "Hello World" REST API from scratch.
+
+<Alert type="info">
+💡 **New to Spring Boot?** This tutorial is perfect for beginners. We'll walk through every step to create your first REST API in just a few minutes!
+</Alert>
 
 ## Prerequisites
 
@@ -120,6 +126,10 @@ Or if you're using Gradle:
 ```
 
 Your application will start on port 8080 by default.
+
+<Alert type="warning">
+⚠️ **Port Already in Use?** If you see an error about port 8080 being in use, either stop the other application or change the port in `application.properties` (see the Customizing the Port section below).
+</Alert>
 
 ## Step 6: Test Your API
 

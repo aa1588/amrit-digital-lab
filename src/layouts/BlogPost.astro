@@ -147,14 +147,22 @@ const formattedDate = new Date(pubDate).toLocaleDateString('en-US', {
     font-size: 1.5rem;
     margin-top: 2.5rem;
     margin-bottom: 1rem;
-    color: var(--color-text);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
   }
 
   .prose :global(h3) {
     font-size: 1.25rem;
     margin-top: 2rem;
     margin-bottom: 0.75rem;
-    color: var(--color-text);
+    background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 600;
   }
 
   .prose :global(p) {
