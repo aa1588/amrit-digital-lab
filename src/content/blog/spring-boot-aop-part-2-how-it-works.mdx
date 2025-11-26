@@ -1,0 +1,207 @@
+---
+title: 'Spring Boot AOP: Part 2 - How AOP Actually Works Under the Hood?'
+description: 'Discover the magic behind Spring AOP.'
+pubDate: 2025-11-25
+author: 'Amrit Adhikari'
+tags: ['aspect-oriented-programming']
+series: 'Spring Boot - Aspect Oriented Programming'
+seriesOrder: 2
+draft: false
+---
+
+import Alert from '../../components/Alert.astro';
+
+## The Magic
+
+In Part 1, we saw how AOP can magically add logging, security, and other cross-cutting concerns to your methods without touching your business code. But how does Spring actually pull off this magic trick?
+
+Let's say you have this simple service:
+
+```java
+@Service
+public class PaymentService {
+    
+    public void processPayment(String userId, BigDecimal amount) {
+        // Just business logic, nothing else
+        debitAccount(userId, amount);
+        sendConfirmation(userId);
+    }
+}
+```
+
+And you want to add logging to it using AOP:
+
+```java
+@Aspect
+@Component
+public class LoggingAspect {
+    
+    @Before("execution(* com.app.service.*.*(..))")
+    public void logBefore(JoinPoint joinPoint) {
+        System.out.println("Method called: " + joinPoint.getSignature());
+    }
+}
+```
+
+<Alert type="info">
+**Question**: How does Spring know to run `logBefore()` when you call `processPayment()`? You never explicitly called the logging method anywhere!
+
+The answer: **Proxies**.
+</Alert>
+
+---
+
+## Understanding the Proxy Pattern
+
+Spring AOP works by creating a **proxy** object that wraps around your actual bean. Think of a proxy as a middleman that intercepts calls to your methods.
+
+### The Real-World Analogy
+
+Imagine you're a celebrity (your business logic), and you hire an assistant (the proxy) to handle your calls.
+
+When someone calls you:
+1. The call goes to your assistant first
+2. Your assistant checks if it's important (applies advice)
+3. Your assistant forwards the call to you
+4. You do your work
+5. Your assistant might do something after you're done (more advice)
+
+That's exactly how Spring AOP works!
+
+![AOP Proxy Diagram](/blog-images/aop-proxy-diagram.svg)
+
+### The Technical View
+
+```
+Client Code
+    ↓
+    calls method
+    ↓
+Proxy Object (created by Spring)
+    ↓
+    executes @Before advice
+    ↓
+Actual Bean (your service)
+    ↓
+    business logic runs
+    ↓
+Proxy Object
+    ↓
+    executes @After advice
+    ↓
+Client Code
+    ↓
+    gets result
+```
+
+---
+
+## How Spring Creates Proxies
+
+When Spring Boot starts up and creates your beans, here's what happens:
+
+### Step 1: Bean Creation
+
+Spring scans your application and finds your `PaymentService`:
+
+```java
+@Service
+public class PaymentService {
+    public void processPayment(String userId, BigDecimal amount) {
+        // business logic
+    }
+}
+```
+
+### Step 2: Aspect Detection
+
+Spring also finds your `LoggingAspect`:
+
+```java
+@Aspect
+@Component
+public class LoggingAspect {
+    @Before("execution(* com.app.service.*.*(..))")
+    public void logBefore(JoinPoint joinPoint) {
+        // logging logic
+    }
+}
+```
+
+### Step 3: Proxy Creation
+
+Spring thinks: "Hmm, `PaymentService` matches the pointcut expression in `LoggingAspect`. I need to create a proxy!"
+
+So instead of giving you the actual `PaymentService` bean, Spring creates a proxy that wraps it:
+
+```java
+// What you think you're getting
+PaymentService service = applicationContext.getBean(PaymentService.class);
+
+// What you're actually getting
+PaymentServiceProxy service = new PaymentServiceProxy(actualPaymentService);
+```
+
+### Step 4: Method Interception
+
+When you call a method:
+
+```java
+paymentService.processPayment("user123", new BigDecimal("100.00"));
+```
+
+The call goes through the proxy:
+
+```java
+public class PaymentServiceProxy extends PaymentService {
+    
+    private PaymentService target; // the actual service
+    private LoggingAspect loggingAspect;
+    
+    @Override
+    public void processPayment(String userId, BigDecimal amount) {
+        // 1. Execute @Before advice
+        loggingAspect.logBefore(joinPoint);
+        
+        // 2. Call the actual method
+        target.processPayment(userId, amount);
+        
+        // 3. Execute @After advice (if any)
+        // ...
+    }
+}
+```
+
+<Alert type="info">
+**Key Insight**: You never directly interact with your actual bean. Spring always gives you the proxy, and the proxy handles all the AOP magic before forwarding calls to your real bean.
+</Alert>
+
+---
+
+## What's Next?
+
+In this part, we've uncovered the magic behind Spring AOP—**proxies**. You now understand:
+
+- How Spring creates proxy objects that wrap your beans
+- The flow of method calls through proxies
+- Why your advice gets executed automatically
+
+But we've only scratched the surface. There's more to learn about proxy types, limitations, and practical implementation.
+
+In **Part 3** of this series, we'll explore:
+
+- **CGLib vs JDK Proxies** - Understanding the two proxy mechanisms
+
+---
+
+## Key Takeaways
+
+- Spring AOP uses **proxies** to intercept method calls
+- The proxy wraps your bean and applies advice before/after method execution
+- You never directly interact with your actual bean. Spring always gives you the proxy
+- Understanding proxies is crucial for debugging AOP issues
+
+
+See you in Part 3! 
+
+

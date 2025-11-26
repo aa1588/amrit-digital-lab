@@ -1,0 +1,314 @@
+---
+title: 'Spring Boot AOP: Part 4 - Simple AOP Project (Hands-On)'
+description: 'Build a simple Spring Boot AOP project from scratch. Learn by doing with a simple, practical example that adds transaction logging to a service method.'
+pubDate: 2025-11-25
+author: 'Amrit Adhikari'
+tags: ['aspect-oriented-programming']
+series: 'Spring Boot - Aspect Oriented Programming'
+seriesOrder: 4
+draft: false
+---
+
+import Alert from '../../components/Alert.astro';
+
+## Let's Build Something Real
+
+It's time to get your hands dirty and build your first AOP project. We're going to create a simple employee management system and add transaction logging using AOP.
+
+---
+
+## Step 1: Create a New Spring Boot Project
+
+Head over to [start.spring.io](https://start.spring.io) and create a new project with these settings:
+
+- **Project**: Maven
+- **Language**: Java
+- **Spring Boot**: 4.0.0
+- **Group**: `com.adigitallab`
+- **Artifact**: `spring-aop-demo`
+- **Name**: `spring-aop-demo`
+- **Package name**: `com.adigitallab`
+- **Packaging**: Jar
+- **Java**: 25 (or your preferred version)
+
+**Dependencies**: None for now (we'll add AOP manually)
+
+Click **Generate**, download the zip file, unzip it, and open it in IntelliJ IDEA (or your favorite IDE).
+
+---
+
+## Step 2: Add the AOP Dependency
+
+Open your `pom.xml` file and add the Spring AOP starter dependency inside the `<dependencies>` section:
+
+<Alert type="info">
+**Important**: Add this dependency to enable AOP in your Spring Boot project. Without it, Spring won't be able to create aspects or proxies.
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-aop</artifactId>
+</dependency>
+```
+</Alert>
+
+---
+
+## Step 3: Create the Employee Class
+
+Let's create a simple `Employee` class to represent our data. Create a new package `com.adigitallab.example` and add this class:
+
+```java
+package com.adigitallab.example;
+
+public class Employee {
+    
+    private Long id;
+    private String firstName;
+    private String lastName;
+    private String email;
+    
+    public Employee(Long id, String firstName, String lastName, String email) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+    }
+    
+    @Override
+    public String toString() {
+        return "Employee{" +
+                "id=" + id +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", email='" + email + '\'' +
+                '}';
+    }
+}
+```
+
+Nothing fancy here, just a plain Java class with some fields and a constructor. The `toString()` method will help us see the employee details when we print it.
+
+---
+
+## Step 4: Create the EmployeeService
+
+Now let's create a service class that will contain our business logic. In the same package, create `EmployeeService.java`:
+
+```java
+package com.adigitallab.example;
+
+import org.springframework.stereotype.Service;
+
+@Service
+public class EmployeeService {
+    
+    public void saveEmployee(Employee e) {
+        System.out.println("Saving employee: " + e);
+    }
+}
+```
+
+This is our **business logic**. Right now, it just prints a message, but imagine this could be saving to a database, sending an email, or doing any real work.
+
+Notice there's **no transaction code here**. No logging, no "begin transaction" or "end transaction" calls. We'll add that separately (AOP)!
+
+---
+
+## Step 5: Create the TransactionAspect
+
+Here's where the magic happens! Create a new class called `TransactionAspect.java` in the same package:
+
+```java
+package com.adigitallab.example;
+
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.annotation.After;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
+import org.aspectj.lang.annotation.Pointcut;
+import org.springframework.stereotype.Component;
+
+@Component
+@Aspect
+public class TransactionAspect {
+    
+    // Define a pointcut that targets the saveEmployee method
+    @Pointcut("execution(* com.adigitallab.example.EmployeeService.saveEmployee(..))")
+    public void saveEmployeePointcut() {
+        // This method is just a placeholder for the pointcut expression
+    }
+    
+    // This runs BEFORE the saveEmployee method
+    @Before("saveEmployeePointcut()")
+    public void beginTransaction(JoinPoint joinPoint) {
+        System.out.println("→ Begin Transaction: " + joinPoint.getSignature());
+    }
+    
+    // This runs AFTER the saveEmployee method
+    @After("saveEmployeePointcut()")
+    public void endTransaction(JoinPoint joinPoint) {
+        System.out.println("← End Transaction: " + joinPoint.getSignature());
+    }
+}
+```
+
+Let's break this down:
+
+### Understanding the Aspect
+
+**`@Component`**: Tells Spring to create this as a bean
+
+**`@Aspect`**: Marks this class as an aspect (container for cross-cutting logic)
+
+**`@Pointcut`**: Defines **where** to apply the advice
+- The expression `execution(* com.adigitallab.example.EmployeeService.saveEmployee(..))` means:
+  - `*` = any return type
+  - `com.adigitallab.example.EmployeeService` = the class
+  - `saveEmployee` = the method name
+  - `(..)` = any parameters
+
+**`@Before`**: Runs **before** the target method executes
+
+**`@After`**: Runs **after** the target method executes (whether it succeeds or fails)
+
+**`JoinPoint`**: Gives us information about the method being called (name, arguments, etc.)
+
+<Alert type="info">
+**Pro Tip**: You can use the pointcut expression directly in `@Before` and `@After` like this:
+
+```java
+@Before("execution(* com.adigitallab.example.EmployeeService.saveEmployee(..))")
+public void beginTransaction(JoinPoint joinPoint) {
+    // ...
+}
+```
+
+But defining a `@Pointcut` method is cleaner when you want to reuse the same expression in multiple places!
+</Alert>
+
+---
+
+## Step 6: Update the Main Application Class
+
+Finally, let's update our main application class to enable AOP and test our code. Open `Application.java`:
+
+```java
+package com.adigitallab;
+
+import com.adigitallab.example.Employee;
+import com.adigitallab.example.EmployeeService;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
+
+@SpringBootApplication
+@EnableAspectJAutoProxy
+public class Application {
+    
+    public static void main(String[] args) {
+        ConfigurableApplicationContext context = SpringApplication.run(Application.class, args);
+        
+        // Get the EmployeeService bean from Spring
+        EmployeeService employeeService = context.getBean(EmployeeService.class);
+        
+        // Call the method - AOP will intercept it!
+        employeeService.saveEmployee(new Employee(1L, "Amrit", "Adhikari", "Amrit@Adhikari.com"));
+    }
+}
+```
+
+**`@EnableAspectJAutoProxy`**: This annotation tells Spring to enable AOP proxy creation. Without it, your aspects won't work!
+
+---
+
+## Step 7: Run the Application
+
+Now for the moment of truth! Run your application and watch the console output.
+
+You should see something like this:
+
+```
+→ Begin Transaction: void com.adigitallab.example.EmployeeService.saveEmployee(Employee)
+Saving employee: Employee{id=1, firstName='Amrit', lastName='Adhikari', email='Amrit@Adhikari@gmail.com'}
+← End Transaction: void com.adigitallab.example.EmployeeService.saveEmployee(Employee)
+```
+
+**Look at that!** 
+
+The transaction logging happened automatically:
+1. `→ Begin Transaction` ran **before** the method
+2. `Saving employee` is our actual business logic
+3. `← End Transaction` ran **after** the method
+
+And we never touched the `EmployeeService` code! That's AOP in action.
+
+---
+
+## What Just Happened?
+
+Let's trace the execution flow:
+
+```
+1. You call: employeeService.saveEmployee(employee)
+   ↓
+2. Spring intercepts the call (because of the proxy)
+   ↓
+3. @Before advice runs: "Begin Transaction"
+   ↓
+4. Actual method runs: "Saving employee"
+   ↓
+5. @After advice runs: "End Transaction"
+   ↓
+6. Control returns to your code
+```
+
+Behind the scenes, Spring created a proxy that wraps your `EmployeeService`. When you call `saveEmployee()`, you're actually calling the proxy, which then:
+- Executes the `@Before` advice
+- Calls your actual method
+- Executes the `@After` advice
+
+---
+
+## Understanding the Pointcut Expression
+
+The pointcut expression is the heart of AOP. Let's break it down:
+
+```java
+execution(* com.adigitallab.example.EmployeeService.saveEmployee(..))
+```
+
+| Part | Meaning |
+|---|---|
+| `execution` | We're matching method execution |
+| `*` | Any return type (void, String, int, etc.) |
+| `com.adigitallab.example.EmployeeService` | The fully qualified class name |
+| `saveEmployee` | The method name |
+| `(..)` | Any number of parameters of any type |
+
+### More Pointcut Examples
+
+```java
+// All methods in EmployeeService
+execution(* com.adigitallab.example.EmployeeService.*(..))
+
+// All methods that start with "save"
+execution(* com.adigitallab.example.EmployeeService.save*(..))
+
+// All methods in any class in the example package
+execution(* com.adigitallab.example.*.*(..))
+
+// All methods that return Employee
+execution(Employee com.adigitallab.example.EmployeeService.*(..))
+
+// Methods with exactly one parameter
+execution(* com.adigitallab.example.EmployeeService.*(*))
+
+// Methods with Employee as first parameter
+execution(* com.adigitallab.example.EmployeeService.*(Employee, ..))
+```
+---
+
+
+Ready for more code? See you in Part 5! 

@@ -1,0 +1,365 @@
+---
+title: 'Spring Boot AOP: Part 3 - CGLib vs JDK Proxies'
+description: 'Learn the differences between CGLib and JDK proxies.'
+pubDate: 2025-11-25
+author: 'Amrit Adhikari'
+tags: ['aspect-oriented-programming']
+series: 'Spring Boot - Aspect Oriented Programming'
+seriesOrder: 3
+draft: false
+---
+
+import Alert from '../../components/Alert.astro';
+
+## Two Flavors of Magic
+
+In Part 2, we learned that Spring AOP uses proxies to intercept method calls. But here's something interesting: Spring can create proxies in **two different ways**.
+
+Think of it like having two different tools to accomplish the same job:
+- A **Swiss Army knife** (CGLib) - works in almost any situation
+- A **specialized tool** (JDK Proxy) - faster but only works in specific cases
+
+Let's explore both and understand when to use each.
+
+---
+
+## Type 1: JDK Dynamic Proxies (Interface-Based)
+
+JDK proxies are part of standard Java (since Java 1.3). They work by implementing interfaces.
+
+### How It Works
+
+JDK proxies **require your class to implement an interface**. Spring creates a proxy that implements the same interface.
+
+```java
+// Step 1: Define an interface
+public interface PaymentService {
+    void processPayment(String userId, BigDecimal amount);
+    void refundPayment(String transactionId);
+}
+
+// Step 2: Implement the interface
+@Service
+public class PaymentServiceImpl implements PaymentService {
+    
+    @Override
+    public void processPayment(String userId, BigDecimal amount) {
+        System.out.println("Processing payment for user: " + userId);
+        // business logic
+    }
+    
+    @Override
+    public void refundPayment(String transactionId) {
+        System.out.println("Refunding transaction: " + transactionId);
+        // business logic
+    }
+}
+```
+
+When Spring creates a proxy, it does something like this:
+
+```java
+PaymentService proxy = (PaymentService) Proxy.newProxyInstance(
+    classLoader,
+    new Class[] { PaymentService.class },
+    new InvocationHandler() {
+        @Override
+        public Object invoke(Object proxy, Method method, Object[] args) {
+            // Execute @Before advice
+            loggingAspect.logBefore();
+            
+            // Call the actual method
+            Object result = method.invoke(actualService, args);
+            
+            // Execute @After advice
+            loggingAspect.logAfter();
+            
+            return result;
+        }
+    }
+);
+```
+
+### The Key Point
+
+The proxy **implements the interface**, not extends the class. This is important!
+
+```
+PaymentService (interface)
+    ↑ implements
+    |
+PaymentServiceImpl (your class)
+
+PaymentService (interface)
+    ↑ implements
+    |
+$Proxy0 (JDK proxy)
+    → delegates to → PaymentServiceImpl
+```
+
+### Pros of JDK Proxies
+
+👍 **Part of standard Java** - No external dependencies needed
+
+👍 **Lightweight** - Minimal overhead
+
+👍 **Fast** - Slightly better performance than CGLib
+
+👍 **Clean separation** - Encourages interface-based design
+
+### Cons of JDK Proxies
+
+👎 **Requires an interface** - Your class must implement one
+
+👎 **Can't proxy classes directly** - Only works with interfaces
+
+👎 **Less flexible** - More restrictive than CGLib
+
+---
+
+## Type 2: CGLib Proxies (Class-Based)
+
+CGLib (Code Generation Library) is more powerful. It can create proxies for **any class**, even without an interface.
+
+### How It Works
+
+CGLib creates a **subclass** of your class at runtime using bytecode generation.
+
+```java
+// No interface needed!
+@Service
+public class PaymentService {
+    
+    public void processPayment(String userId, BigDecimal amount) {
+        System.out.println("Processing payment for user: " + userId);
+        // business logic
+    }
+    
+    public void refundPayment(String transactionId) {
+        System.out.println("Refunding transaction: " + transactionId);
+        // business logic
+    }
+}
+```
+
+CGLib generates a subclass like this:
+
+```java
+public class PaymentService$$EnhancerBySpringCGLIB$$a1b2c3d4 extends PaymentService {
+    
+    private PaymentService target;
+    private LoggingAspect loggingAspect;
+    
+    @Override
+    public void processPayment(String userId, BigDecimal amount) {
+        // Execute @Before advice
+        loggingAspect.logBefore();
+        
+        // Call the parent method
+        super.processPayment(userId, amount);
+        
+        // Execute @After advice
+        loggingAspect.logAfter();
+    }
+    
+    @Override
+    public void refundPayment(String transactionId) {
+        // Same pattern...
+        loggingAspect.logBefore();
+        super.refundPayment(transactionId);
+        loggingAspect.logAfter();
+    }
+}
+```
+
+### The Key Point
+
+The proxy **extends your class**. It's a subclass!
+
+```
+PaymentService (your class)
+    ↑ extends
+    |
+PaymentService$$EnhancerBySpringCGLIB (proxy)
+```
+
+### Pros of CGLib Proxies
+
+👍 **Works with any class** - No interface required
+
+👍 **More flexible** - Can proxy classes directly
+
+👍 **Default in Spring Boot** - No configuration needed
+
+👍 **Widely used** - Battle-tested in production
+
+### Cons of CGLib Proxies
+
+👎 **Slightly slower** - More overhead than JDK proxies
+
+👎 **Can't proxy final classes** - Subclassing won't work
+
+👎 **Can't proxy final methods** - Can't override them
+
+👎 **Requires CGLib library** - Extra dependency (but included in Spring Boot)
+
+---
+
+## Which One Does Spring Use?
+
+**By default, Spring Boot uses CGLib proxies for everything.**
+
+You can verify this yourself:
+
+```java
+@Service
+public class PaymentService {
+    
+    public void processPayment(String userId, BigDecimal amount) {
+        // Print the actual class name
+        System.out.println("Class: " + this.getClass().getName());
+        System.out.println("Simple name: " + this.getClass().getSimpleName());
+    }
+}
+```
+
+When you run this with AOP enabled, you'll see:
+
+```
+Class: com.app.service.PaymentService$$EnhancerBySpringCGLIB$$a1b2c3d4
+Simple name: PaymentService$$EnhancerBySpringCGLIB$$a1b2c3d4
+```
+
+See that `$$EnhancerBySpringCGLIB`? That's your proof—it's a CGLib proxy!
+
+<Alert type="info">
+**Fun fact**: The random characters at the end (`a1b2c3d4`) are generated by CGLib to ensure unique class names. Each proxy gets a different suffix.
+</Alert>
+
+---
+
+## Switching to JDK Proxies
+
+If you prefer JDK proxies (and your classes implement interfaces), you can configure Spring to use them:
+
+```properties
+# application.properties
+spring.aop.proxy-target-class=false
+```
+
+Or in YAML:
+
+```yaml
+# application.yml
+spring:
+  aop:
+    proxy-target-class: false
+```
+
+<Alert type="warning">
+**Important**: If you set `proxy-target-class=false` but your class doesn't implement an interface, Spring will throw an error at startup:
+
+```
+Cannot create JDK dynamic proxy: target class does not implement any interfaces
+```
+
+Make sure all your AOP-enabled classes implement interfaces if you use this setting!
+</Alert>
+
+---
+
+## Side-by-Side Comparison
+
+| Feature | CGLib Proxy | JDK Proxy |
+|---|---|---|
+| **Requires interface?** | 🚫 No | ✔️ Yes |
+| **How it works** | Subclassing (extends) | Interface implementation |
+| **Can proxy final classes?** | 🚫 No | N/A |
+| **Can proxy final methods?** | 🚫 No | ✔️ Yes (on interface) |
+| **Performance** | Slightly slower | Slightly faster |
+| **Memory usage** | Slightly higher | Slightly lower |
+| **Spring Boot default** | ✔️ Yes | 🚫 No |
+| **Configuration** | Default | `proxy-target-class=false` |
+| **External dependency** | CGLib (included) | None (JDK built-in) |
+| **Use case** | General purpose | Interface-based design |
+
+---
+
+
+---
+
+## Practical Example: Seeing Proxies in Action
+
+Let's create a simple example to see proxies at work:
+
+```java
+@Service
+public class OrderService {
+    
+    public void createOrder(String userId, List<Item> items) {
+        System.out.println("=== Inside createOrder ===");
+        System.out.println("Class: " + this.getClass().getSimpleName());
+        
+        Order order = new Order(userId, items);
+        order.calculateTotal();
+        
+        System.out.println("Order created: " + order.getId());
+    }
+}
+
+@Aspect
+@Component
+public class LoggingAspect {
+    
+    @Before("execution(* com.app.service.OrderService.*(..))")
+    public void logBefore(JoinPoint joinPoint) {
+        System.out.println("→ [BEFORE] Calling: " + joinPoint.getSignature().getName());
+    }
+    
+    @AfterReturning("execution(* com.app.service.OrderService.*(..))")
+    public void logAfter(JoinPoint joinPoint) {
+        System.out.println("← [AFTER] Finished: " + joinPoint.getSignature().getName());
+    }
+}
+```
+
+When you call `orderService.createOrder()`, you'll see:
+
+```
+→ [BEFORE] Calling: createOrder
+=== Inside createOrder ===
+Class: OrderService$$EnhancerBySpringCGLIB$$a1b2c3d4
+Order created: ORD-12345
+← [AFTER] Finished: createOrder
+```
+
+Notice:
+1. The `@Before` advice runs first
+2. The actual method executes
+3. The class name shows it's a CGLib proxy
+4. The `@After` advice runs last
+
+---
+
+## When to Use Which Proxy?
+
+<Alert type="info">
+**Recommendation**: Stick with the default (CGLib) unless you have a specific reason to change. It works in 99% of cases and requires less boilerplate.
+</Alert>
+
+---
+
+## Key Takeaways
+
+- Spring supports **two proxy types**: CGLib (class-based) and JDK (interface-based)
+- **CGLib is the default** and works with any class
+- **JDK proxies** require interfaces but are slightly faster
+- Only **public methods** can be effectively proxied
+- **Final classes/methods** can't be proxied by CGLib
+- Understanding proxy limitations helps you write better AOP code
+
+## What's Next?
+
+Let's write some code !
+
+---

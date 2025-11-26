@@ -1,0 +1,252 @@
+---
+title: 'Spring Boot AOP: Part 1 - Introduction to Aspect-Oriented Programming'
+description: 'A beginner-friendly introduction to Spring Boot AOP.'
+pubDate: 2025-11-25
+author: 'Amrit Adhikari'
+tags: ['aspect-oriented-programming']
+series: 'Spring Boot - Aspect Oriented Programming'
+seriesOrder: 1
+draft: false
+---
+
+import Alert from '../../components/Alert.astro';
+
+## Understanding the problem
+
+Imagine you're building a banking app, and everything starts simple. You have a clean `TransferService` with a `transfer()` method that only handles the money movement. It looks nice, easy to read, and focused.
+
+```java
+@Service
+public class TransferService {
+    public void transfer(Account from, Account to, BigDecimal amount) {
+        from.debit(amount);
+        to.credit(amount);
+        accountRepository.save(from, to);
+    }
+}
+```
+
+
+But then things slowly get complicated.
+
+Your manager comes and says, “Hey, we need to log every transfer.”  
+Okay, fine, you add some logging.
+
+Then the security team says, “We need to know who is doing the transfer.”  
+So you add an authentication or permission check.
+
+Then the auditing team says, “Please record every action in the audit table.”  
+More code gets added.
+
+Now your once clean method starts getting filled with a lot of extra things that have nothing to do with the real money transfer (business logic). The actual business logic: debit, credit, save becomes only a tiny part of a bigger mess. Everything else around it is just noise that keeps growing.
+
+**Here is how it slowly turns into something messy:**
+
+```java
+@Service
+public class TransferService {
+    public void transfer(Account from, Account to, BigDecimal amount) {
+        // Logging
+        logger.info("Transfer started: {} -> {}", from.getId(), to.getId());
+        
+        // Security check
+        if (!securityService.hasPermission(getCurrentUser(), "TRANSFER")) {
+            throw new SecurityException("Unauthorized");
+        }
+        
+        // Audit logging
+        auditService.log("TRANSFER_INITIATED", from.getId(), to.getId());
+        
+        // The actual business logic (now only a small part)
+        from.debit(amount);
+        to.credit(amount);
+        accountRepository.save(from, to);
+        
+        // More logging
+        logger.info("Transfer completed");
+        
+        // More audit logging
+        auditService.log("TRANSFER_COMPLETED", from.getId(), to.getId());
+    }
+}
+```
+
+<Alert type="warning">
+**The worst part?**  
+
+You also need the same logging, the same security checks, the same audit logs in `withdraw()`, `deposit()`, `refund()`, and many other methods. You end up copying the same code everywhere, and everything becomes harder to maintain.
+</Alert>
+
+<Alert type="info">
+**This is exactly the situation where AOP helps.** It lets us keep the business logic clean and move all these repeating features (logging, security, auditing, transactions) into separate parts without touching every single method.
+</Alert>
+
+
+---
+
+## What is Aspect-Oriented Programming?
+
+AOP is a programming paradigm that lets us separate **cross-cutting concerns** from the business logic.
+
+We can think of it like this:
+
+> **AOP = Clean Business Code + Centralized Cross-Cutting Logic**
+
+### Understanding "Cross-Cutting"
+
+**Cross-cutting** concerns are pieces of code that affect many parts of your application, not just one place. They **"cut across"** multiple layers and classes.
+
+![Cross-Cutting Concerns Diagram](/blog-images/cross-cutting-concern.svg)
+
+Common examples:
+
+- **Logging**: We need it in your controller, service, repository, and utility classes
+- **Security checks**: Every sensitive operation needs authorization
+- **Transaction management**: Multiple methods need to be atomic
+- **Performance monitoring**: We want to track execution time across the app
+- **Error handling**: Consistent exception handling everywhere
+- **Caching**: Multiple methods could benefit from caching
+
+Without AOP, we'd copy-paste this code everywhere. With AOP, we write it once and apply it everywhere.
+
+---
+
+## The AOP Solution
+
+With AOP, your `transfer()` method becomes beautifully simple:
+
+```java
+@Transactional
+@Logged
+@Secured("TRANSFER")
+@Audited
+public void transfer(Account from, Account to, BigDecimal amount) {
+    from.debit(amount);
+    to.credit(amount);
+    accountRepository.save(from, to);
+}
+```
+
+All the cross-cutting concerns are handled by AOP. Our method is now focused on what it actually does (transferring money).
+
+The logging, security, transactions, and auditing happen automatically, behind the scenes.
+
+---
+
+## Core AOP Concepts
+
+Before we jump into coding, let's understand some AOP concepts:
+
+### 1. **Aspect** 
+
+An Aspect is a class that contains extra behavior you want to apply across your application. Think of it as a container for cross-cutting logic.
+
+```java
+@Aspect
+@Component
+public class LoggingAspect {
+    // This class contains all our logging logic
+}
+```
+
+### 2. **Advice**
+
+Advice is a method inside an Aspect that contains the actual cross-cutting logic. It specifies **when** and **what** to execute.
+
+Spring gives us five types of advice:
+
+| Advice Type | When It Runs | Use Case |
+|---|---|---|
+| `@Before` | Before the method executes | Validation, security checks |
+| `@After` | After the method executes (**always**) | Cleanup, resource release |
+| `@AfterReturning` | After successful execution | Logging results, caching |
+| `@AfterThrowing` | After an exception is thrown | Error handling, alerting |
+| `@Around` | Wraps the entire method | Performance monitoring, transactions |
+---
+
+Example:
+
+```java
+@Aspect
+@Component
+public class LoggingAspect {
+    
+    @Before("execution(* com.app.service.*.*(..))")
+    public void logBefore(JoinPoint joinPoint) {
+        System.out.println("Method called: " + joinPoint.getSignature());
+    }
+    
+    @After("execution(* com.app.service.*.*(..))")
+    public void logAfter(JoinPoint joinPoint) {
+        System.out.println("Method finished: " + joinPoint.getSignature());
+    }
+}
+```
+
+### 3. **Pointcut**
+
+A Pointcut is an expression that tells Spring **where** to apply the advice. It's like a pattern matcher that targets specific methods or classes.
+
+Common pointcut expressions:
+
+```java
+// All methods in the service package
+execution(* com.app.service.*.*(..))
+
+// All methods annotated with @Transactional
+@annotation(org.springframework.transaction.annotation.Transactional)
+
+// All methods in beans named "userService"
+bean(userService)
+
+// All methods in classes implementing UserRepository
+target(com.app.repository.UserRepository)
+```
+
+
+### 4. **JoinPoint** 
+
+A JoinPoint represents all possible method executions that Spring can intercept. It's the actual moment when your advice runs.
+
+When you have access to a JoinPoint, you can:
+- Get the method name
+- Get the arguments passed
+- Get the target object
+- Proceed with the actual method execution
+
+```java
+@Before("execution(* com.app.service.*.*(..))")
+public void logBefore(JoinPoint joinPoint) {
+    String methodName = joinPoint.getSignature().getName();
+    Object[] args = joinPoint.getArgs();
+    System.out.println("Calling: " + methodName + " with args: " + Arrays.toString(args));
+}
+```
+
+---
+
+## What's Next?
+
+In this introduction, we've covered the **why** and **what** of AOP.
+
+In the **Next Part** of this series, we'll dive into the mechanics of AOP.
+
+For now, remember this simple formula:
+
+> **AOP = Separating what your code does (business logic) from how it does it (cross-cutting concerns)**
+
+---
+
+## Quick Reference
+
+| Concept | What It Is |
+|---|---|
+| **Aspect** | A class containing cross-cutting logic |
+| **Advice** | A method in an Aspect that runs at a specific time |
+| **Pointcut** | An expression that targets where advice should apply |
+| **JoinPoint** | The actual moment when advice executes |
+| **Proxy** | Spring's wrapper around your bean that enables AOP |
+
+---
+
+Let's explore more about Spring AOP in the next part!

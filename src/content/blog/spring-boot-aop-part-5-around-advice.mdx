@@ -1,0 +1,387 @@
+---
+title: 'Spring Boot AOP: Part 5 - @Around Advice and Custom Annotations'
+description: 'Learn how to use @Around advice to wrap method execution and create custom annotations.'
+pubDate: 2025-11-25
+author: 'Amrit Adhikari'
+tags: ['aspect-oriented-programming']
+series: 'Spring Boot - Aspect Oriented Programming'
+seriesOrder: 5
+draft: false
+---
+
+import Alert from '../../components/Alert.astro';
+
+## Yet Another AOP Project
+
+In Part 4, we used `@Before` and `@After` advice to add transaction logging. But what if you need to wrap around a method (run code before AND after), and even control whether the method executes at all?
+
+That's where `@Around` advice comes in. It's the most powerful advice type in AOP.
+
+Today, we're building a **performance monitoring system** that tracks how long methods take to execute. And we'll do it using a custom annotation called `@TrackTime`.
+
+Let's dive in! 
+
+---
+
+## What We're Building
+
+We'll create a simple order processing system where we can track execution time by just adding `@TrackTime` to any method:
+
+```java
+@TrackTime
+public void processOrder() {
+    // business logic
+}
+```
+
+Output:
+```
+void OrderService.processOrder() executed in 1002 ms
+```
+
+No manual timing code, no stopwatch logic in your business methods. Just one annotation, and AOP handles the rest!
+
+---
+
+## Project Setup
+
+### Quick Start
+
+1. Go to [start.spring.io](https://start.spring.io)
+2. Create a new project:
+   - **Group**: `com.adigitallab`
+   - **Artifact**: `aop-performance-tracker`
+   - **Dependencies**: None (we'll add AOP manually)
+3. Download, unzip, and open in your IDE
+
+### Add AOP Dependency
+
+Add this to your `pom.xml`:
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-aop</artifactId>
+</dependency>
+```
+
+That's it for setup! Now let's build.
+
+---
+
+## Step 1: Create a Custom Annotation
+
+First, let's create our `@TrackTime` annotation. Create a new package `com.adigitallab.aop` and add this class:
+
+```java
+package com.adigitallab.aop;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface TrackTime {
+}
+```
+
+### Understanding the Annotation
+
+**`@Target(ElementType.METHOD)`**: This annotation can only be used on methods (not classes or fields)
+
+**`@Retention(RetentionPolicy.RUNTIME)`**: The annotation will be available at runtime (so AOP can detect it)
+
+**`public @interface TrackTime`**: Defines a custom annotation named `TrackTime`
+
+<Alert type="info">
+**Why create a custom annotation?**
+
+Instead of writing complex pointcut expressions like:
+```java
+execution(* com.adigitallab.service.OrderService.*(..))
+```
+
+We can simply use:
+```java
+@annotation(com.adigitallab.aop.TrackTime)
+```
+
+It's cleaner, more flexible, and easier to apply to any method you want to track!
+</Alert>
+
+---
+
+## Step 2: Create the OrderService
+
+Create a new package `com.adigitallab.service` and add this service:
+
+```java
+package com.adigitallab.service;
+
+import com.adigitallab.aop.TrackTime;
+import org.springframework.stereotype.Service;
+
+@Service
+public class OrderService {
+    
+    @TrackTime
+    public void processOrder() throws InterruptedException {
+        Thread.sleep(1000); // Simulate a slow task
+    }
+}
+```
+
+Notice how clean this is! The `@TrackTime` annotation is all we need. **Nothing extra**, just pure business logic (well, a simulated slow task).
+
+---
+
+## Step 3: Create the PerformanceAspect
+
+Now for the magic! Create `PerformanceAspect.java` in the `com.adigitallab.aop` package:
+
+```java
+package com.adigitallab.aop;
+
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
+import org.springframework.stereotype.Component;
+
+@Component
+@Aspect
+public class PerformanceAspect {
+    
+    @Around("@annotation(com.adigitallab.aop.TrackTime)")
+    public Object logExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
+        long startTime = System.currentTimeMillis();
+        
+        // Call the actual method
+        Object result = joinPoint.proceed();
+        
+        long endTime = System.currentTimeMillis();
+        long executionTime = endTime - startTime;
+        
+        System.out.println(
+            joinPoint.getSignature() + " executed in " + executionTime + " ms"
+        );
+        
+        return result;
+    }
+}
+```
+
+### Understanding @Around Advice
+
+This is different from `@Before` and `@After`! Let's break it down:
+
+**`@Around`**: Wraps around the method execution—you control when (or if) the method runs
+
+**`ProceedingJoinPoint`**: Special type of JoinPoint that lets you call `proceed()` to execute the actual business method
+
+**`joinPoint.proceed()`**: This is where the actual business method runs. Everything before this is "before" logic, everything after is "after" logic
+
+**`return result`**: You must return the result from the actual method (if it has a return value)
+
+### The Flow
+
+```
+1. @Around advice starts
+   ↓
+2. Record start time
+   ↓
+3. joinPoint.proceed() → Actual method runs
+   ↓
+4. Record end time
+   ↓
+5. Calculate execution time
+   ↓
+6. Print the result
+   ↓
+7. Return the result
+```
+
+<Alert type="warning">
+**Important**: Always call `joinPoint.proceed()` in your `@Around` advice! If you forget, the actual method will never execute.
+
+Also, always return the result from `proceed()`. If you don't, methods that return values will return `null`!
+</Alert>
+
+---
+
+## Step 4: Update the Main Application
+
+Update your `Application.java`:
+
+```java
+package com.adigitallab;
+
+import com.adigitallab.service.OrderService;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
+
+@SpringBootApplication
+@EnableAspectJAutoProxy
+public class Application implements CommandLineRunner {
+    
+    private final OrderService orderService;
+    
+    public Application(OrderService orderService) {
+        this.orderService = orderService;
+    }
+    
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+    
+    @Override
+    public void run(String... args) throws Exception {
+        orderService.processOrder();
+    }
+}
+```
+
+We're using `CommandLineRunner` here, which runs automatically after Spring Boot starts. It's perfect for testing!
+
+---
+
+## Step 5: Run and See the Magic
+
+Run your application. You should see output like this:
+
+```
+void com.adigitallab.service.OrderService.processOrder() executed in 1002 ms
+```
+
+**That's it!** 
+
+The method took about 1000ms (because of `Thread.sleep(1000)`), and our aspect automatically tracked and logged it.
+
+---
+
+## Why @Around is Powerful
+
+`@Around` advice is the most flexible because you can:
+
+### 1. Run Code Before and After
+
+```java
+@Around("@annotation(TrackTime)")
+public Object logExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
+    System.out.println("Before method");
+    Object result = joinPoint.proceed();
+    System.out.println("After method");
+    return result;
+}
+```
+
+### 2. Modify Arguments
+
+```java
+@Around("@annotation(TrackTime)")
+public Object modifyArgs(ProceedingJoinPoint joinPoint) throws Throwable {
+    Object[] args = joinPoint.getArgs();
+    // Modify arguments
+    args[0] = "Modified value";
+    return joinPoint.proceed(args); // Pass modified args
+}
+```
+
+### 3. Modify Return Values
+
+```java
+@Around("@annotation(TrackTime)")
+public Object modifyResult(ProceedingJoinPoint joinPoint) throws Throwable {
+    Object result = joinPoint.proceed();
+    // Modify the result
+    return result + " (modified)";
+}
+```
+
+### 4. Handle Exceptions
+
+```java
+@Around("@annotation(TrackTime)")
+public Object handleException(ProceedingJoinPoint joinPoint) throws Throwable {
+    try {
+        return joinPoint.proceed();
+    } catch (Exception e) {
+        System.out.println("Exception caught: " + e.getMessage());
+        return null; // Return default value
+    }
+}
+```
+
+### 5. Skip Method Execution
+
+```java
+@Around("@annotation(TrackTime)")
+public Object skipMethod(ProceedingJoinPoint joinPoint) throws Throwable {
+    if (someCondition) {
+        return null; // Don't call proceed() - method never runs!
+    }
+    return joinPoint.proceed();
+}
+```
+
+---
+
+## Let's Enhance It!
+
+### Add Multiple Methods
+
+Update `OrderService` to track multiple methods:
+
+```java
+@Service
+public class OrderService {
+    
+    @TrackTime
+    public void processOrder() throws InterruptedException {
+        Thread.sleep(1000);
+        System.out.println("Order processed");
+    }
+    
+    @TrackTime
+    public void validateOrder() throws InterruptedException {
+        Thread.sleep(500);
+        System.out.println("Order validated");
+    }
+    
+    @TrackTime
+    public void shipOrder() throws InterruptedException {
+        Thread.sleep(1500);
+        System.out.println("Order shipped");
+    }
+}
+```
+
+Update `Application.java` to call all methods:
+
+```java
+@Override
+public void run(String... args) throws Exception {
+    orderService.validateOrder();
+    orderService.processOrder();
+    orderService.shipOrder();
+}
+```
+
+Output:
+```
+Order validated
+void OrderService.validateOrder() executed in 502 ms
+Order processed
+void OrderService.processOrder() executed in 1001 ms
+Order shipped
+void OrderService.shipOrder() executed in 1501 ms
+```
+
+Every method with `@TrackTime` is automatically tracked! 
+
+---
+
+
