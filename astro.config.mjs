@@ -7,6 +7,7 @@ import sitemap from '@astrojs/sitemap';
 export default defineConfig({
   site: 'https://aa1588.github.io',
   base: '/amrit-digital-lab',
+  output: 'static',
   integrations: [mdx(), sitemap()],
   markdown: {
     syntaxHighlight: 'shiki',
