@@ -5,7 +5,8 @@ import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://yourdomain.com', // Update this with your actual domain
+  site: 'https://aa1588.github.io',
+  base: '/amrit-digital-lab',
   integrations: [mdx(), sitemap()],
   markdown: {
     syntaxHighlight: 'shiki',
