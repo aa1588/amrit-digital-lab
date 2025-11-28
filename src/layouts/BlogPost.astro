@@ -73,7 +73,7 @@ const currentUrl = new URL(Astro.url.pathname, Astro.site).toString();
         {tags.length > 0 && (
           <div class="tags">
             {tags.map(tag => (
-              <a href={`/blog?tag=${tag}`} class="tag">{tag}</a>
+              <a href={`${import.meta.env.BASE_URL}blog?tag=${tag}`} class="tag">{tag}</a>
             ))}
           </div>
         )}
