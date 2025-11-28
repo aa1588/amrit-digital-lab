@@ -6,7 +6,7 @@ import sitemap from '@astrojs/sitemap';
 // https://astro.build/config
 export default defineConfig({
   site: 'https://aa1588.github.io',
-  base: '/amrit-digital-lab',
+  base: '/amrit-digital-lab/',
   output: 'static',
   integrations: [mdx(), sitemap()],
   markdown: {
