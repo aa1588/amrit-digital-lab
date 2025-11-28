@@ -1,8 +1,7 @@
 name: CI
 
 on:
-  push:
-    branches: [main, master]
+  # Only run on pull requests (deploy.yml handles main branch)
   pull_request:
     branches: [main, master]
 
@@ -26,11 +25,5 @@ jobs:
       - name: Build project
         run: npm run build
 
-      - name: Check for build errors
-        run: |
-          if [ $? -eq 0 ]; then
-            echo "Build successful!"
-          else
-            echo "Build failed!"
-            exit 1
-          fi
+      - name: Verify build succeeded
+        run: echo "✅ Build successful!"
