@@ -29,7 +29,7 @@ const nextPost = currentIndex < seriesPosts.length - 1 ? seriesPosts[currentInde
     <div class="series-posts">
       {seriesPosts.map((post, index) => (
         <a 
-          href={`${base}blog/${post.slug}`}
+          href={`${base}blog/${post.slug}/`}
           class:list={['series-item', { active: post.slug === currentSlug }]}
         >
           <span class="series-number">{index + 1}</span>
@@ -40,13 +40,13 @@ const nextPost = currentIndex < seriesPosts.length - 1 ? seriesPosts[currentInde
 
     <div class="series-navigation">
       {prevPost && (
-        <a href={`${base}blog/${prevPost.slug}`} class="nav-link prev">
+        <a href={`${base}blog/${prevPost.slug}/`} class="nav-link prev">
           <span class="nav-label">← Previous</span>
           <span class="nav-title">{prevPost.data.title}</span>
         </a>
       )}
       {nextPost && (
-        <a href={`${base}blog/${nextPost.slug}`} class="nav-link next">
+        <a href={`${base}blog/${nextPost.slug}/`} class="nav-link next">
           <span class="nav-label">Next →</span>
           <span class="nav-title">{nextPost.data.title}</span>
         </a>
