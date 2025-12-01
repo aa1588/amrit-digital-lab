@@ -1,0 +1,432 @@
+---
+title: 'ThreadLocal in Java: Per-Thread Variables Explained'
+description: 'Learn how ThreadLocal works in Java, why it matters, and how frameworks like Spring Security use it to store per-thread data without passing objects everywhere.'
+pubDate: 2025-02-16
+author: 'Amrit Adhikari'
+tags: ['java', 'concurrency', 'Multithreading']
+draft: false
+---
+
+import Alert from '../../components/Alert.astro';
+
+## Let's Recall What a Thread Is
+
+**Reminder:** We know that a Java app can run multiple threads at the same time.
+
+<Alert type="info">
+Each thread has:
+- Its own call stack
+- Its own execution flow
+</Alert>
+
+But all threads **share the same heap** (same objects in memory).
+
+So normally:
+
+```java
+int x = 10; // shared object
+```
+
+If `thread A` and `thread B` both use `x`, they are looking at the **same value** (unless you copy it).
+
+However, sometimes you might want **each thread to have its own value** of something.
+
+### Real-World Examples
+
+```
+- Each HTTP request has its own logged-in user
+- Each request has its own request ID (for logging)
+- Each transaction has its own transaction context
+```
+
+So we want:
+
+> **"One variable, but each thread sees its own value."**
+
+<Alert type="warning">
+This is exactly what `ThreadLocal` gives us.
+</Alert>
+
+---
+
+## What is ThreadLocal?
+
+A `ThreadLocal<T>` is like a **per-thread variable**.
+
+- You create one `ThreadLocal` object
+- Each thread gets its own copy of the value inside it
+- Threads do not see each other's values
+
+Think of it as a magic box where each thread has its own compartment, even though they're all using the same box.
+
+---
+
+## Simple Example
+
+Let's start with the basics:
+
+```java
+public class SimpleThreadLocalDemo {
+    
+    private static final ThreadLocal<String> userNameHolder = new ThreadLocal<>();
+    
+    public static void main(String[] args) {
+        // Remember: We are in the main thread here
+        
+        userNameHolder.set("Amrit");  // store value for this thread
+        System.out.println("Main thread username: " + userNameHolder.get());
+        
+        userNameHolder.remove();  // clean up
+    }
+}
+```
+
+**Output:**
+```
+Main thread username: Amrit
+```
+
+Nothing magical yet. The real power comes when **multiple threads** use the same `ThreadLocal`.
+
+---
+
+## Same ThreadLocal, Different Threads
+
+Here's where it gets interesting:
+
+```java
+public class SimpleThreadLocalDemo {
+    
+    private static final ThreadLocal<String> userNameHolder = new ThreadLocal<>();
+    
+    public static void main(String[] args) {
+        Thread t1 = new Thread(() -> {
+            try {
+                userNameHolder.set("Amrit");
+                sleep(100);
+                System.out.println("Thread-1 username: " + userNameHolder.get());
+            } finally {
+                userNameHolder.remove();
+            }
+        });
+        
+        Thread t2 = new Thread(() -> {
+            try {
+                userNameHolder.set("Alex");
+                sleep(50);
+                System.out.println("Thread-2 username: " + userNameHolder.get());
+            } finally {
+                userNameHolder.remove();
+            }
+        });
+        
+        t1.start();
+        t2.start();
+    }
+    
+    private static void sleep(long ms) {
+        try { Thread.sleep(ms); } catch (InterruptedException ignored) {}
+    }
+}
+```
+
+**Output:**
+```
+Thread-2 username: Alex
+Thread-1 username: Amrit
+```
+
+### Key Points
+
+- Both threads use the **same static field**: `userNameHolder`
+- But Thread-1 sees `"Amrit"`, Thread-2 sees `"Alex"`
+- They don't overwrite or clash with each other
+
+<Alert type="success">
+**This is the core idea of ThreadLocal:**
+
+One `ThreadLocal` object, but one separate value per thread.
+</Alert>
+
+---
+
+## Storing More Than One Thing in ThreadLocal
+
+We could have multiple `ThreadLocal`s:
+
+```java
+ThreadLocal<String> userNameHolder;
+ThreadLocal<String> passwordHolder;
+ThreadLocal<Boolean> isLoggedInHolder;
+```
+
+But this gets messy fast. A better approach is to use a **record** or class:
+
+```java
+record UserData(String userName, String password, boolean isLoggedIn) {}
+```
+
+Now we can store everything in one `ThreadLocal`:
+
+```java
+public class ThreadLocalUserDataDemo {
+    
+    private static final ThreadLocal<UserData> sessionHolder = new ThreadLocal<>();
+    
+    public static void main(String[] args) {
+        
+        Thread t1 = new Thread(() -> {
+            try {
+                sessionHolder.set(new UserData("Amrit", "Amrit_Pass", true));
+                sleep(100);
+                System.out.println("Thread-1 session: " + sessionHolder.get());
+            } finally {
+                sessionHolder.remove();
+            }
+        });
+        
+        Thread t2 = new Thread(() -> {
+            try {
+                sessionHolder.set(new UserData("Alex", "Alex_Pass", false));
+                sleep(50);
+                System.out.println("Thread-2 session: " + sessionHolder.get());
+            } finally {
+                sessionHolder.remove();
+            }
+        });
+        
+        Thread t3 = new Thread(() -> {
+            try {
+                sessionHolder.set(new UserData("John", "John_Pass", true));
+                sleep(80);
+                System.out.println("Thread-3 session: " + sessionHolder.get());
+            } finally {
+                sessionHolder.remove();
+            }
+        });
+        
+        t1.start();
+        t2.start();
+        t3.start();
+    }
+    
+    private static void sleep(long ms) {
+        try { Thread.sleep(ms); } catch (InterruptedException ignored) {}
+    }
+}
+```
+
+**Output:**
+```
+Thread-2 session: UserData[userName=Alex, password=Alex_Pass, isLoggedIn=false]
+Thread-3 session: UserData[userName=John, password=John_Pass, isLoggedIn=true]
+Thread-1 session: UserData[userName=Amrit, password=Amrit_Pass, isLoggedIn=true]
+```
+
+Each thread has its own complete user session, stored in the same `ThreadLocal` object!
+
+---
+
+## How Frameworks Actually Use ThreadLocal
+
+### Spring Security Example
+
+**Spring Security** does something very similar with `SecurityContextHolder`:
+
+- It has a `ThreadLocal<SecurityContext>`
+- When the user is authenticated, Spring stores the `SecurityContext` in that `ThreadLocal`
+
+Anywhere in your code you can call:
+
+```java
+SecurityContextHolder.getContext().getAuthentication();
+```
+
+You don't pass the user object into every method—it's pulled from a `ThreadLocal`.
+
+This is why you can do this in any Spring controller or service:
+
+```java
+@GetMapping("/profile")
+public String getProfile() {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    String username = auth.getName();
+    return "Hello, " + username;
+}
+```
+
+No need to pass the user through method parameters. Spring stores it in a `ThreadLocal` when the request starts, and you can access it anywhere in that thread.
+
+<Alert type="info">
+**Other frameworks using ThreadLocal:**
+
+- **Hibernate/JPA**: Session management per thread
+- **Log4j/Logback**: MDC (Mapped Diagnostic Context) for request IDs
+- **Spring Transaction Management**: Transaction context per thread
+</Alert>
+
+---
+
+## The Memory Leak Problem
+
+So far, we've created threads with `new Thread(...)`. But in an enterprise-level application, we use things like:
+
+- `ExecutorService`
+- `ThreadPoolTaskExecutor`
+- `@Async` in Spring
+
+In those cases, **threads are reused** for many tasks.
+
+If we don't clear the `ThreadLocal`, old values can:
+- Stick around in the same thread
+- Leak into the next task
+- Waste memory
+
+<Alert type="error">
+**Memory Leak Warning:**
+
+In thread pools, if you don't call `remove()`, the old value stays in the thread. When that thread picks up a new task, it might see stale data from the previous task!
+
+This is a common source of bugs in production applications.
+</Alert>
+
+### The Solution: Always Clean Up
+
+**Always** set, use, and then `remove()` in a `finally` block:
+
+```java
+try {
+    threadLocal.set(value);
+    // do work
+} finally {
+    threadLocal.remove();  // ALWAYS clean up!
+}
+```
+
+### Example with ExecutorService
+
+```java
+public class ThreadPoolExample {
+    
+    private static final ThreadLocal<String> requestId = new ThreadLocal<>();
+    
+    public static void main(String[] args) {
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        
+        // Submit 5 tasks, but only 2 threads in pool
+        for (int i = 1; i <= 5; i++) {
+            int taskId = i;
+            executor.submit(() -> {
+                try {
+                    requestId.set("REQ-" + taskId);
+                    System.out.println(Thread.currentThread().getName() + 
+                                     " processing: " + requestId.get());
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                } finally {
+                    requestId.remove();  // Critical!
+                }
+            });
+        }
+        
+        executor.shutdown();
+    }
+}
+```
+
+**Output (may vary between runs):**
+```
+pool-1-thread-1 processing: REQ-1
+pool-1-thread-2 processing: REQ-2
+pool-1-thread-2 processing: REQ-4
+pool-1-thread-1 processing: REQ-3
+pool-1-thread-2 processing: REQ-5
+```
+
+Notice how `pool-1-thread-1` and `pool-1-thread-2` are reused for multiple tasks. The order can differ between runs due to thread scheduling. Without `remove()`, when a thread finishes task 1 and picks up task 3, it might still see stale data from task 1.
+
+---
+
+## When to Use ThreadLocal
+
+### Good Use Cases
+
+- **Per-request context** in web applications (user, request ID, transaction)
+- **Database connections** in connection-per-thread models
+- **Date formatters** (`SimpleDateFormat` is not thread-safe, so use `ThreadLocal<SimpleDateFormat>`)
+- **Random number generators** per thread
+
+### When NOT to Use ThreadLocal
+
+- **Sharing data between threads** (use proper synchronization instead)
+- **Long-lived data** that doesn't need to be per-thread
+- **When you can pass parameters** normally (don't overuse it)
+
+<Alert type="warning">
+**Rule of thumb:** Use `ThreadLocal` when passing parameters through many layers becomes impractical, and the data is truly per-thread/per-request.
+</Alert>
+
+---
+
+## Quick Reference
+
+### Basic Operations
+
+```java
+// Create
+ThreadLocal<String> threadLocal = new ThreadLocal<>();
+
+// Set value for current thread
+threadLocal.set("value");
+
+// Get value for current thread
+String value = threadLocal.get();
+
+// Remove value (important!)
+threadLocal.remove();
+
+// Set initial value
+ThreadLocal<String> threadLocal = ThreadLocal.withInitial(() -> "default");
+```
+
+### Best Practice Pattern
+
+```java
+private static final ThreadLocal<MyData> holder = new ThreadLocal<>();
+
+public void processRequest() {
+    try {
+        holder.set(new MyData());
+        // do work
+    } finally {
+        holder.remove();  // Always!
+    }
+}
+```
+
+---
+
+## Key Takeaways
+
+- `ThreadLocal` provides **per-thread variables**
+- Each thread sees its own value, even though they use the same `ThreadLocal` object
+- Frameworks like **Spring Security** use it extensively
+- **Always call `remove()`** in a `finally` block to avoid memory leaks
+- Especially important with **thread pools** where threads are reused
+- Use it when passing parameters becomes impractical, not as a replacement for proper design
+
+`ThreadLocal` is a powerful tool when used correctly. Just remember to clean up after yourself! 
+
+
+---
+
+## 🔬 Want to Experiment?
+
+All the code examples from this blog are available to run and experiment with:
+
+<Alert type="info">
+**📦 GitHub Repository**: [ThreadLocal in Java](https://github.com/aa1588/ThreadLocal-in-Java)
+
+Clone it, run the examples, and play around with the code to deepen your understanding!
+</Alert>
