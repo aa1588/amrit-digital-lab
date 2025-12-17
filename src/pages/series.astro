@@ -43,7 +43,16 @@ const series = Array.from(seriesMap.entries()).map(([name, posts]) => ({
           {series.map(({ name, posts, count }) => (
             <div class="series-card">
               <div class="series-header">
-                <h2>📚 {name}</h2>
+                <h2>
+                  {name === 'Apache Kafka' ? (
+                    <span class="series-icon-wrapper">
+                      <img src="/blog-images/kafka/Apache-Kafka.svg" alt="Apache Kafka" class="series-icon" />
+                      {name}
+                    </span>
+                  ) : (
+                    <>📚 {name}</>
+                  )}
+                </h2>
                 <span class="post-count">{count} {count === 1 ? 'post' : 'posts'}</span>
               </div>
               <div class="series-posts">
@@ -122,6 +131,18 @@ const series = Array.from(seriesMap.entries()).map(([name, posts]) => ({
   .series-header h2 {
     font-size: 1.375rem;
     color: var(--color-text);
+  }
+
+  .series-icon-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .series-icon {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
   }
 
   .post-count {

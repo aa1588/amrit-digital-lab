@@ -22,7 +22,16 @@ const nextPost = currentIndex < seriesPosts.length - 1 ? seriesPosts[currentInde
 {seriesPosts.length > 1 && (
   <div class="series-nav">
     <div class="series-header">
-      <h3>📚 Series: {seriesName}</h3>
+      <h3>
+        {seriesName === 'Apache Kafka' ? (
+          <span class="series-icon-wrapper">
+            <img src="/blog-images/kafka/Apache-Kafka.svg" alt="Apache Kafka" class="series-icon" />
+            Series: {seriesName}
+          </span>
+        ) : (
+          <>📚 Series: {seriesName}</>
+        )}
+      </h3>
       <p>Part {currentIndex + 1} of {seriesPosts.length}</p>
     </div>
     
@@ -74,6 +83,18 @@ const nextPost = currentIndex < seriesPosts.length - 1 ? seriesPosts[currentInde
     font-size: 1rem;
     margin-bottom: 0.25rem;
     color: var(--color-text);
+  }
+
+  .series-icon-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .series-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
   }
 
   .series-header p {
