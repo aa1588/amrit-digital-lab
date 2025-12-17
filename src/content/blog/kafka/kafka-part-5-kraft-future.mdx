@@ -22,30 +22,37 @@ This is Part 5 of our comprehensive Kafka series. Make sure you've read the prev
 
 ### The Evolution: From ZooKeeper to KRaft
 
-```mermaid
-graph TB
-    subgraph "Traditional Kafka with ZooKeeper"
-        ZK[ZooKeeper Cluster]
-        B1[Broker 1]
-        B2[Broker 2] 
-        B3[Broker 3]
-        ZK --> B1
-        ZK --> B2
-        ZK --> B3
-    end
-    
-    subgraph "Modern Kafka with KRaft"
-        C1[Controller 1]
-        C2[Controller 2]
-        C3[Controller 3]
-        KB1[Broker 1]
-        KB2[Broker 2]
-        C1 -.-> KB1
-        C2 -.-> KB2
-        C1 --- C2
-        C2 --- C3
-        C3 --- C1
-    end
+```
+Traditional Kafka Architecture (with ZooKeeper):
+┌─────────────────────────────────────────────────┐
+│              ZooKeeper Cluster                  │
+│         (Manages Metadata & Coordination)       │
+└─────────────────┬───────────────────────────────┘
+                  │
+        ┌─────────┼─────────┐
+        │         │         │
+        ▼         ▼         ▼
+   ┌─────────┐ ┌─────────┐ ┌─────────┐
+   │Broker 1 │ │Broker 2 │ │Broker 3 │
+   │         │ │         │ │         │
+   └─────────┘ └─────────┘ └─────────┘
+
+Modern Kafka Architecture (with KRaft):
+┌─────────────────────────────────────────────────┐
+│           KRaft Controller Quorum               │
+│    ┌─────────┐ ┌─────────┐ ┌─────────┐         │
+│    │Ctrl 1   │◄┤Ctrl 2   │►│Ctrl 3   │         │
+│    │(Leader) │ │         │ │         │         │
+│    └─────────┘ └─────────┘ └─────────┘         │
+└─────────────────┬───────────────────────────────┘
+                  │ (Metadata Distribution)
+        ┌─────────┼─────────┐
+        │         │         │
+        ▼         ▼         ▼
+   ┌─────────┐ ┌─────────┐ ┌─────────┐
+   │Broker 1 │ │Broker 2 │ │Broker 3 │
+   │         │ │         │ │         │
+   └─────────┘ └─────────┘ └─────────┘
 ```
 
 ## Why Replace ZooKeeper?
@@ -126,17 +133,27 @@ Instead of ZooKeeper's broadcast model, KRaft uses a pull-based approach:
 2. **Follower Controllers**: Replica followers of metadata
 3. **Brokers**: Replica observers that fetch metadata changes
 
-```mermaid
-sequenceDiagram
-    participant AC as Active Controller
-    participant FC as Follower Controller
-    participant B as Broker
-    
-    AC->>AC: Write metadata change
-    FC->>AC: Fetch latest metadata
-    B->>AC: Fetch latest metadata
-    AC-->>FC: Metadata updates
-    AC-->>B: Metadata updates
+```
+KRaft Metadata Synchronization Flow:
+
+Active Controller    Follower Controller    Broker
+       │                     │               │
+       │ 1. Write metadata   │               │
+       │    change           │               │
+       │◄────────────────────┼───────────────┤
+       │                     │ 2. Fetch      │
+       │                     │    latest     │
+       │                     │    metadata   │
+       │─────────────────────┤               │
+       │ 3. Metadata updates │               │
+       │                     │               │
+       │◄────────────────────┼───────────────┤
+       │                     │               │ 4. Fetch
+       │                     │               │    latest
+       │                     │               │    metadata
+       │─────────────────────┼───────────────┤
+       │                     │ 5. Metadata   │
+       │                     │    updates    │
 ```
 
 ### Benefits of Pull-Based Model
@@ -348,4 +365,3 @@ Throughout this 5-part series, we've explored:
 
 Apache Kafka with KRaft represents the culmination of years of architectural evolution, delivering a more robust, scalable, and operationally simple event streaming platform. Whether you're starting fresh or planning a migration, KRaft is the foundation for your event-driven future.
 
-Thank you for joining us on this comprehensive journey through Apache Kafka! The event streaming revolution continues, and now you're equipped with the knowledge to be part of it.
