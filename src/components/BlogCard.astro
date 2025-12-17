@@ -25,6 +25,16 @@ const formattedDate = new Date(pubDate).toLocaleDateString('en-US', {
             <img src="/blog-images/kafka/Apache-Kafka.svg" alt="Apache Kafka" class="series-icon" />
             {series}
           </span>
+        ) : series === 'Spring Boot - Aspect Oriented Programming' ? (
+          <span class="series-icon-wrapper">
+            <img src="/blog-images/spring/springio-icon.svg" alt="Spring Boot" class="series-icon" />
+            {series}
+          </span>
+        ) : series === 'OAuth 2.0' ? (
+          <span class="series-icon-wrapper">
+            <img src="/blog-images/oauth2/oauth-svgrepo-com.svg" alt="OAuth 2.0" class="series-icon" />
+            {series}
+          </span>
         ) : (
           <>📚 {series}</>
         )}
@@ -65,7 +75,8 @@ const formattedDate = new Date(pubDate).toLocaleDateString('en-US', {
   }
 
   .series-badge {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
     font-size: 0.875rem;
     color: var(--color-primary);
     margin-bottom: 0.5rem;
@@ -76,12 +87,28 @@ const formattedDate = new Date(pubDate).toLocaleDateString('en-US', {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    line-height: 1;
   }
 
   .series-icon {
     width: 16px;
     height: 16px;
     flex-shrink: 0;
+    vertical-align: middle;
+  }
+
+  /* Specific adjustments for Spring logo alignment */
+  .series-icon-wrapper img[src*="spring"] {
+    width: 18px;
+    height: 18px;
+    margin-top: -2px;
+  }
+
+  /* Make OAuth logo bigger and align properly */
+  .series-icon-wrapper img[src*="oauth"] {
+    width: 20px;
+    height: 20px;
+    margin-top: -3px;
   }
 
   h3 {

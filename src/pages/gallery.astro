@@ -5,6 +5,36 @@ import ResourcesSection from '../components/ResourcesSection.astro';
 // Gallery items - add your photos here
 const galleryItems = [
   {
+    image: '/gallery/masters-graduation.jpg',
+    caption: 'Graduation: Master\'s in Computer Science, UNT',
+    date: 'December 2025'
+  },
+  {
+    image: '/gallery/unt-final-day-2025.jpg',
+    caption: 'Final Day at UNT - Master\'s Program Completion',
+    date: 'December 2025'
+  },
+  {
+    image: '/gallery/uni-research-day-presentation-2025.jpg',
+    caption: 'Presented a little research on LLM bias at the University Research Day Event',
+    date: 'October 2025'
+  },
+  {
+    image: '/gallery/IMG_AGENTCON2025.jpg',
+    caption: 'Home Base Fit Check: See you soon, AgentCon\'25 Dallas!',
+    date: 'July 2025'
+  },
+  {
+    image: '/gallery/IMG_AgentCon_Badge.jpg',
+    caption: 'Officially Checked In! AgentCon 2025',
+    date: 'July 2025'
+  },
+  {
+    image: '/gallery/k8s-demo.png',
+    caption: 'Presentation on Microservices Deployment with Kubernetes',
+    date: 'November 2024'
+  },
+  {
     image: '/gallery/photo1.jpg',
     caption: 'Speaking at Tech Conference 2024',
     date: 'March 2024'
@@ -129,8 +159,40 @@ const galleryItems = [
   .image-container img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     transition: transform 0.3s ease;
+  }
+
+  /* Zoom in the UNT final day image to fit the card better */
+  .image-container img[src*="unt-final-day"] {
+    object-fit: cover;
+  }
+
+  /* Make AgentCon images fit the card view properly */
+  .image-container img[src*="AGENTCON"] {
+    object-fit: cover;
+  }
+
+  .image-container img[src*="AgentCon_Badge"] {
+    object-fit: cover;
+  }
+
+  /* Zoom out university research day image to show more content */
+  .image-container img[src*="uni-research-day"] {
+    object-fit: contain;
+  }
+
+  /* Zoom in Kubernetes demo image to fit the card better */
+  .image-container img[src*="k8s-demo"] {
+    object-fit: cover;
+    object-position: 75% 85%;
+  }
+
+  /* Mobile responsive: use contain for all images on small screens */
+  @media (max-width: 768px) {
+    .image-container img {
+      object-fit: contain !important;
+    }
   }
 
   .gallery-card:hover .image-container img {

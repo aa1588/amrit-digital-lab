@@ -49,6 +49,16 @@ const series = Array.from(seriesMap.entries()).map(([name, posts]) => ({
                       <img src="/blog-images/kafka/Apache-Kafka.svg" alt="Apache Kafka" class="series-icon" />
                       {name}
                     </span>
+                  ) : name === 'Spring Boot - Aspect Oriented Programming' ? (
+                    <span class="series-icon-wrapper">
+                      <img src="/blog-images/spring/springio-icon.svg" alt="Spring Boot" class="series-icon" />
+                      {name}
+                    </span>
+                  ) : name === 'OAuth 2.0' ? (
+                    <span class="series-icon-wrapper">
+                      <img src="/blog-images/oauth2/oauth-svgrepo-com.svg" alt="OAuth 2.0" class="series-icon" />
+                      {name}
+                    </span>
                   ) : (
                     <>📚 {name}</>
                   )}
@@ -143,6 +153,13 @@ const series = Array.from(seriesMap.entries()).map(([name, posts]) => ({
     width: 24px;
     height: 24px;
     flex-shrink: 0;
+  }
+
+  /* Make OAuth logo bigger on series page */
+  .series-icon-wrapper img[src*="oauth"] {
+    width: 28px;
+    height: 28px;
+    margin-top: -3px;
   }
 
   .post-count {

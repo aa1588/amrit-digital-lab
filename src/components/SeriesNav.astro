@@ -28,6 +28,16 @@ const nextPost = currentIndex < seriesPosts.length - 1 ? seriesPosts[currentInde
             <img src="/blog-images/kafka/Apache-Kafka.svg" alt="Apache Kafka" class="series-icon" />
             Series: {seriesName}
           </span>
+        ) : seriesName === 'Spring Boot - Aspect Oriented Programming' ? (
+          <span class="series-icon-wrapper">
+            <img src="/blog-images/spring/springio-icon.svg" alt="Spring Boot" class="series-icon" />
+            Series: {seriesName}
+          </span>
+        ) : seriesName === 'OAuth 2.0' ? (
+          <span class="series-icon-wrapper">
+            <img src="/blog-images/oauth2/oauth-svgrepo-com.svg" alt="OAuth 2.0" class="series-icon" />
+            Series: {seriesName}
+          </span>
         ) : (
           <>📚 Series: {seriesName}</>
         )}
@@ -95,6 +105,13 @@ const nextPost = currentIndex < seriesPosts.length - 1 ? seriesPosts[currentInde
     width: 20px;
     height: 20px;
     flex-shrink: 0;
+  }
+
+  /* Make OAuth logo bigger in series navigation */
+  .series-icon-wrapper img[src*="oauth"] {
+    width: 24px;
+    height: 24px;
+    margin-top: -2px;
   }
 
   .series-header p {
