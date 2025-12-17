@@ -55,6 +55,21 @@ const galleryItems = [
     date: 'February 2024'
   },
   {
+    image: '/gallery/IMG_Hanuman_temple_visit.jpg',
+    caption: 'A Pause for the Soul - Hanuman Temple, Frisco',
+    date: 'December 2023'
+  },
+  {
+    image: '/gallery/IMG_Pikes_Peak_2018.PNG',
+    caption: 'The only non-rectangular national flag and the mountains - Pikes Peak Colorado!',
+    date: 'March 2018'
+  },
+  {
+    image: '/gallery/IMG_dallas_museum_of_arts_2017.JPG',
+    caption: 'Visited Dallas Museum of Arts for a Texas Government Assignment',
+    date: 'February 2017'
+  },
+  {
     image: '/gallery/photo2.jpg',
     caption: 'Hackathon Winner - Best Innovation Award',
     date: 'January 2024'
@@ -211,6 +226,22 @@ const galleryItems = [
   /* Make skiing image fit the card properly */
   .image-container img[src*="Skii-2024"] {
     object-fit: cover;
+  }
+
+  /* Make Hanuman temple visit image fit the card properly */
+  .image-container img[src*="Hanuman_temple"] {
+    object-fit: cover;
+  }
+
+  /* Zoom out Dallas museum image to show more content */
+  .image-container img[src*="dallas_museum"] {
+    object-fit: contain;
+  }
+
+  /* Make Pikes Peak image fit the card properly and position to show head */
+  .image-container img[src*="Pikes_Peak"] {
+    object-fit: cover;
+    object-position: center 30%;
   }
 
   /* Mobile responsive: use contain for all images on small screens */
