@@ -1,0 +1,210 @@
+---
+title: 'OAuth 2.0: Part 2 - Getting Keycloak Running'
+description: 'Learn how to set up and run Keycloak as your OAuth 2.0 authorization server. A practical, hands-on guide to get you started quickly.'
+pubDate: 2021-02-15
+author: 'Amrit Adhikari'
+tags: ['oauth2', 'security', 'keycloak']
+series: 'OAuth 2.0'
+seriesOrder: 2
+draft: false
+---
+
+import Alert from '../../../components/Alert.astro';
+
+## Why Keycloak?
+
+In [Part 1](/blog/oauth2/oauth2-part-1-introduction), we learned about OAuth 2.0 concepts and the role of different components. Now it's time to get hands-on.
+
+**Keycloak** is an open-source Identity and Access Management solution that provides:
+- OAuth 2.0 and OpenID Connect support out of the box
+- User management and authentication
+- Single Sign-On (SSO)
+- Social login integration
+- A clean admin console
+
+Best of all? It's free and relatively easy to set up.
+
+<Alert type="info">
+This guide focuses on getting Keycloak running locally for development. For production deployments, you'll need additional configuration for security, scalability, and high availability.
+</Alert>
+
+---
+
+## Prerequisites
+
+Before we start, make sure you have:
+
+- **Docker** and **Docker Compose** installed on your machine
+
+That's it. Docker makes this incredibly simple.
+
+---
+
+## Running Keycloak with Docker Compose
+
+Let's start by installing Keycloak using Docker Compose.
+
+### Step 1: Create docker-compose.yaml
+
+Create a file named `docker-compose.yaml` with the following content:
+
+```yaml
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0.5
+    container_name: keycloak
+    command: start-dev
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+    ports:
+      - "127.0.0.1:9090:8080"
+```
+
+### Step 2: Start Keycloak
+
+Now start the Keycloak container:
+
+```bash
+docker compose up -d
+```
+
+We're running Keycloak in dev mode here and setting up the admin credentials through environment variables. The container runs on port `8080` internally and is accessible on your local machine at the port `9090`.
+
+<Alert type="warning">
+**Security Note**: The credentials `admin/admin` are fine for local development, but never use these in production!
+</Alert>
+
+### Step 3: Wait for Keycloak to Start
+
+Keycloak takes a minute or two to start up. You can check the logs:
+
+```bash
+docker compose logs -f keycloak
+```
+
+Look for a message like:
+```
+Running the server in development mode. DO NOT use this configuration in production.
+```
+
+Once you see that, Keycloak is ready!
+
+### Step 4: Access the Admin Console
+
+You can now access the Keycloak Admin Console at:
+
+```
+http://localhost:8080
+```
+
+Click on **Administration Console** and log in with:
+- Username: `admin`
+- Password: `admin`
+
+You're in! You should see the Keycloak admin dashboard.
+
+---
+
+## Creating Your First Realm
+
+A **realm** in Keycloak is like a workspace. It manages a set of users, credentials, roles, and groups.
+
+### Step 1: Create a New Realm
+
+1. Click **Create Realm**
+2. Enter a name: `demo-realm`
+3. Click **Create**
+
+Once it's created, the new realm `demo-realm` should automatically be selected.
+
+<Alert type="info">
+The "master" realm is for managing Keycloak itself. Always create separate realms for your applications.
+</Alert>
+
+### Step 2: Create a Client
+
+A **client** represents your application that will use Keycloak for authentication.
+
+1. In the left sidebar, click **Clients**
+2. Click **Create client**
+3. Fill in the details:
+   - **Client ID**: `demo-app`
+   - **Client type**: OpenID Connect
+   - Click **Next**
+4. Configure capabilities:
+   - Enable **Client authentication**
+   - Disable **Authorization**
+   - Enable **Standard flow** and uncheck everything else
+   - Click **Next**
+5. Set login settings:
+   - **Root URL**: `http://localhost:8080`
+   - **Home URL**: `http://localhost:8080`
+   - **Valid redirect URIs**: `http://localhost:8080/callback`
+   - **Web origins**: `http://localhost:8000`
+   - **Valid post logout redirect URIs**: `http://localhost:8000`
+
+   - Click **Save**
+
+
+### Step 3: Get Client Credentials
+
+1. Go to the **Credentials** tab of your client
+2. Copy the **Client secret** (you'll need this later). Here's mine: `QxDILK2t5mYmODOgke4vSsVEQeeupjAw`
+
+---
+
+## Creating a Test User
+
+Let's create a user to test authentication:
+
+### Step 1: Create User
+
+1. In the left sidebar, click **Users**
+2. Click **Add user**
+3. Fill in:
+   - **Username**: `amrit`
+   - **Email**: `amrit@example.com`
+   - **First name**: `Amrit`
+   - **Last name**: `Adhikari`
+   - **Email verified**: ON
+4. Click **Create**
+
+### Step 2: Set Password
+
+1. Go to the **Credentials** tab
+2. Click **Set password**
+3. Enter password: `password123`
+4. Turn OFF **Temporary**
+5. Click **Save**
+
+
+
+<Alert type="warning">
+Again, this is just for testing. Use strong passwords in real applications!
+</Alert>
+
+---
+
+## Testing Your Setup
+
+Time to check if everything is okay so far.
+
+
+<Alert type="info">
+    Go to `http://localhost:9090/realms/demo-realm/account/` and Sign In with the credentials `amrit/password123`.
+</Alert>
+
+Congratulations! You just authenticated a user.
+
+---
+
+---
+
+## What's Next?
+
+We now have a working Keycloak instance! In the next part of this series, we'll:
+
+- Explore on how to get **Access Token** using **Authorization Code Flow**.
+
+See you in Part 3!
