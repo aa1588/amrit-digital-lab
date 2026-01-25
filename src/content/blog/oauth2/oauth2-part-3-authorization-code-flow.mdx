@@ -23,13 +23,11 @@ Remember how I mentioned earlier that OAuth 2.0 handles authorization (what you'
 
 Well, **"Authorization Code Grant Type"** is the OAuth 2.0 term, and **"Authorization Code Flow"** is what OpenID Connect calls it. They basically work the same way. The main difference is just in the scope of what they're doing. This will make more sense once we actually walk through some examples later in this article.
 
-
-Just to quickly refresh the  memory, here's what we set up in the previous part:
-- **Client ID**: `demo-app`
-- **Client Secret**: `QxDILK2t5mYmODOgke4vSsVEQeeupjAw`
-- **Username**: `amrit`
-- **Password**: `password123`
-
+> Just to quickly refresh the memory, here's what we set up in the previous part:
+> - **Client ID**: `demo-app`
+> - **Client Secret**: `QxDILK2t5mYmODOgke4vSsVEQeeupjAw`
+> - **Username**: `amrit`
+> - **Password**: `password123`
 
 Now let's dive into how this actually works.
 
@@ -133,9 +131,7 @@ http://localhost:9090/realms/demo-realm/protocol/openid-connect/auth?
 ```
 </Alert>
 
-<Alert type="warning">
-**Note**: The `redirect_uri` you specified in the request URL should match one of the Client's Valid redirect URIs configured in the Login settings.
-</Alert>
+> **The `redirect_uri` you specified in the request URL should match one of the Client's Valid redirect URIs configured in the Login settings.**
 
 
 ### Step 2: User Authenticates
