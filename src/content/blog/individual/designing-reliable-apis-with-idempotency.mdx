@@ -1,0 +1,357 @@
+---
+title: 'Designing Reliable APIs with Idempotency'
+description: 'Learn how to build APIs that handle retries gracefully without creating duplicate side effects. A practical guide to implementing idempotency in production systems.'
+pubDate: 2025-01-26
+author: 'Amrit Adhikari'
+tags: ['api-design', 'distributed-systems', 'backend']
+draft: false
+---
+
+import Alert from '../../../components/Alert.astro';
+
+## The Problem with Retries
+
+We usually build APIs with the assumption that every request will be processed exactly once. In real systems, that assumption does not hold.
+
+Retries happen all the time. Mobile apps resend requests when a response feels slow. Load balancers replay requests when they do not receive a timely response from a backend service. Client SDKs automatically retry when they encounter transient failures such as network hiccups or temporary timeouts.
+
+<Alert type="info">
+> In distributed systems — especially over HTTP — network issues, timeouts, and client retries are normal.
+</Alert>
+
+If an API only reads data, retries are usually harmless. Problems start when an API produces side effects, meaning it changes system state. Side effects include actions like creating a ticket, placing an order, reserving inventory, or charging a payment.
+
+When such an API is retried, the same operation may be executed more than once. This often happens quietly. The request returns a normal response, nothing looks broken, and yet duplicate tickets are created, duplicate orders are placed, or a customer is charged twice.
+
+> **This is how retries, which are meant to improve reliability, end up breaking correctness in production systems (corrupting data).**
+
+### Without Idempotency Key
+
+![API behavior without idempotency key](/blog-images/WithoutIdempotencyKey.png)
+
+When retries happen without idempotency protection, each request is treated as new, leading to duplicate operations and corrupted state.
+
+### With Idempotency Key
+
+![API behavior with idempotency key](/blog-images/WithIdempotencyKey.png)
+
+With idempotency keys, the server recognizes retry attempts and returns the cached response, ensuring the operation happens exactly once.
+
+---
+
+## What is Idempotency?
+
+An operation is idempotent if performing it multiple times has the same effect as performing it once.
+
+In mathematical terms: `f(f(x)) = f(x)`
+
+For APIs, this means that making the same request multiple times should produce the same result and have the same side effects as making it once.
+
+### Examples of Idempotent Operations
+
+**Naturally Idempotent:**
+- `GET /users/123` - Reading data multiple times doesn't change anything
+- `PUT /users/123` - Setting a value to the same thing multiple times has the same effect
+- `DELETE /users/123` - Deleting something that's already deleted is still deleted
+
+**Not Naturally Idempotent:**
+- `POST /orders` - Creates a new order each time
+- `POST /payments` - Charges the customer each time
+- `POST /tickets` - Creates a new ticket each time
+
+<Alert type="warning">
+**Important:** Idempotency is about the effect on the system, not about the response. An idempotent operation might return different status codes (200 vs 201), but the system state should be the same.
+</Alert>
+
+---
+
+## Why Idempotency Matters
+
+### Real-World Scenario
+
+Imagine you're building an e-commerce API. A customer clicks "Place Order" on their mobile app:
+
+1. The app sends `POST /orders` with order details
+2. Your server processes the order and charges the payment
+3. The response gets lost due to a network issue
+4. The app doesn't receive confirmation, so it retries
+5. Your server processes the order again
+6. The customer is charged twice
+
+Without idempotency, this scenario leads to:
+- Duplicate orders in your system
+- Double charges to the customer
+- Inventory issues
+- Customer support tickets
+- Refund processing overhead
+- Loss of customer trust
+
+### The Cost of Non-Idempotent APIs
+
+In production systems, the impact is real:
+- **Financial loss**: Duplicate payments, refunds, and chargebacks
+- **Data integrity**: Inconsistent state across services
+- **Customer experience**: Confusion and frustration
+- **Operational overhead**: Manual cleanup and reconciliation
+- **Compliance issues**: Audit trails become unreliable
+
+---
+
+## How Idempotency Fixes the Problem
+
+The core idea is simple:
+
+1. The client generates a unique idempotency key (e.g., a UUID) for each business action.
+2. The client sends this key in an HTTP header with the POST request.
+3. The server checks if it already processed a request with this key.
+4. If not, it executes the logic, stores the result with the key, and returns it.
+5. If yes, it returns the stored result without executing the logic again.
+
+This ensures that retries with the same idempotency key do not cause additional side effects.
+
+---
+
+## How to Make APIs Idempotent
+
+### 1. Use Idempotency Keys
+
+The most common approach is to require clients to send a unique idempotency key with each request.
+
+Idempotency is achieved by having the client generate a unique idempotency key for each distinct operation. The server stores this key along with the result of the initial request. When it receives the same key again, it returns the previously stored result instead of executing the operation again.
+
+**How it works:**
+1. Client generates a unique key (usually a UUID)
+2. Client includes the key in the request header
+3. Server checks if it has seen this key before
+4. If yes, return the cached response
+5. If no, process the request and cache the result
+
+> **Who Generates the Idempotency Key?**
+>
+> For idempotency to work correctly, the **client** that initiates the operation must generate the idempotency key, and it must reuse that same key for all retries of the same logical operation.
+>
+> Here's how it works in practice:
+>
+> 1. A user clicks "Create Ticket" or "Place Order" in the UI
+> 2. At that moment, the frontend generates a unique idempotency key
+> 3. That key represents **one logical intent**, not one HTTP request
+> 4. The frontend sends the request to the backend with that idempotency key (usually as a header)
+>
+> **If the request succeeds**, the operation is done.
+>
+> **If the request times out**, the network drops, or the backend responds slowly, the frontend retries the request. But it **reuses the same idempotency key**, not a new one. This tells the backend: "This is the same operation again, not a new one."
+>
+> **Critical:** If the frontend generated a new key for every retry, idempotency would not work. The backend would see each request as a brand-new operation and would correctly execute it again.
+
+**Example Request:**
+```bash
+POST /api/orders
+Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000
+Content-Type: application/json
+
+{
+  "items": [{"productId": "123", "quantity": 2}],
+  "totalAmount": 50.00
+}
+```
+
+**Server-side Implementation (Conceptual):**
+```java
+@PostMapping("/orders")
+public ResponseEntity<Order> createOrder(
+    @RequestHeader("Idempotency-Key") String idempotencyKey,
+    @RequestBody OrderRequest request) {
+    
+    // Check if we've seen this key before
+    CachedResponse cached = cache.get(idempotencyKey);
+    if (cached != null) {
+        return cached.toResponseEntity();
+    }
+    
+    // Process the order
+    Order order = orderService.createOrder(request);
+    
+    // Cache the response
+    cache.put(idempotencyKey, new CachedResponse(order, 201));
+    
+    return ResponseEntity.status(201).body(order);
+}
+```
+
+<Alert type="info">
+**Best Practice:** Store idempotency keys with an expiration time (e.g., 24 hours). This prevents your cache from growing indefinitely while still covering realistic retry scenarios.
+</Alert>
+
+---
+
+## Spring Boot Implementation (Ticket Example)
+
+In this example, we build a simple Spring Boot API that creates support tickets in an idempotent way.
+
+#### 1. Domain Models
+
+
+```java
+//Entity for the actual business resource:
+
+@Entity
+public class SupportTicket {
+    @Id
+    @GeneratedValue
+    private Long id;
+    private String user;
+    private String description;
+}
+```
+
+
+
+```java
+//Entity for storing idempotency state:
+
+@Entity
+public class IdempotencyRecord {
+    @Id
+    private String key;
+    private String response;
+    private int status;
+    private Instant createdAt;
+}
+```
+
+#### 2. Repositories
+
+```java
+public interface TicketRepository extends JpaRepository<SupportTicket, Long> {}
+
+public interface IdempotencyRepository extends JpaRepository<IdempotencyRecord, String> {}
+```
+
+#### 3. Service Logic
+
+```java
+@Service
+public class TicketService {
+    @Autowired
+    private TicketRepository ticketRepo;
+    
+    @Autowired
+    private IdempotencyRepository idemRepo;
+
+    public ResponseEntity<String> createTicket(
+            String idempotencyKey, 
+            SupportTicket ticket) {
+        // Check if we've already seen this key
+        Optional<IdempotencyRecord> existing = idemRepo.findById(idempotencyKey);
+        if (existing.isPresent()) {
+            return ResponseEntity.status(existing.get().getStatus())
+                                 .body(existing.get().getResponse());
+        }
+
+        // First time: process normally
+        SupportTicket saved = ticketRepo.save(ticket);
+        String body = "Ticket created: " + saved.getId();
+
+        // Store result for future retries
+        IdempotencyRecord record = new IdempotencyRecord();
+        record.setKey(idempotencyKey);
+        record.setResponse(body);
+        record.setStatus(HttpStatus.CREATED.value());
+        record.setCreatedAt(Instant.now());
+        idemRepo.save(record);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(body);
+    }
+}
+```
+
+#### 4. REST Controller
+
+```java
+@RestController
+@RequestMapping("/tickets")
+public class TicketController {
+    @Autowired
+    private TicketService service;
+
+    @PostMapping
+    public ResponseEntity<String> create(
+            @RequestHeader("Idempotency-Key") String idKey,
+            @RequestBody SupportTicket ticket) {
+        
+        return service.createTicket(idKey, ticket);
+    }
+}
+```
+
+### How This Works
+
+In this code:
+
+1. The endpoint expects an `Idempotency-Key` header.
+2. The service checks whether the key has been processed before.
+3. If yes, it returns the stored response.
+4. If not, it executes, stores the result, and returns it.
+
+<Alert type="warning">
+**Production Consideration:** In a real production system, you should wrap the ticket creation and idempotency record storage in a database transaction to ensure atomicity. This prevents race conditions where multiple requests with the same key could be processed simultaneously.
+</Alert>
+
+---
+
+## Production Checklist: What If?
+
+The example above explains the idea, but real systems need to answer a few uncomfortable questions.
+
+### ☑️ <span style="color: #dc2626;">What if two identical requests arrive at the same time?</span>
+
+You need database-level guarantees to ensure only one request actually creates the ticket. Use unique constraints on the idempotency key column and handle constraint violations gracefully.
+
+### ☑️ <span style="color: #dc2626;">What if a client reuses the same idempotency key with a different payload?</span>
+
+You need request fingerprinting to detect misuse and fail fast instead of returning incorrect data. Hash the request body and store it alongside the idempotency key to verify consistency.
+
+### ☑️ <span style="color: #dc2626;">What if retries happen hours later?</span>
+
+You need expiration and cleanup so idempotency records do not grow forever. Implement TTL (time-to-live) policies and background jobs to remove stale records.
+
+### ☑️ <span style="color: #dc2626;">What if the client retries and expects the exact same response?</span>
+
+You need to store and replay the full HTTP response, not just a success message. This includes status codes, headers, and the complete response body.
+
+### ☑️ <span style="color: #dc2626;">What if retries suddenly spike in production?</span>
+
+You need metrics and observability to see retry behavior before it becomes an incident. Track idempotency key hit rates, cache performance, and duplicate request patterns.
+
+---
+
+This is what idempotency looks like in production: not just "return the same response," but protecting correctness under concurrency, failures, and misuse.
+
+<Alert type="info">
+**Full Production Implementation**
+
+For a complete production-ready implementation with Spring Boot, H2, metrics, and concurrency safety, check out the GitHub repository:
+
+<img src="https://cdn.simpleicons.org/github/181717" alt="GitHub" style="width: 20px; height: 20px; display: inline; vertical-align: middle; margin-right: 8px;" /> [Idempotency Implementation Example](https://github.com/aa1588/spring-boot-idempotency-demo)
+
+The core idea stays simple. The details exist because production systems are not.
+</Alert>
+
+---
+
+## Key Takeaways
+
+- Retries are inevitable in distributed systems
+- Non-idempotent APIs can cause duplicate side effects
+- Idempotency keys are the most common solution
+- Always design APIs with retries in mind
+
+Building reliable systems means accepting that things will fail and designing for it. Idempotency is not optional, it's a fundamental requirement for production APIs.
+
+---
+
+## Learn More
+
+Want to dive deeper into idempotency standards and best practices?
+
+- **IETF Draft Specification**: [The Idempotency-Key HTTP Header Field](https://www.ietf.org/archive/id/draft-ietf-httpapi-idempotency-key-header-01.html) - Official specification for standardizing idempotency key headers in HTTP APIs
