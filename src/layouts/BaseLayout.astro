@@ -57,21 +57,22 @@ const socialImage = new URL(image, Astro.site);
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   </head>
   <body>
+    <!-- Fixed Logo -->
+    <a href={base} class="fixed-logo">
+      <img src={`${base}LOGO.png`} alt="Amrit Adhikari" class="logo-image" />
+    </a>
+
+    <!-- Sticky Navigation -->
     <header>
       <nav>
         <div class="container">
-          <a href={base} class="logo">
-            <img src={`${base}logo.png`} alt="A Digital Lab - Software, Learning, And The Journey Between" class="logo-image" />
-          </a>
-          <div class="nav-right">
-            <ul>
-              <li><a href={base} class:list={{ active: currentPath === base || currentPath === `${base}/` }}>Home</a></li>
-              <li><a href={`${base}blog/`} class:list={{ active: currentPath.startsWith(`${base}blog`) }}>Blog</a></li>
-              <li><a href={`${base}series/`} class:list={{ active: currentPath === `${base}series` }}>Series</a></li>
-              <li><a href={`${base}gallery/`} class:list={{ active: currentPath === `${base}gallery` }}>Gallery</a></li>
-              <li><a href={`${base}about/`} class:list={{ active: currentPath === `${base}about` }}>About</a></li>
-            </ul>
-          </div>
+          <ul>
+            <li><a href={base} class:list={{ active: currentPath === base || currentPath === `${base}/` }}>Home</a></li>
+            <li><a href={`${base}blog/`} class:list={{ active: currentPath.startsWith(`${base}blog`) }}>Blog</a></li>
+            <li><a href={`${base}series/`} class:list={{ active: currentPath === `${base}series` }}>Series</a></li>
+            <li><a href={`${base}gallery/`} class:list={{ active: currentPath === `${base}gallery` }}>Gallery</a></li>
+            <li><a href={`${base}about/`} class:list={{ active: currentPath === `${base}about` }}>About</a></li>
+          </ul>
         </div>
       </nav>
     </header>
@@ -89,40 +90,22 @@ const socialImage = new URL(image, Astro.site);
 </html>
 
 <style>
-  header {
-    background: var(--color-bg);
-    border-bottom: 1px solid var(--color-border);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    backdrop-filter: blur(10px);
-  }
-
-  nav {
-    padding: 1rem 0;
-  }
-
-  .container {
-    max-width: var(--max-width);
-    margin: 0 auto;
-    padding: 0 1.5rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .logo {
+  /* Fixed Logo in Top Left Corner */
+  .fixed-logo {
+    position: fixed;
+    top: 1.5rem;
+    left: 1.5rem;
+    z-index: 2000;
     display: flex;
     align-items: center;
     transition: transform 0.3s ease;
-    position: relative;
   }
 
-  .logo::before {
+  .fixed-logo::before {
     content: '';
     position: absolute;
     inset: -4px;
-    border-radius: 12px;
+    border-radius: 50%;
     padding: 2px;
     background: linear-gradient(135deg, var(--color-primary), #8b5cf6, var(--color-primary));
     background-size: 200% 200%;
@@ -143,19 +126,26 @@ const socialImage = new URL(image, Astro.site);
     }
   }
 
-  .logo:hover::before {
+  .fixed-logo:hover::before {
     opacity: 1;
   }
 
-  .logo:hover {
+  .fixed-logo:hover {
     transform: scale(1.05);
   }
 
   .logo-image {
-    height: 65px;
-    width: auto;
-    transition: filter 0.3s ease;
+    height: 70px;
+    width: 70px;
+    border-radius: 50%;
+    object-fit: cover;
+    object-position: center center;
+    transition: box-shadow 0.3s ease;
     animation: logoFloat 3s ease-in-out infinite;
+    border: 3px solid var(--color-border);
+    background: var(--color-bg);
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
   }
 
   @keyframes logoFloat {
@@ -167,8 +157,8 @@ const socialImage = new URL(image, Astro.site);
     }
   }
 
-  .logo:hover .logo-image {
-    filter: drop-shadow(0 4px 12px rgba(59, 130, 246, 0.4));
+  .fixed-logo:hover .logo-image {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3), 0 4px 12px rgba(59, 130, 246, 0.2);
     animation: logoSpin 0.6s ease;
   }
 
@@ -184,22 +174,44 @@ const socialImage = new URL(image, Astro.site);
     }
   }
 
-  .nav-right {
+  /* Sticky Navigation Bar */
+  header {
+    background: var(--color-bg);
+    border-bottom: 1px solid var(--color-border);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  nav {
+    padding: 1.25rem 0;
+    background: var(--color-bg);
+  }
+
+  .container {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 0 1.5rem;
     display: flex;
+    justify-content: center;
     align-items: center;
-    gap: 1.5rem;
   }
 
   nav ul {
     display: flex;
-    gap: 2rem;
+    gap: 2.5rem;
     list-style: none;
+    margin: 0;
+    padding: 0;
   }
 
   nav a {
     color: var(--color-text-secondary);
     font-weight: 500;
     transition: color 0.2s;
+    font-size: 1rem;
   }
 
   nav a:hover,
@@ -224,12 +236,22 @@ const socialImage = new URL(image, Astro.site);
   }
 
   @media (max-width: 768px) {
+    .fixed-logo {
+      top: 1rem;
+      left: 1rem;
+    }
+
+    .logo-image {
+      height: 55px;
+      width: 55px;
+    }
+
     nav ul {
       gap: 1rem;
     }
 
-    .nav-right {
-      gap: 1rem;
+    nav a {
+      font-size: 0.875rem;
     }
   }
 </style>
