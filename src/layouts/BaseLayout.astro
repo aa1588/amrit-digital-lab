@@ -67,7 +67,6 @@ const socialImage = new URL(image, Astro.site);
       <nav>
         <div class="container">
           <ul>
-            <li><a href={base} class:list={{ active: currentPath === base || currentPath === `${base}/` }}>Home</a></li>
             <li><a href={`${base}blog/`} class:list={{ active: currentPath.startsWith(`${base}blog`) }}>Blog</a></li>
             <li><a href={`${base}series/`} class:list={{ active: currentPath === `${base}series` }}>Series</a></li>
             <li><a href={`${base}gallery/`} class:list={{ active: currentPath === `${base}gallery` }}>Gallery</a></li>
