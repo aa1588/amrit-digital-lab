@@ -66,7 +66,7 @@ const formattedDate = new Date(pubDate).toLocaleDateString('en-US', {
   .blog-card:hover {
     box-shadow: var(--shadow-hover);
     transform: translateY(-2px);
-    border-color: var(--color-primary);
+    border-color: var(--color-text-secondary);
   }
 
   .blog-card a {
@@ -77,10 +77,16 @@ const formattedDate = new Date(pubDate).toLocaleDateString('en-US', {
   .series-badge {
     display: inline-flex;
     align-items: center;
-    font-size: 0.875rem;
-    color: var(--color-primary);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: 100px;
+    padding: 1px 8px;
     margin-bottom: 0.5rem;
-    font-weight: 600;
   }
 
   .series-icon-wrapper {
