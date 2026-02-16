@@ -7,13 +7,15 @@ interface Props {
   description?: string;
   image?: string;
   article?: boolean;
+  hideThemeToggle?: boolean;
 }
 
-const { 
-  title, 
+const {
+  title,
   description = 'DigitalLab - Software, Learning, And The Journey Between. A blog by Amrit Adhikari about web development, Java, Spring Boot, and technology.',
   image = '/logo.png',
-  article = false
+  article = false,
+  hideThemeToggle = false
 } = Astro.props;
 
 const base = import.meta.env.BASE_URL;
@@ -88,7 +90,7 @@ const socialImage = new URL(image, Astro.site);
             </li>
           </ul>
           <div class="nav-actions">
-            <ThemeToggle />
+            {!hideThemeToggle && <ThemeToggle />}
           </div>
         </div>
       </nav>

@@ -32,7 +32,11 @@ const readingTime = calculateReadingTime(content);
 const currentUrl = new URL(Astro.url.pathname, Astro.site).toString();
 ---
 
-<BaseLayout title={title} description={description} image={image} article={true}>
+<BaseLayout title={title} description={description} image={image} article={true} hideThemeToggle={true}>
+  <!-- Force light mode for blog posts -->
+  <script is:inline>
+    document.documentElement.setAttribute('data-theme', 'light');
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700&display=swap" rel="stylesheet">
@@ -181,7 +185,7 @@ const currentUrl = new URL(Astro.url.pathname, Astro.site).toString();
   }
 
   [data-theme="dark"] .prose :global(h2) {
-    color: #60a5fa;
+    color: #ffffff;
   }
 
   .prose :global(h3) {
@@ -196,7 +200,7 @@ const currentUrl = new URL(Astro.url.pathname, Astro.site).toString();
   }
 
   [data-theme="dark"] .prose :global(h3) {
-    color: #e2e8f0;
+    color: #f1f5f9;
   }
 
   .prose :global(p) {
