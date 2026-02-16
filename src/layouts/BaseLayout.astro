@@ -60,14 +60,20 @@ const socialImage = new URL(image, Astro.site);
     <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
 
     <!-- Blocking theme script: sets data-theme before first paint to prevent flash -->
-    <script is:inline>
-      (function () {
-        const stored = localStorage.getItem('theme');
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const theme = stored || (prefersDark ? 'dark' : 'light');
-        document.documentElement.setAttribute('data-theme', theme);
-      })();
-    </script>
+    {hideThemeToggle ? (
+      <script is:inline>
+        document.documentElement.setAttribute('data-theme', 'light');
+      </script>
+    ) : (
+      <script is:inline>
+        (function () {
+          const stored = localStorage.getItem('theme');
+          const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          const theme = stored || (prefersDark ? 'dark' : 'light');
+          document.documentElement.setAttribute('data-theme', theme);
+        })();
+      </script>
+    )}
   </head>
   <body>
     <!-- Sticky Navigation -->
