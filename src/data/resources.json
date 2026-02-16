@@ -1,0 +1,92 @@
+[
+  {
+    "topic": "Large Language Models & Prompt Engineering",
+    "links": [
+      {
+        "title": "OpenAI Prompt Engineering Guide",
+        "url": "https://platform.openai.com/docs/guides/prompt-engineering",
+        "description": "Official best practices for prompting GPT models"
+      },
+      {
+        "title": "Anthropic Prompt Library",
+        "url": "https://docs.anthropic.com/en/prompt-library/library",
+        "description": "Curated prompt examples from Anthropic"
+      }
+    ]
+  },
+  {
+    "topic": "Retrieval-Augmented Generation (RAG)",
+    "links": [
+      {
+        "title": "LangChain RAG Tutorial",
+        "url": "https://python.langchain.com/docs/tutorials/rag/",
+        "description": "End-to-end RAG pipeline with LangChain"
+      },
+      {
+        "title": "LlamaIndex Documentation",
+        "url": "https://docs.llamaindex.ai/en/stable/",
+        "description": "Framework for building RAG and agent applications"
+      }
+    ]
+  },
+  {
+    "topic": "Apache Kafka",
+    "links": [
+      {
+        "title": "Apache Kafka Documentation",
+        "url": "https://kafka.apache.org/documentation/",
+        "description": "Official Kafka docs — concepts, configuration, APIs"
+      },
+      {
+        "title": "Confluent Kafka Tutorials",
+        "url": "https://developer.confluent.io/tutorials/",
+        "description": "Hands-on tutorials for Kafka development"
+      }
+    ]
+  },
+  {
+    "topic": "Spring Boot",
+    "links": [
+      {
+        "title": "Spring Boot Reference Documentation",
+        "url": "https://docs.spring.io/spring-boot/docs/current/reference/html/",
+        "description": "Official Spring Boot reference guide"
+      },
+      {
+        "title": "Spring Boot Self Learning Guides",
+        "url": "https://github.com/sivaprasadreddy/spring-boot-self-learning-guide",
+        "description": "Learn to build Spring Boot applications with frequently used features"
+      }
+    ]
+  },
+  {
+    "topic": "Kubernetes & Docker",
+    "links": [
+      {
+        "title": "Kubernetes Official Documentation",
+        "url": "https://kubernetes.io/docs/home/",
+        "description": "Concepts, tutorials, and API reference"
+      },
+      {
+        "title": "Docker Get Started",
+        "url": "https://docs.docker.com/get-started/",
+        "description": "Official Docker getting started guide"
+      }
+    ]
+  },
+  {
+    "topic": "AWS",
+    "links": [
+      {
+        "title": "AWS Documentation",
+        "url": "https://docs.aws.amazon.com/",
+        "description": "Full AWS service documentation"
+      },
+      {
+        "title": "AWS Well-Architected Framework",
+        "url": "https://aws.amazon.com/architecture/well-architected/",
+        "description": "Best practices for building on AWS"
+      }
+    ]
+  }
+]

@@ -5,97 +5,102 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 <BaseLayout title="About - Amrit Adhikari">
   <div class="about-page">
     <div class="container">
+
+      <!-- ── Intro hero ─────────────────────────────────── -->
       <div class="intro-section">
         <div class="intro-content">
-          <h1>Namaste</h1>
-          <p class="greeting">I'm Amrit Adhikari.</p>
-          <p class="email">reachouttoamrit@gmail.com</p>
+          <p class="hello">Namaste</p>
+          <h1>I'm Amrit Adhikari.</h1>
+          <p class="role-line">Senior Software Engineer &nbsp;·&nbsp; Dallas, TX</p>
+          <a href="mailto:reachouttoamrit@gmail.com" class="email">reachouttoamrit@gmail.com</a>
           <div class="social-links">
             <a href="https://www.linkedin.com/in/amrit-adhikari1/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
               </svg>
             </a>
             <a href="https://github.com/aa1588" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
               </svg>
             </a>
             <a href="https://scholar.google.com/citations?user=zxIRPZYAAAAJ&hl=en" target="_blank" rel="noopener noreferrer" aria-label="Google Scholar">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 24a7 7 0 1 1 0-14 7 7 0 0 1 0 14zm0-24L0 9.5l4.838 3.94A8 8 0 0 1 12 9a8 8 0 0 1 7.162 4.44L24 9.5z"/>
               </svg>
             </a>
           </div>
         </div>
         <div class="photo-container">
-          <img src={`${import.meta.env.BASE_URL}profile.png`} alt="A Ad" class="profile-photo" />
+          <img src={`${import.meta.env.BASE_URL}profile.png`} alt="Amrit Adhikari" class="profile-photo" />
         </div>
       </div>
 
+      <!-- ── Content ────────────────────────────────────── -->
       <div class="content">
-        <p>
-          I work with <strong>software</strong> for a living, and to be completely honest with you, I'm still figuring things out every single day. I'm based in <a href="https://www.google.com/search?q=Dallas" target="_blank" rel="noopener noreferrer" class="pokhara-link">Dallas, Texas</a> right now. Most of my days are pretty ordinary. I sit at my desk, work on whatever I need to work on, try to understand something new, or maybe write a small blog post about something I just learned. That cycle of learning something, messing it up, fixing it, and doing it again? That's genuinely my favorite part of this whole thing.
+
+        <p class="lead">
+          I am a <strong>software engineer</strong> living in <a href="https://www.google.com/search?q=Dallas" target="_blank" rel="noopener noreferrer" class="pokhara-link">Dallas, Texas</a>. Every day I pick up a new idea, try it out, break something, fix it, and learn a little more. I write blog posts about the things I learn along the way. That process of learning, making mistakes, and figuring things out is what I love most about this work.
         </p>
 
         <h2>How It All Started</h2>
         <p>
-          My journey with computers started long before I even knew being a software engineer was possible. I grew up in a small town in <a href="https://www.google.com/search?q=Nepal" target="_blank" rel="noopener noreferrer" class="nepal">🇳🇵</a>, and when I was around 10, my mom got me into this private school that had this little computer lab. It really wasn't much, just a few old computers in a small room, but to me back then, it felt like pure magic. I still remember sitting there, completely fascinated, wondering what these machines could do.
+          My story with computers started when I was about 10 years old. I grew up in a small town in <a href="https://www.google.com/search?q=Nepal" target="_blank" rel="noopener noreferrer" class="nepal">🇳🇵</a> and my mom got me into a private school that had a small computer lab. There were only a few old computers in that room. But to me, it felt like magic. I remember sitting there and just staring at the screen, wondering what these machines could really do.
         </p>
         <p>
-          After finishing high school in <a href="https://www.google.com/search?q=pokhara+nepal" target="_blank" rel="noopener noreferrer" class="pokhara-link">Pokhara</a>, I decided I wanted to go to the United States to study computer science. My parents believed in me and supported that decision, and I honestly don't think I'll ever be able to thank them enough for that. It was a huge step. In 2016, I landed in Chicago as a 19-year-old kid with big dreams but practically no idea what was waiting for me. I was excited, sure, but mostly I was just scared.
+          After finishing high school in <a href="https://www.google.com/search?q=pokhara+nepal" target="_blank" rel="noopener noreferrer" class="pokhara-link">Pokhara</a>, I decided to move to the United States to study computer science. My parents believed in me and made it possible. I will never be able to thank them enough. In 2016, I arrived in Chicago at 19. I was full of hope but also very scared. I had big dreams and no real idea of what was ahead of me.
         </p>
         <p>
-          I finished my bachelor's degree in 2021 and my master's in 2025, both in Computer Science from the <a href="https://www.unt.edu/index.html" target="_blank" rel="noopener noreferrer" class="unt-link">University of North Texas</a>. School gave me the basics and taught me how to think, but my real education? That came from struggling alone at my computer, trying things, breaking things, spending hours stuck on errors, reading through Stack Overflow at weird hours, and very slowly piecing things together. One small step at a time.
+          I finished my Bachelor's degree in 2021 and my Master's degree in 2025, both in Computer Science from the <a href="https://www.unt.edu/index.html" target="_blank" rel="noopener noreferrer" class="unt-link">University of North Texas</a>. School taught me the basics and how to think. But my real learning came from sitting alone at my computer, trying things, breaking things, getting stuck for hours, and slowly figuring it out. One small step at a time.
         </p>
 
         <h2>My Path as a Developer</h2>
         <p>
-          The first programming language I learned was <strong>C</strong>. Then I discovered <strong>Java</strong> and something just clicked for me. I fell in love with it, and I'm still really happy working with it.
+          The first programming language I learned was <strong>C</strong>. Then I found <strong>Java</strong> and something clicked. I really enjoyed it and I still enjoy working with it today.
+        </p>
+        <p>Over the years I have worked with:</p>
+        <div class="skill-chips">
+          <span>Java &amp; Spring Boot</span>
+          <span>Microservices</span>
+          <span>Backend Systems</span>
+          <span>React</span>
+          <span>Machine Learning &amp; AI</span>
+          <span>DevOps &amp; Containers</span>
+          <span>Kubernetes</span>
+          <span>AWS</span>
+        </div>
+        <p>
+          These days I mostly work with <em>TypeScript</em>, <em>Spring Boot</em>, <em>PostgreSQL</em>, <em>Docker</em>, <em>Testcontainers</em>, and <em>Kubernetes</em>. I am still learning better ways to use all of them. It is a slow and ongoing process.
         </p>
         <p>
-          Over the years I've gotten to work with:
-        </p>
-        <ul>
-          <li>Java and Spring Boot</li>
-          <li>Microservices and backend systems</li>
-          <li>React (still learning this one)</li>
-          <li>Some Machine Learning and AI</li>
-          <li>DevOps, Cloud, and Containers</li>
-        </ul>
-        <p>
-          These days I mostly work with <em>TypeScript</em>, <em>Spring Boot</em>, <em>PostgreSQL</em>, <em>Docker</em>, <em>Testcontainers</em>, and <em>Kubernetes</em>. I'm still learning better ways to use all of these. It's a constant process.
+          One of my early goals was to work at a big company and build things that real people use. In 2021, I got that chance when <a href="https://en.wikipedia.org/wiki/American_Express" target="_blank" rel="noopener noreferrer" class="amex-link">American Express</a> hired me as a Software Engineer. It felt like a dream. Some days I still feel very lucky.
         </p>
         <p>
-          Early on, one of my goals was to work at a bigger company and build something that real people would actually use. In 2021, I got that opportunity when <a href="https://en.wikipedia.org/wiki/American_Express" target="_blank" rel="noopener noreferrer" class="amex-link">American Express</a> brought me on as a Software Engineer. It felt like a dream, honestly, like something I'd been hoping for finally happened. Some days I still feel lucky about it.
-        </p>
-        <p>
-          But what really keeps me going isn't the job title or the company name. It's simpler than that. It's finally understanding something that confused you yesterday. It's fixing something you broke and learning why it broke in the first place. Small stuff like that. I think it's similar to life in general. You don't always need the big wins. Sometimes just figuring out one small thing, taking one step forward, that's enough to keep you going.
+          But what keeps me going is not the job title or the company name. It is something much simpler. It is finally understanding something that confused you yesterday. It is fixing a bug and learning why it happened. Small things like that. I think this is true for life too. You do not always need big wins. Sometimes one small step forward is enough.
         </p>
 
         <h2>Life Outside Tech</h2>
         <p>
-          Outside of work, I try to keep things simple. I go for walks or run early in the morning when it's still quiet. Nothing fancy, just helps me clear my head before everything starts. Sometimes the best solutions come to me during those walks, when I'm not even trying to think about the problem.
+          Outside of work, I like to keep things simple. I go for walks or run early in the morning when it is still quiet. It helps me clear my head before the day starts. Sometimes I find the best solutions to problems during those walks, when I am not even thinking about work.
         </p>
 
         <h2>What I Believe</h2>
-        <p>
-          I don't really have big philosophies or anything. Just a few simple things I try to stick to:
-        </p>
+        <p>I do not have any big philosophies. Just a few simple things I try to follow:</p>
         <ul>
-          <li>Work hard, even when it's tough</li>
+          <li>Work hard even when it is difficult</li>
           <li>Be honest with yourself about what you know and what you still need to learn</li>
-          <li>The rest? You figure it out as you go</li>
+          <li>The rest you figure out along the way</li>
         </ul>
         <p>
-          I haven't really done anything special yet. But getting to where I am, leaving home, starting over in a new country, finding my way in this field, that's taken a lot of time, a lot of patience, and so much support from my family. I think many people understand that feeling of just trying to make a little progress each day, not always knowing if you're doing it right.
+          I have not done anything special yet. But getting to where I am today took a lot of time, patience, and support from my family. I left home, moved to a new country, and slowly found my way in this field. I think many people know that feeling of just trying to make a little progress each day without knowing if you are doing it right.
         </p>
         <p>
-          If you're reading this, I hope maybe it gives you something. Maybe just a reminder that someone else is out there learning too, making mistakes, trying to get better.
+          If you are reading this, I hope it gives you something. Maybe just a small reminder that someone else is out there learning too, making mistakes, and trying to get better.
         </p>
         <p>
-          And if you ever feel like you're just figuring it all out as you go? Yeah, same here. I think most of us are. You're not alone in that.
+          And if you feel like you are just figuring it out as you go, same here. I think most of us are. You are not alone in that.
         </p>
+
       </div>
     </div>
   </div>
@@ -112,120 +117,131 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     padding: 0 2rem;
   }
 
+  /* ── Intro hero ───────────────────────────────────────── */
   .intro-section {
     display: grid;
     grid-template-columns: 1fr auto;
-    gap: 4rem;
+    gap: 3rem;
     align-items: center;
-    margin-bottom: 4rem;
-    padding-bottom: 3rem;
-    border-bottom: 1px solid #e5e7eb;
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    padding: 2.5rem;
+    margin-bottom: 3.5rem;
   }
 
-  [data-theme="dark"] .intro-section {
-    border-bottom-color: #4a5568;
-  }
-
-  .intro-content h1 {
-    font-size: 2.75rem;
-    margin-bottom: 1.25rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-  }
-
-  .greeting {
-    font-size: 1.375rem;
-    font-weight: 400;
-    line-height: 1.6;
+  .hello {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--color-text-secondary);
     margin-bottom: 0.5rem;
   }
 
-  .email {
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 1rem;
-    color: #6b7280;
-    margin-bottom: 1.5rem;
-    letter-spacing: 0.02em;
+  .intro-content h1 {
+    font-size: 2.25rem;
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    color: var(--color-text);
   }
 
-  [data-theme="dark"] .email {
-    color: #9ca3af;
+  .role-line {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 1rem;
+    line-height: 1.5;
+  }
+
+  .email {
+    display: inline-block;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8125rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.01em;
+    transition: color 0.2s;
+  }
+
+  .email:hover {
+    color: var(--color-text);
   }
 
   .social-links {
     display: flex;
-    gap: 1rem;
+    gap: 0.625rem;
   }
 
   .social-links a {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 44px;
-    height: 44px;
-    border-radius: 10px;
-    background: var(--color-bg-secondary);
-    color: var(--color-text);
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    background: var(--color-bg);
+    color: var(--color-text-secondary);
     transition: all 0.2s;
     border: 1px solid var(--color-border);
   }
 
   .social-links a:hover {
-    background: var(--color-primary);
-    color: white;
+    color: var(--color-text);
+    border-color: var(--color-text-secondary);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  }
-
-  .photo-container {
-    flex-shrink: 0;
   }
 
   .profile-photo {
-    width: 180px;
-    height: 180px;
-    border-radius: 16px;
+    width: 160px;
+    height: 160px;
+    border-radius: 10px;
     object-fit: cover;
     object-position: center top;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    box-shadow: -6px 10px 28px rgba(0, 0, 0, 0.18);
+    transform: perspective(500px) rotateY(-12deg);
   }
 
+  /* ── Content ──────────────────────────────────────────── */
   .content {
     font-size: 1.0625rem;
-    line-height: 1.75;
-    max-width: 100%;
-    color: #4b5563;
+    line-height: 1.8;
+    color: var(--color-text-secondary);
   }
 
-  [data-theme="dark"] .content {
-    color: #f3f4f6;
+  .lead {
+    font-size: 1.125rem;
+    line-height: 1.8;
+    margin-bottom: 2.5rem;
+    color: var(--color-text-secondary);
   }
 
   .content p {
-    margin-bottom: 1.75rem;
+    margin-bottom: 1.5rem;
   }
 
   .content h2 {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     margin-top: 3rem;
-    margin-bottom: 1.25rem;
+    margin-bottom: 1rem;
     font-weight: 600;
     letter-spacing: -0.01em;
     color: var(--color-text);
-  }
-
-  .content h2:first-of-type {
-    margin-top: 0;
+    padding-left: 0.875rem;
+    border-left: 2px solid var(--color-border);
   }
 
   .content ul {
-    margin: 1.5rem 0 1.75rem;
+    margin: 1.25rem 0 1.5rem;
     padding-left: 1.5rem;
     list-style: none;
   }
 
   .content li {
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.625rem;
     padding-left: 0.5rem;
     position: relative;
   }
@@ -235,54 +251,56 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     position: absolute;
     left: -1rem;
     font-weight: 600;
-    color: #6b7280;
+    color: var(--color-text-secondary);
   }
 
-  [data-theme="dark"] .content li::before {
-    color: #94a3b8;
+  /* ── Skill chips ─────────────────────────────────────── */
+  .skill-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0 0 1.5rem;
   }
 
+  .skill-chips span {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8125rem;
+    padding: 4px 12px;
+    border-radius: 100px;
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+  }
+
+  /* ── Named links ─────────────────────────────────────── */
   .unt-link {
     color: #00853e;
     font-weight: 500;
-    text-decoration: none;
-    border-bottom: 2px solid transparent;
+    border-bottom: 1px solid transparent;
     transition: border-color 0.2s;
   }
-
-  .unt-link:hover {
-    border-bottom-color: #00853e;
-  }
+  .unt-link:hover { border-bottom-color: #00853e; }
 
   .pokhara-link {
     color: #2563eb;
     font-weight: 500;
-    text-decoration: none;
-    border-bottom: 2px solid transparent;
+    border-bottom: 1px solid transparent;
     transition: border-color 0.2s;
   }
+  .pokhara-link:hover { border-bottom-color: #2563eb; }
 
-  .pokhara-link:hover {
-    border-bottom-color: #2563eb;
-  }
-
-  .nepal {
-    color: #dc2626;
-    font-weight: 500;
-  }
+  .nepal { color: #dc2626; font-weight: 500; }
 
   .amex-link {
     color: #006fcf;
     font-weight: 500;
-    text-decoration: none;
-    border-bottom: 2px solid transparent;
+    border-bottom: 1px solid transparent;
     transition: border-color 0.2s;
   }
+  .amex-link:hover { border-bottom-color: #006fcf; }
 
-  .amex-link:hover {
-    border-bottom-color: #006fcf;
-  }
-
+  /* ── Responsive ──────────────────────────────────────── */
   @media (max-width: 768px) {
     .about-page {
       padding: 2rem 0 4rem;
@@ -294,9 +312,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     .intro-section {
       grid-template-columns: 1fr;
-      gap: 2rem;
+      gap: 1.5rem;
       text-align: center;
-      padding-bottom: 2rem;
+      padding: 1.75rem;
       margin-bottom: 2.5rem;
     }
 
@@ -306,20 +324,18 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     .photo-container {
       order: -1;
+      display: flex;
+      justify-content: center;
     }
 
     .profile-photo {
-      width: 140px;
-      height: 140px;
-      margin: 0 auto;
+      width: 120px;
+      height: 120px;
+      transform: perspective(400px) rotateY(-10deg);
     }
 
     .intro-content h1 {
-      font-size: 2rem;
-    }
-
-    .greeting {
-      font-size: 1.125rem;
+      font-size: 1.75rem;
     }
 
     .content {
@@ -327,7 +343,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }
 
     .content h2 {
-      font-size: 1.25rem;
+      font-size: 1.125rem;
       margin-top: 2.5rem;
     }
   }

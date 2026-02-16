@@ -1,0 +1,332 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import resources from '../data/resources.json';
+
+// Events / photo items
+const galleryItems = [
+  {
+    image: '/gallery/masters-graduation.jpg',
+    caption: 'Graduation: Master\'s in Computer Science, UNT',
+    date: 'December 2025'
+  },
+  {
+    image: '/gallery/unt-final-day-2025.jpg',
+    caption: 'Final Day at UNT - Master\'s Program Completion',
+    date: 'December 2025'
+  },
+  {
+    image: '/gallery/uni-research-day-presentation-2025.jpg',
+    caption: 'Presented a little research on LLM bias at the University Research Day Event',
+    date: 'October 2025'
+  },
+  {
+    image: '/gallery/ai-summer-research-2025.jpeg',
+    caption: 'UNT AI Summer Research Program',
+    date: 'Summer 2025'
+  },
+  {
+    image: '/gallery/IMG_AGENTCON2025.jpg',
+    caption: 'Home Base Fit Check: See you soon, AgentCon\'25 Dallas!',
+    date: 'July 2025'
+  },
+  {
+    image: '/gallery/IMG_AgentCon_Badge.jpg',
+    caption: 'Officially Checked In! AgentCon 2025',
+    date: 'July 2025'
+  },
+  {
+    image: '/gallery/summer_research.png',
+    caption: 'Summer Research Program',
+    date: 'July 2025'
+  },
+  {
+    image: '/gallery/k8s-demo.png',
+    caption: 'Presentation on Microservices Deployment with Kubernetes',
+    date: 'November 2024'
+  },
+];
+---
+
+<BaseLayout title="Events - DigitalLab" description="Resources, materials, and moments from my journey in tech, events, and community participation.">
+  <div class="events-page">
+    <div class="container">
+
+      <!-- ── Resources & Materials ──────────────────────── -->
+      <div class="page-header">
+        <h1>Events</h1>
+        <p class="subtitle">Resources, materials, and moments from my journey in tech and community.</p>
+      </div>
+
+      <section class="section">
+        <div class="section-label">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Resources &amp; Materials
+        </div>
+
+        <div class="resources-grid">
+          {resources.map((group) => (
+            <div class="resource-group">
+              <div class="resource-topic">{group.topic}</div>
+              <ul class="resource-links">
+                {group.links.map((link) => (
+                  <li>
+                    <a href={link.url} target="_blank" rel="noopener noreferrer" class="resource-link">
+                      <span class="resource-link-title">{link.title}</span>
+                      <svg class="resource-link-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    </a>
+                    {link.description && (
+                      <p class="resource-link-desc">{link.description}</p>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <!-- ── Events / Photos ────────────────────────────── -->
+      <section class="section">
+        <div class="section-label">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          Photos &amp; Moments
+        </div>
+
+        <div class="gallery-grid">
+          {galleryItems.map((item) => (
+            <div class="gallery-card">
+              <div class="image-container">
+                <img src={item.image} alt={item.caption} loading="lazy" />
+              </div>
+              <div class="card-content">
+                <p class="caption">{item.caption}</p>
+                <p class="date">{item.date}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .events-page {
+    padding: 4rem 0 6rem;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  /* ── Page header ─────────────────────────────────────── */
+  .page-header {
+    margin-bottom: 3.5rem;
+  }
+
+  .page-header h1 {
+    font-size: 2.75rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--color-text);
+    margin-bottom: 0.5rem;
+  }
+
+  .subtitle {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9375rem;
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+  }
+
+  /* ── Sections ────────────────────────────────────────── */
+  .section {
+    margin-bottom: 4rem;
+    padding-top: 2.5rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-text-secondary);
+    margin-bottom: 1.75rem;
+  }
+
+  /* ── Resources grid ──────────────────────────────────── */
+  .resources-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .resource-group {
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 1.25rem 1.25rem 1rem;
+  }
+
+  .resource-topic {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text);
+    margin-bottom: 0.875rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--color-border);
+    line-height: 1.4;
+  }
+
+  .resource-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+  }
+
+  .resource-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8125rem;
+    color: var(--color-text-secondary);
+    transition: color 0.2s;
+  }
+
+  .resource-link:hover {
+    color: var(--color-text);
+  }
+
+  .resource-link-title {
+    line-height: 1.4;
+  }
+
+  .resource-link-icon {
+    flex-shrink: 0;
+    opacity: 0.5;
+  }
+
+  .resource-link-desc {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    opacity: 0.75;
+    margin: 0.2rem 0 0;
+    line-height: 1.5;
+  }
+
+  /* ── Gallery grid ────────────────────────────────────── */
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .gallery-card {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+
+  .gallery-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-hover);
+  }
+
+  .image-container {
+    width: 100%;
+    height: 260px;
+    overflow: hidden;
+    background: var(--color-bg-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+  }
+
+  .image-container img[src*="unt-final-day"],
+  .image-container img[src*="AGENTCON"],
+  .image-container img[src*="AgentCon_Badge"] {
+    object-fit: cover;
+  }
+
+  .image-container img[src*="k8s-demo"] {
+    object-fit: cover;
+    object-position: 75% 85%;
+  }
+
+  .gallery-card:hover .image-container img {
+    transform: scale(1.04);
+  }
+
+  .card-content {
+    padding: 1rem 1.25rem 1.25rem;
+  }
+
+  .caption {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text);
+    margin-bottom: 0.3rem;
+    line-height: 1.5;
+  }
+
+  .date {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8125rem;
+    color: var(--color-text-secondary);
+  }
+
+  /* ── Responsive ──────────────────────────────────────── */
+  @media (max-width: 768px) {
+    .events-page {
+      padding: 2rem 0 4rem;
+    }
+
+    .container {
+      padding: 0 1.5rem;
+    }
+
+    .page-header h1 {
+      font-size: 2rem;
+    }
+
+    .resources-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .gallery-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .image-container {
+      height: 220px;
+    }
+
+    .image-container img {
+      object-fit: contain !important;
+    }
+  }
+</style>

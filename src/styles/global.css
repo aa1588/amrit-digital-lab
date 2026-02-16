@@ -12,6 +12,19 @@
   --shadow-hover: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
+[data-theme="dark"] {
+  --color-primary: #d4d4d4;
+  --color-primary-hover: #ffffff;
+  --color-text: #d4d4d4;
+  --color-text-secondary: #888888;
+  --color-bg: #111111;
+  --color-bg-secondary: #1c1c1c;
+  --color-border: #2a2a2a;
+  --color-card-bg: #1c1c1c;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-hover: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -70,6 +83,16 @@ pre {
 pre code {
   background: none !important;
   padding: 0;
+}
+
+[data-theme="dark"] code {
+  background: #1e1e1e !important;
+  color: #d4d4d4 !important;
+}
+
+[data-theme="dark"] pre {
+  background: #1e1e1e !important;
+  border-color: #333333;
 }
 
 
