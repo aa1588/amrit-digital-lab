@@ -35,6 +35,10 @@ const base = import.meta.env.BASE_URL;
       <div class="page-header">
         <h1>Series</h1>
         <p class="subtitle">Structured learning paths — follow from part one to the end.</p>
+        <div class="screen-hint">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          <span>Best viewed on laptop or tablet — works on mobile too!</span>
+        </div>
       </div>
 
       {series.length === 0 ? (
@@ -119,9 +123,27 @@ const base = import.meta.env.BASE_URL;
   }
 
   .subtitle {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 0.9375rem;
     color: var(--color-text-secondary);
+  }
+
+  .screen-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    background: var(--color-accent-light);
+    border-radius: 20px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.75rem;
+    color: var(--color-accent);
+    font-weight: 500;
+  }
+
+  .screen-hint svg {
+    flex-shrink: 0;
   }
 
   .no-series {
