@@ -1,0 +1,283 @@
+---
+title: 'Spring JdbcClient'
+description: 'Learn how to use Spring JdbcClient for database operations with H2 and PostgreSQL in Spring Boot applications.'
+pubDate: 2026-02-18
+author: 'Amrit Adhikari'
+tags: ['spring boot', 'database']
+draft: false
+---
+
+import Alert from '../../../components/Alert.astro';
+
+Spring's JDBC support simplifies working with SQL databases by eliminating boilerplate code commonly required with traditional JDBC.
+Instead of manually managing database connections, creating statements, handling result sets, and dealing with exception handling,
+Spring provides higher-level abstractions like `JdbcClient` (introduced in Spring Framework 6.1)
+and `JdbcTemplate` that handle these concerns automatically.
+This allows developers to focus on writing SQL queries and mapping results to domain objects,
+while Spring manages resource management, exception translation, and connection pooling behind the scenes.
+
+## Working with H2 Database
+
+H2 is an embedded in-memory database that's good enough for development and testing.
+Spring Boot automatically configures all necessary beans to interact with H2 when it detects the H2 dependency on the classpath.
+
+### Adding H2 Dependency
+
+Add the JDBC starter and H2 database driver dependency to your `pom.xml`:
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-jdbc</artifactId>
+</dependency>
+<dependency>
+    <groupId>com.h2database</groupId>
+    <artifactId>h2</artifactId>
+    <scope>runtime</scope>
+</dependency>
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-h2console</artifactId>
+</dependency>
+```
+
+### Auto-Configuration
+
+Spring Boot automatically configures the following beans when JDBC starter and H2 are on the classpath:
+
+- **DataSource**: Connection pool for managing database connections
+- **JdbcClient/JdbcTemplate**: For executing SQL queries
+- **DataSourceTransactionManager**: For transaction management
+- **H2 Console**: Web-based database console (accessible at `/h2-console` when enabled)
+
+### Configuration Properties
+
+Configure H2 in your `application.properties`:
+
+```properties
+# Enable H2 Console
+spring.h2.console.enabled=true
+spring.h2.console.path=/h2-console
+```
+
+With this configuration, you can access the H2 console at `http://localhost:8080/h2-console` and connect using the JDBC URL `jdbc:h2:mem:testdb`.
+
+## Database Initialization
+
+Spring Boot provides automatic database initialization using SQL script files.
+This is useful for creating schema and loading initial data during application startup.
+
+### Using schema.sql
+
+Create a `schema.sql` file in `src/main/resources` to define your database schema:
+
+```sql
+DROP TABLE IF EXISTS articles;
+
+create table articles
+(
+    id         bigserial primary key,
+    title      varchar   not null,
+    url        varchar   not null,
+    created_at timestamp default now()
+);
+```
+
+### Using data.sql
+
+Create a `data.sql` file in `src/main/resources` to populate initial data:
+
+```sql
+DELETE FROM articles;
+
+INSERT INTO articles(title, url) VALUES
+('Understanding Java Virtual Threads','https://example.com/java-virtual-threads'),
+('Building REST APIs with Spring Boot 3','https://example.com/spring-boot-3-rest-apis'),
+('Introduction to Docker Containers','https://example.com/docker-containers-intro'),
+('Microservices Architecture Patterns','https://example.com/microservices-patterns'),
+('Database Indexing Best Practices','https://example.com/database-indexing'),
+('Unit Testing with JUnit 5','https://example.com/junit5-testing')
+;
+```
+
+### Configuration
+
+Control database initialization behavior in `application.properties`:
+
+```properties
+# Database initialization mode
+# always: Always initialize (default for embedded databases)
+# never: Never initialize
+# embedded: Only initialize embedded databases
+spring.sql.init.mode=always
+```
+
+For platform-specific initialization, you can create files like `schema-h2.sql`, `schema-postgresql.sql`, `data-h2.sql`, etc.
+
+## Using Spring JdbcClient
+
+Spring Framework 6.1 introduced a new **JdbcClient** API, which is a wrapper on top of **JdbcTemplate**,
+for performing database operations using a fluent API.
+
+<Alert type="info">
+**JdbcClient** is recommended over **JdbcTemplate** for new projects.
+</Alert>
+
+Let's explore how we can use **JdbcClient** to perform various database operations.
+
+Create an Article domain class:
+
+```java
+import java.time.Instant;
+
+public record Article(
+        Long id,
+        String title,
+        String url,
+        Instant createdAt
+) {}
+```
+
+Let's implement CRUD operations on Article domain class using JdbcClient API:
+
+```java
+@Repository
+public class ArticleRepository {
+    private final JdbcClient jdbcClient;
+
+    public ArticleRepository(JdbcClient jdbcClient) {
+        this.jdbcClient = jdbcClient;
+    }
+    //...
+}
+```
+
+### Fetch All Articles
+
+```java
+public List<Article> findAll() {
+    String sql = "select id, title, url, created_at from articles";
+    return jdbcClient.sql(sql).query(new ArticleRowMapper()).list();
+}
+
+static class ArticleRowMapper implements RowMapper<Article> {
+    @Override
+    public Article mapRow(ResultSet rs, int rowNum) throws SQLException {
+        return new Article(
+                rs.getLong("id"),
+                rs.getString("title"),
+                rs.getString("url"),
+                rs.getTimestamp("created_at").toInstant()
+        );
+    }
+}
+```
+
+We can also simplify this as follows:
+
+```java
+public List<Article> findAll() {
+    String sql = "select id, title, url, created_at from articles";
+    return jdbcClient.sql(sql).query(Article.class).list();
+}
+```
+
+The **JdbcClient** API will take care of dynamically creating a **RowMapper** by using **SimplePropertyRowMapper**.
+It will perform the mapping between bean property names to table column names by converting camelCase to underscore notation.
+
+### Find Article By ID
+
+We can fetch an article by id using JdbcClient as follows:
+
+```java
+public Optional<Article> findById(Long id) {
+    String sql = "select id, title, url, created_at from articles where id = :id";
+    return jdbcClient.sql(sql).param("id", id).query(Article.class).optional();
+
+    // If you want to use your own RowMapper
+    //return jdbcClient.sql(sql).param("id", id).query(new ArticleRowMapper()).optional();
+}
+```
+
+### Insert an Article
+
+We can insert a new row into the articles table and get the generated primary key value as follows:
+
+```java
+public Long save(Article article) {
+    String sql = "insert into articles(title, url) values(:title,:url)";
+    KeyHolder keyHolder = new GeneratedKeyHolder();
+    jdbcClient.sql(sql)
+                .param("title", article.title())
+                .param("url", article.url())
+                .update(keyHolder);
+    return (Long) keyHolder.getKeys().get("ID");
+}
+```
+
+### Update an Article
+
+We can update an article as follows:
+
+```java
+public void update(Article article) {
+    String sql = "update articles set title = ?, url = ? where id = ?";
+    int count = jdbcClient.sql(sql)
+            .param(1, article.title())
+            .param(2, article.url())
+            .param(3, article.id())
+            .update();
+    if (count == 0) {
+        throw new RuntimeException("Article not found");
+    }
+}
+```
+
+### Delete an Article
+
+We can delete an article as follows:
+
+```java
+public void delete(Long id) {
+    String sql = "delete from articles where id = ?";
+    int count = jdbcClient.sql(sql).param(1, id).update();
+    if (count == 0) {
+        throw new RuntimeException("Article not found");
+    }
+}
+```
+
+## Adding PostgreSQL Database Support
+
+For production environments, you'll typically want to use a more robust database like PostgreSQL or MySQL.
+
+Let's replace H2 with PostgreSQL in this guide.
+
+### Adding PostgreSQL Dependency
+
+Add the PostgreSQL driver to your `pom.xml`:
+
+```xml
+<dependency>
+    <groupId>org.postgresql</groupId>
+    <artifactId>postgresql</artifactId>
+    <scope>runtime</scope>
+</dependency>
+```
+
+### PostgreSQL Configuration
+
+In the **Getting Started** section, we have started the PostgreSQL server using Docker.
+
+Configure PostgreSQL connection in `application.properties`:
+
+```properties
+# PostgreSQL Configuration
+spring.datasource.driver-class-name=org.postgresql.Driver
+spring.datasource.url=jdbc:postgresql://localhost:5432/postgres
+spring.datasource.username=postgres
+spring.datasource.password=postgres
+```
+
+When we explicitly configure the JDBC DataSource properties,
+Spring Boot will automatically configure DataSource using the provided properties instead of using the H2 in-memory database.

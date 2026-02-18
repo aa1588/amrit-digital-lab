@@ -481,12 +481,25 @@ const currentUrl = new URL(Astro.url.pathname, Astro.site).toString();
   }
 
   /* Tables */
+  .prose :global(.table-wrapper) {
+    overflow-x: auto;
+    margin: 2.5rem 0;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow);
+  }
+
   .prose :global(table) {
     width: 100%;
-    margin: 2.5rem 0;
+    min-width: 600px;
     border-collapse: collapse;
     font-size: 0.9375rem;
-    overflow: hidden;
+  }
+
+  .prose :global(table):not(.table-wrapper table) {
+    margin: 2.5rem 0;
+    display: block;
+    overflow-x: auto;
     border-radius: var(--radius-md);
     border: 1px solid var(--color-border);
     box-shadow: var(--shadow);
@@ -537,6 +550,16 @@ const currentUrl = new URL(Astro.url.pathname, Astro.site).toString();
     margin: 2rem 0;
     font-size: 0.9rem;
     border-radius: var(--radius-md);
+    overflow-x: auto;
+    white-space: pre;
+    max-height: 600px;
+    overflow-y: auto;
+  }
+
+  .prose :global(pre code) {
+    white-space: pre;
+    word-break: normal;
+    overflow-wrap: normal;
   }
 
   /* Strong and emphasis */
