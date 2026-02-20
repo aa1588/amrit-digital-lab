@@ -1,16 +1,26 @@
 [
   {
-    "topic": "Large Language Models & Prompt Engineering",
+    "topic": "AI ML NLP",
     "links": [
       {
-        "title": "OpenAI Prompt Engineering Guide",
-        "url": "https://platform.openai.com/docs/guides/prompt-engineering",
-        "description": "Official best practices for prompting GPT models"
+        "title": "Google Machine Learning Crash Course",
+        "url": "https://developers.google.com/machine-learning/crash-course",
+        "description": "Google's fast-paced introduction to machine learning"
       },
       {
-        "title": "Anthropic Prompt Library",
-        "url": "https://docs.anthropic.com/en/prompt-library/library",
-        "description": "Curated prompt examples from Anthropic"
+        "title": "How Transformers Work",
+        "url": "https://www.datacamp.com/tutorial/how-transformers-work",
+        "description": "DataCamp tutorial explaining transformer architecture"
+      },
+      {
+        "title": "Neural Networks: Zero to Hero",
+        "url": "https://karpathy.ai/zero-to-hero.html",
+        "description": "Andrej Karpathy's course on building neural networks from scratch"
+      },
+      {
+        "title": "LLM University",
+        "url": "https://cohere.com/llmu",
+        "description": "Cohere's comprehensive course on large language models"
       }
     ]
   },
@@ -26,6 +36,11 @@
         "title": "LlamaIndex Documentation",
         "url": "https://docs.llamaindex.ai/en/stable/",
         "description": "Framework for building RAG and agent applications"
+      },
+      {
+        "title": "Production RAG with Java & Kubernetes",
+        "url": "https://aboullaite.me/production-rag-java-k8s-part1/",
+        "description": "Building production-ready RAG applications using Java and Kubernetes"
       }
     ]
   },
@@ -56,6 +71,11 @@
         "title": "Spring Boot Self Learning Guides",
         "url": "https://github.com/sivaprasadreddy/spring-boot-self-learning-guide",
         "description": "Learn to build Spring Boot applications with frequently used features"
+      },
+      {
+        "title": "Spring AI Reference",
+        "url": "https://docs.spring.io/spring-ai/reference/",
+        "description": "Official documentation for Spring AI framework"
       }
     ]
   },

@@ -1,0 +1,277 @@
+---
+title: 'Building a Custom Spring Boot Starter for Reddit API'
+description: 'Learn how to create your own Spring Boot Starter by building an auto-configured Reddit API client.'
+pubDate: 2026-02-20
+author: 'Amrit Adhikari'
+tags: ['spring boot']
+draft: false
+---
+
+import Alert from '../../../components/Alert.astro';
+
+Spring Boot Starters are one of the things that make Spring Boot so convenient.
+When you add `spring-boot-starter-web` to your project, you get an embedded Tomcat server, Jackson for JSON, and everything configured automatically.
+But have you ever wondered how these starters actually work? Or how you can build your own?
+
+In this post, we'll build a custom Spring Boot Starter that wraps Reddit's public JSON API.
+By the end, you'll understand how auto-configuration works and how to create reusable components for your own projects.
+
+## Why Build a Custom Starter?
+
+Let's say you have a piece of functionality that you use across multiple projects.
+Maybe it's a custom logging setup, a specific API client, or some internal library.
+Instead of copying the same configuration code everywhere, you can package it as a Spring Boot Starter.
+
+Benefits of creating a starter:
+
+- **Zero configuration** for consumers (just add the dependency)
+- **Sensible defaults** that work out of the box
+- **Customizable** through `application.properties`
+- **Reusable** across multiple projects
+
+## Project Structure
+
+Our Reddit starter will be a multi-module Maven project with three modules:
+
+```
+spring-boot-starter-reddit/
+├── reddit-spring-boot-autoconfigure/    # The brain - auto-configuration logic
+├── reddit-spring-boot-starter/          # The convenience - pulls everything together
+└── reddit-spring-boot-sample/           # Demo app showing how to use it
+```
+
+| Module | Purpose |
+|--------|---------|
+| `reddit-spring-boot-autoconfigure` | Contains the auto-configuration logic and Reddit client |
+| `reddit-spring-boot-starter` | Dependency aggregator that pulls everything together |
+| `reddit-spring-boot-sample` | Demo application showing how to use the starter |
+
+<Alert type="info">
+**Why separate autoconfigure and starter modules?**
+
+This is the recommended Spring Boot convention. The autoconfigure module contains the actual logic, while the starter module is just a convenient way to pull in all required dependencies. This separation allows for more flexibility.
+</Alert>
+
+## Building the Reddit Client
+
+First, let's create the core component: a simple Java class that calls Reddit's API using Spring's `RestClient`.
+
+```java
+public class RedditClient {
+    private final RestClient restClient;
+    private final RedditProperties properties;
+
+    public RedditClient(RestClient.Builder restClientBuilder, RedditProperties properties) {
+        this.properties = properties;
+        this.restClient = restClientBuilder
+                .baseUrl("https://www.reddit.com")
+                .defaultHeader("User-Agent", properties.getUserAgent())
+                .build();
+    }
+
+    public List<RedditPost> getPosts(String subreddit) {
+        return getPosts(subreddit, properties.getDefaultLimit());
+    }
+
+    public List<RedditPost> getPosts(String subreddit, int limit) {
+        RedditResponse response = restClient.get()
+                .uri("/r/{subreddit}/hot.json?limit={limit}", subreddit, limit)
+                .retrieve()
+                .body(RedditResponse.class);
+
+        return response.getData().getChildren().stream()
+                .map(child -> child.getData())
+                .toList();
+    }
+}
+```
+
+This is just a regular Java class. Nothing special about it yet.
+
+## Configuration Properties
+
+Next, we need a way to let users customize the client's behavior.
+Spring Boot's `@ConfigurationProperties` is perfect for this.
+
+```java
+@ConfigurationProperties(prefix = "reddit")
+public class RedditProperties {
+
+    private String userAgent = "SpringBootRedditClient:v1.0.0";
+    private String defaultSubreddit = "programming";
+    private int defaultLimit = 25;
+
+    // getters and setters
+}
+```
+
+Now users can configure the client in their `application.properties`:
+
+```properties
+reddit.user-agent=MyApp:v1.0.0 (by /u/username)
+reddit.default-subreddit=java
+reddit.default-limit=50
+```
+
+## The Auto-Configuration Class
+
+This is where the magic happens. The auto-configuration class tells Spring Boot how to create and configure our beans automatically.
+
+```java
+@AutoConfiguration
+@ConditionalOnClass(RestClient.class)
+@EnableConfigurationProperties(RedditProperties.class)
+public class RedditAutoConfiguration {
+
+    @Bean
+    @ConditionalOnMissingBean
+    public RedditClient redditClient(
+            RestClient.Builder restClientBuilder,
+            RedditProperties properties) {
+        return new RedditClient(restClientBuilder, properties);
+    }
+}
+```
+
+Let's break down the annotations:
+
+| Annotation | Purpose |
+|------------|---------|
+| `@AutoConfiguration` | Marks this class for auto-configuration discovery |
+| `@ConditionalOnClass` | Only activate if `RestClient` is on the classpath |
+| `@EnableConfigurationProperties` | Registers our properties class |
+| `@ConditionalOnMissingBean` | Only create the bean if user hasn't defined their own |
+
+<Alert type="info">
+**@ConditionalOnMissingBean** is important because it allows users to override your default configuration. If someone wants to provide their own `RedditClient` bean with custom behavior, Spring will use theirs instead of yours.
+</Alert>
+
+Spring Boot will detect this bean and skip creating the default one. This is the "opinionated defaults with easy customization" philosophy in action!
+
+## Registering the Auto-Configuration
+
+For Spring Boot 3.x and 4.x, we need to register our auto-configuration in:
+
+`META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`
+
+```
+org.example.redditspringbootautoconfigure.RedditAutoConfiguration
+```
+
+For backward compatibility with Spring Boot 2.x, you can also include:
+
+`META-INF/spring.factories`
+
+```
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+org.example.redditspringbootautoconfigure.RedditAutoConfiguration
+```
+
+This tells Spring Boot: "Hey, when you're scanning for auto-configurations, include this class!"
+
+## The Starter Module
+
+The starter module is simple. It's just a `pom.xml` that pulls in the autoconfigure module and any required dependencies.
+
+```xml
+<dependencies>
+    <dependency>
+        <groupId>com.example</groupId>
+        <artifactId>reddit-spring-boot-autoconfigure</artifactId>
+        <version>${project.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+</dependencies>
+```
+
+## Using the Starter
+
+This demonstrates how easy it is to use our starter:
+
+### 1. Add the Dependency
+
+```xml
+<dependency>
+    <groupId>org.example</groupId>
+    <artifactId>reddit-spring-boot-starter</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+</dependency>
+```
+
+### 2. Use the Auto-Configured Bean
+
+```java
+@RestController
+@RequestMapping("/api/reddit")
+public class RedditController {
+
+    private final RedditClient redditClient;
+
+    public RedditController(RedditClient redditClient) {
+        this.redditClient = redditClient;  // Auto-injected!
+    }
+
+    @GetMapping("/posts/{subreddit}")
+    public List<RedditPost> getPosts(@PathVariable String subreddit) {
+        return redditClient.getPosts(subreddit);
+    }
+
+    @GetMapping("/search")
+    public List<RedditPost> search(@RequestParam String q) {
+        return redditClient.search(q);
+    }
+}
+```
+
+That's it! No configuration needed. The `RedditClient` is automatically available for injection.
+
+### 3. Optional: Customize via Properties
+
+```properties
+spring.application.name=reddit-spring-boot-sample
+
+# Customize the Reddit client
+reddit.user-agent=MyAwesomeApp:v1.0.0 (by /u/myusername)
+reddit.default-subreddit=programming
+reddit.default-limit=50
+
+server.port=8080
+```
+
+## Testing the Sample Application
+
+Build and run the sample application:
+
+```bash
+mvn clean install
+cd reddit-spring-boot-sample
+mvn spring-boot:run
+```
+
+Test the endpoint:
+
+```bash
+curl http://localhost:8080/api/reddit/posts/java
+```
+
+You should see a list of posts from the Java subreddit.
+
+## Key Takeaways
+
+Building a custom Spring Boot Starter comes down to a few key concepts:
+
+1. **Create your core components** as regular Java classes
+2. **Use `@ConfigurationProperties`** to allow customization through properties
+3. **Write an auto-configuration class** with conditional annotations
+4. **Register the auto-configuration** in the imports file
+5. **Package it as a starter** for easy consumption
+
+The philosophy behind Spring Boot Starters is **opinionated defaults with easy customization**.
+Your starter should work out of the box with sensible defaults, but allow users to customize everything through properties or by providing their own beans.
+
+---
+
+You can find the complete source code for this project on [GitHub](https://github.com/aa1588/spring-boot-starter-reddit).
