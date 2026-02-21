@@ -21,6 +21,11 @@
         "title": "LLM University",
         "url": "https://cohere.com/llmu",
         "description": "Cohere's comprehensive course on large language models"
+      },
+      {
+        "title": "IBM Machine Learning Crash Course",
+        "url": "https://www.ibm.com/think/machine-learning",
+        "description": "IBM's introduction to machine learning fundamentals"
       }
     ]
   },
