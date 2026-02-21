@@ -30,6 +30,26 @@
     ]
   },
   {
+    "topic": "Cybersecurity",
+    "links": [
+      {
+        "title": "IBM Cybersecurity Guide",
+        "url": "https://www.ibm.com/think/cybersecurity",
+        "description": "IBM's comprehensive guide to cybersecurity concepts and practices"
+      }
+    ]
+  },
+  {
+    "topic": "Agentic AI",
+    "links": [
+      {
+        "title": "What are AI Agents?",
+        "url": "https://www.ibm.com/think/topics/ai-agents",
+        "description": "IBM's guide to understanding AI agents and agentic systems"
+      }
+    ]
+  },
+  {
     "topic": "Retrieval-Augmented Generation (RAG)",
     "links": [
       {
