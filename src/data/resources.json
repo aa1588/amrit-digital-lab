@@ -26,6 +26,21 @@
         "title": "IBM Machine Learning Crash Course",
         "url": "https://www.ibm.com/think/machine-learning",
         "description": "IBM's introduction to machine learning fundamentals"
+      },
+      {
+        "title": "LLM Course by Huggingface",
+        "url": "https://huggingface.co/learn/llm-course/chapter1/1",
+        "description": "Comprehensive course on building with large language models"
+      },
+      {
+        "title": "PyTorch Tutorials",
+        "url": "https://docs.pytorch.org/tutorials/beginner/basics/intro.html",
+        "description": "Official PyTorch beginner tutorials and documentation"
+      },
+      {
+        "title": "Practical Deep Learning",
+        "url": "https://course.fast.ai/",
+        "description": "Fast.ai's free course on deep learning for coders"
       }
     ]
   },
