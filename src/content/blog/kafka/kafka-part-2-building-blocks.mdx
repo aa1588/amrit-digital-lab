@@ -1,6 +1,6 @@
 ---
 title: 'Apache Kafka: Part 2 - Understanding the Core Building Blocks'
-description: 'Deep dive into Kafka architecture - Messages, Topics, Partitions, Producers, Consumers, Brokers, and Clusters. Learn how these components work together to create a distributed event streaming platform.'
+description: 'Deep dive into Kafka architecture. Messages, Topics, Partitions, Producers, Consumers, Brokers, and Clusters. Learn how these components work together to create a distributed event streaming platform.'
 pubDate: 2024-12-16
 author: 'Amrit Adhikari'
 tags: ['kafka']
@@ -12,7 +12,7 @@ draft: false
 import Alert from '../../../components/Alert.astro';
 
 <Alert type="info">
-**Disclaimer**: Most of the content mentioned in this series comes directly from the **Confluent Apache Kafka Fundamentals Course** available at [training.confluent.io](https://training.confluent.io). This series aims to make that knowledge more accessible and digestible.
+**Full disclosure:** Most of the content in this series comes from the **Confluent Apache Kafka Fundamentals Course** at [training.confluent.io](https://training.confluent.io). I'm sharing my notes and trying to make them easier to understand!
 </Alert>
 
 ## The Kafka Architecture Puzzle
@@ -31,7 +31,7 @@ Let's break down each piece of this puzzle.
 
 A **message** (also called an **event** or **record**) is the fundamental unit of data in Apache Kafka. It's like a letter in our postal system analogy.
 
-Every Kafka message consists of two main components:
+Every Kafka message consists of two main components.
 
 ### The Key (Optional but Powerful)
 ```json
@@ -63,11 +63,11 @@ The key helps determine **which partition** a message will go to in a Kafka topi
 The value is the actual content of the message. It can be any type of data:
 - **JSON** (most common)
 - **Plain text**
-- **Avro** (schema-based)
+- **Avro** (schema based)
 - **Binary data**
 
-<Alert type="success">
-**Immutability is Key**: Kafka messages are immutable, meaning once they're written to a topic, they can't be modified. This ensures data integrity and allows consumers to replay messages at any time.
+<Alert type="info">
+**Immutability is Key**: Kafka messages are immutable. Once they're written to a topic, they can't be modified. This ensures data integrity and allows consumers to replay messages at any time.
 </Alert>
 
 ---
@@ -81,7 +81,7 @@ A **topic** is like a category or folder where messages are organized. Think of 
 ```
 Topic: "user-purchases"
 ├── Message 1: User A bought a laptop
-├── Message 2: User B bought headphones  
+├── Message 2: User B bought headphones
 ├── Message 3: User A bought a mouse
 └── Message 4: User C bought a keyboard
 ```
@@ -92,16 +92,16 @@ Topic: "user-purchases"
 - **Producer systems** can publish messages to a particular topic
 - **Consumer systems** can read messages from that topic
 
-**Time-Based Storage**: Messages are stored with a timestamp and kept for a configurable period (retention policy).
+**Time Based Storage**: Messages are stored with a timestamp and kept for a configurable period (retention policy).
 
 **Replay Capability**: This retention feature allows consumers to read messages at their own pace and replay messages if needed.
 
-### Real-World Topic Examples
+### Real World Topic Examples
 
 ```
 E-commerce Platform:
 ├── user-registrations
-├── product-views  
+├── product-views
 ├── shopping-cart-events
 ├── order-payments
 ├── inventory-updates
@@ -110,7 +110,7 @@ E-commerce Platform:
 Banking System:
 ├── account-transactions
 ├── fraud-alerts
-├── loan-applications  
+├── loan-applications
 ├── credit-score-updates
 └── regulatory-reports
 ```
@@ -127,7 +127,7 @@ Here's where Kafka gets really clever. **Topics are split into partitions**, all
 Topic: "user-purchases" (3 partitions)
 
 Partition 0: [Msg1] [Msg4] [Msg7] [Msg10]
-Partition 1: [Msg2] [Msg5] [Msg8] [Msg11]  
+Partition 1: [Msg2] [Msg5] [Msg8] [Msg11]
 Partition 2: [Msg3] [Msg6] [Msg9] [Msg12]
 ```
 
@@ -137,14 +137,14 @@ Partition 2: [Msg3] [Msg6] [Msg9] [Msg12]
 
 **Parallel Processing**: When a producer sends messages, they're distributed across different partitions. This means multiple consumers can read messages concurrently from different partitions, speeding up processing.
 
-**Distribution**: Each partition is stored on a broker (server/node).
+**Distribution**: Each partition is stored on a broker (server or node).
 
 **Fault Tolerance**: If one broker goes down, other brokers can take over the partitions and continue delivering data, ensuring high availability.
 
 <Alert type="info">
 **Quiz Time**: In Kafka, what is the purpose of a Partition in a topic?
 
-**Answer**: To enable parallel processing and scalability! 🎯
+**Answer**: To enable parallel processing and scalability!
 </Alert>
 
 ### Partition Assignment Strategy
@@ -152,7 +152,7 @@ Partition 2: [Msg3] [Msg6] [Msg9] [Msg12]
 When a producer sends a message:
 
 1. **With Key**: Messages with the same key always go to the same partition
-2. **Without Key**: Messages are distributed round-robin across partitions
+2. **Without Key**: Messages are distributed round robin across partitions
 3. **Custom Logic**: You can implement custom partitioning logic
 
 ```java
@@ -168,12 +168,12 @@ Key: "user-12345" → Always Partition 1 (again)
 
 ### What is an Offset?
 
-Each message within a partition is assigned an **offset** - a unique identifier for that message. Think of it like a page number in a book.
+Each message within a partition is assigned an **offset**. This is a unique identifier for that message. Think of it like a page number in a book.
 
 ```
 Partition 0:
 Offset 0: [Message A]
-Offset 1: [Message B]  
+Offset 1: [Message B]
 Offset 2: [Message C]
 Offset 3: [Message D]
 ```
@@ -194,7 +194,7 @@ KafkaProducer<String, String> producer = new KafkaProducer<>(props);
 
 ProducerRecord<String, String> record = new ProducerRecord<>(
     "user-purchases",           // topic
-    "user-12345",              // key  
+    "user-12345",              // key
     "{\"product\": \"laptop\"}" // value
 );
 
@@ -209,11 +209,11 @@ producer.send(record);
 
 **Serialization Support**: The Producer API allows data to be serialized into formats like JSON, Avro, or plain text before being sent to Kafka.
 
-**Fault Tolerance**: Built-in mechanisms ensure data reliability. Producers can wait for acknowledgment from Kafka brokers to confirm message delivery.
+**Fault Tolerance**: Built in mechanisms ensure data reliability. Producers can wait for acknowledgment from Kafka brokers to confirm message delivery.
 
 **Compression**: Supports message compression to reduce network bandwidth, making data transfer more efficient.
 
-<Alert type="success">
+<Alert type="info">
 **The Power of Decoupling**: Producers can keep generating and pushing data, even if consumers are temporarily unavailable. This decoupling is what makes Kafka so resilient.
 </Alert>
 
@@ -247,7 +247,7 @@ Topic: "orders" (3 partitions)
 Consumer Group: "order-processors"
 
 Partition 0 → Consumer A
-Partition 1 → Consumer B  
+Partition 1 → Consumer B
 Partition 2 → Consumer C
 ```
 
@@ -261,7 +261,7 @@ Partition 2 → Consumer C
 <Alert type="info">
 **Quiz Time**: How does a Kafka Consumer keep track of messages it has consumed?
 
-**Answer**: By maintaining an offset for each partition it reads from! 📖
+**Answer**: By maintaining an offset for each partition it reads from!
 </Alert>
 
 ### The Beauty of Decoupling
@@ -303,7 +303,7 @@ A **Kafka cluster** is a group of servers (brokers) that work together to manage
 ```
 Kafka Cluster
 ├── Broker 1 (ID: 1)
-├── Broker 2 (ID: 2)  
+├── Broker 2 (ID: 2)
 ├── Broker 3 (ID: 3)
 └── Broker 4 (ID: 4)
 ```
@@ -340,7 +340,7 @@ Replication ensures **data availability** and **data integrity**. In Kafka, repl
 
 **Replicas**: Each partition is distributed across several brokers with multiple copies called replicas.
 
-**Leader and Followers**: 
+**Leader and Followers**:
 - **Leader**: The only replica that handles reads and writes
 - **Followers**: Replicate data from the leader
 
@@ -350,7 +350,7 @@ Replication ensures **data availability** and **data integrity**. In Kafka, repl
 Partition "orders-0" (Replication Factor: 3)
 
 Broker 1: [Leader Replica]    ← Handles reads/writes
-Broker 2: [Follower Replica]  ← Replicates from leader  
+Broker 2: [Follower Replica]  ← Replicates from leader
 Broker 3: [Follower Replica]  ← Replicates from leader
 ```
 
@@ -360,8 +360,8 @@ Broker 3: [Follower Replica]  ← Replicates from leader
 
 Kafka provides a **data retention policy** that defines how long data is stored before deletion. This can be configured per topic or as a default global retention period.
 
-**Time-based**: Keep messages for 7 days
-**Size-based**: Keep up to 1GB of messages per partition
+**Time based**: Keep messages for 7 days
+**Size based**: Keep up to 1GB of messages per partition
 **Compacted**: Keep only the latest message for each key
 
 ---
@@ -378,7 +378,7 @@ Let's trace a message through the entire Kafka system:
 6. **Consumer X** polls and receives the message, processes it, and commits offset 1047
 7. **Consumer X** is now ready to read the next message at offset 1048
 
-<Alert type="success">
+<Alert type="info">
 **The Magic**: All of this happens automatically, at scale, with fault tolerance, in milliseconds. That's the power of Kafka's architecture!
 </Alert>
 
@@ -388,10 +388,10 @@ Let's trace a message through the entire Kafka system:
 
 Now you understand Kafka's core building blocks and how they work together. In **Part 3** of this series, we'll explore:
 
-- **Kafka Development Tools** - Producer API, Consumer API, Kafka Streams
-- **Building Real Applications** - Practical examples and code
-- **Performance Tuning** - Throughput, latency, and configuration
-- **Exactly Once Semantics** - Ensuring message delivery guarantees
+- **Kafka Development Tools**: Producer API, Consumer API, Kafka Streams
+- **Building Real Applications**: Practical examples and code
+- **Performance Tuning**: Throughput, latency, and configuration
+- **Exactly Once Semantics**: Ensuring message delivery guarantees
 
 Ready to start building with Kafka? Let's get our hands dirty!
 
@@ -399,8 +399,8 @@ Ready to start building with Kafka? Let's get our hands dirty!
 
 ## Key Takeaways
 
-- **Messages** are key-value pairs that flow through Kafka
-- **Topics** organize messages into logical categories  
+- **Messages** are key value pairs that flow through Kafka
+- **Topics** organize messages into logical categories
 - **Partitions** enable parallel processing and scalability
 - **Offsets** track consumer progress through partitions
 - **Producers** send data asynchronously with fault tolerance
