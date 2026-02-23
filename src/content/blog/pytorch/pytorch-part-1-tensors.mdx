@@ -1,0 +1,362 @@
+---
+title: 'PyTorch: Part 1 - Tensors, The Building Blocks'
+description: 'Learn about PyTorch tensors, the fundamental data structure for deep learning. Understand how to create, manipulate, and perform operations on tensors.'
+pubDate: 2026-02-22
+author: 'Amrit Adhikari'
+tags: ['pytorch', 'deep learning']
+series: 'PyTorch'
+seriesOrder: 1
+draft: false
+---
+
+import Alert from '../../../components/Alert.astro';
+
+## Getting Started with PyTorch
+
+PyTorch is one of the most popular deep learning frameworks out there. It's used by researchers and developers to build everything from simple neural networks to complex AI systems.
+
+In this series, I will share my understanding of PyTorch fundamentals. We'll start from the very basics and work our way up to training neural networks.
+
+<Alert type="info">
+**Full disclosure:** I'm learning too! This is my attempt to document what I've learned along the way. If you spot something off, please let me know!
+</Alert>
+
+Before we dive into neural networks, we need to understand the most fundamental concept in PyTorch: **Tensors**.
+
+---
+
+## What is a Tensor?
+
+A tensor is like a container for numbers. Think of it as a multi dimensional array.
+
+Here's how to think about it:
+
+- **0D tensor (scalar):** Just one number like `5`
+- **1D tensor (vector):** A list like `[1, 2, 3]`
+- **2D tensor (matrix):** A table like `[[1, 2], [3, 4]]`
+- **3D+ tensor:** Multiple tables stacked together
+
+That's it. Tensors are just numbers organized in different dimensions.
+
+<Alert type="info">
+If you've used NumPy before, tensors are very similar to NumPy arrays. The big difference is that PyTorch tensors can run on GPUs which makes them much faster for deep learning.
+</Alert>
+
+---
+
+## Creating Tensors
+
+Let's start by creating some tensors. First, make sure you have PyTorch installed:
+
+```bash
+pip install torch
+```
+
+Now let's create our first tensor:
+
+```python
+import torch
+
+# Create a tensor from a list
+x = torch.tensor([[1, 2, 3],
+                  [4, 5, 6]])
+print(x)
+print(f"Shape: {x.shape}")
+print(f"Data type: {x.dtype}")
+```
+
+Output:
+```
+tensor([[1, 2, 3],
+        [4, 5, 6]])
+Shape: torch.Size([2, 3])
+Data type: torch.int64
+```
+
+We just created a 2D tensor with 2 rows and 3 columns. The shape tells us the dimensions and dtype tells us the data type.
+
+![Tensor Visualization](/blog-images/pytorch/tensor-visualization.png)
+
+---
+
+## Common Ways to Create Tensors
+
+PyTorch gives us many helper functions to create tensors quickly.
+
+### Creating Zeros
+
+```python
+# All elements are 0
+zeros = torch.zeros(2, 3)
+print(zeros)
+```
+
+Output:
+```
+tensor([[0., 0., 0.],
+        [0., 0., 0.]])
+```
+
+### Creating Ones
+
+```python
+# All elements are 1
+ones = torch.ones(2, 3)
+print(ones)
+```
+
+Output:
+```
+tensor([[1., 1., 1.],
+        [1., 1., 1.]])
+```
+
+### Random Values (0 to 1)
+
+```python
+# Random values between 0 and 1
+rand = torch.rand(2, 3)
+print(rand)
+```
+
+Output:
+```
+tensor([[0.5414, 0.4792, 0.8803],
+        [0.2376, 0.7674, 0.1234]])
+```
+
+### Random Normal Distribution
+
+```python
+# Random values from normal distribution
+randn = torch.randn(2, 3)
+print(randn)
+```
+
+Output:
+```
+tensor([[-0.7654, 1.2341, 0.4567],
+        [ 0.8923, -0.3421, 1.0987]])
+```
+
+---
+
+## Important Tensor Parameters
+
+When creating tensors, there are some important parameters you should know about:
+
+### Shape
+
+The dimensions of the tensor. For example, `(2, 3)` means 2 rows and 3 columns.
+
+```python
+x = torch.zeros(2, 3)
+print(x.shape)  # torch.Size([2, 3])
+```
+
+### Data Type (dtype)
+
+The type of numbers stored in the tensor. Common types are:
+
+- `torch.float32` (default for most operations)
+- `torch.int64` (for integers)
+- `torch.bool` (for True/False)
+
+```python
+# Specify the data type
+x = torch.tensor([1, 2, 3], dtype=torch.float32)
+print(x.dtype)  # torch.float32
+```
+
+### Device
+
+Where the tensor lives: CPU or GPU.
+
+```python
+# Check device
+x = torch.tensor([1, 2, 3])
+print(x.device)  # cpu
+
+# Move to GPU (if available)
+if torch.cuda.is_available():
+    x = x.to('cuda')
+    print(x.device)  # cuda:0
+```
+
+### requires_grad
+
+Whether to track operations for automatic differentiation. We'll explore this in Part 2.
+
+```python
+x = torch.tensor([1.0, 2.0, 3.0], requires_grad=True)
+print(x.requires_grad)  # True
+```
+
+---
+
+## Tensor Operations
+
+Now let's see how to do math with tensors.
+
+### Addition
+
+```python
+a = torch.tensor([[1, 2], [3, 4]])
+b = torch.tensor([[5, 6], [7, 8]])
+
+# Addition
+result = a + b  # or torch.add(a, b)
+print("Addition:\n", result)
+```
+
+Output:
+```
+Addition:
+ tensor([[ 6,  8],
+        [10, 12]])
+```
+
+### Element wise Multiplication
+
+```python
+# Multiply each element
+result = a * b  # or torch.mul(a, b)
+print("Element wise Multiplication:\n", result)
+```
+
+Output:
+```
+Element wise Multiplication:
+ tensor([[ 5, 12],
+        [21, 32]])
+```
+
+### Matrix Multiplication
+
+```python
+# Matrix multiplication (not element wise)
+result = torch.matmul(a, b)  # or a @ b
+print("Matrix Multiplication:\n", result)
+```
+
+Output:
+```
+Matrix Multiplication:
+ tensor([[19, 22],
+        [43, 50]])
+```
+
+<Alert type="warning">
+**Don't confuse these!** Element wise multiplication (`*`) multiplies matching elements. Matrix multiplication (`@` or `matmul`) follows linear algebra rules.
+</Alert>
+
+---
+
+## Useful Tensor Methods
+
+Here are some methods you'll use all the time:
+
+### Reshape
+
+Change the shape without changing the data:
+
+```python
+x = torch.tensor([[1, 2, 3], [4, 5, 6]])
+print("Original shape:", x.shape)  # [2, 3]
+
+# Reshape to 3 rows, 2 columns
+y = x.reshape(3, 2)
+print("New shape:", y.shape)  # [3, 2]
+print(y)
+```
+
+Output:
+```
+Original shape: torch.Size([2, 3])
+New shape: torch.Size([3, 2])
+tensor([[1, 2],
+        [3, 4],
+        [5, 6]])
+```
+
+### Transpose
+
+Swap dimensions:
+
+```python
+x = torch.tensor([[1, 2, 3], [4, 5, 6]])
+y = x.transpose(0, 1)  # Swap rows and columns
+print(y)
+```
+
+Output:
+```
+tensor([[1, 4],
+        [2, 5],
+        [3, 6]])
+```
+
+### Squeeze and Unsqueeze
+
+Remove or add dimensions of size 1:
+
+```python
+x = torch.tensor([[1, 2, 3]])  # Shape: [1, 3]
+print("Original:", x.shape)
+
+# Remove dimension of size 1
+y = x.squeeze()
+print("After squeeze:", y.shape)  # [3]
+
+# Add dimension at position 0
+z = y.unsqueeze(0)
+print("After unsqueeze:", z.shape)  # [1, 3]
+```
+
+### Moving to Device
+
+```python
+x = torch.tensor([1, 2, 3])
+
+# Move to GPU
+if torch.cuda.is_available():
+    x = x.to('cuda')
+
+# Move back to CPU
+x = x.to('cpu')
+```
+
+---
+
+## Quick Reference
+
+| Method | What It Does |
+|--------|-------------|
+| `tensor.shape` | Get dimensions |
+| `tensor.dtype` | Get data type |
+| `tensor.device` | Check CPU or GPU |
+| `tensor.reshape(shape)` | Change shape |
+| `tensor.view(shape)` | Change shape (requires contiguous memory) |
+| `tensor.transpose(dim0, dim1)` | Swap dimensions |
+| `tensor.squeeze()` | Remove dimensions of size 1 |
+| `tensor.unsqueeze(dim)` | Add dimension of size 1 |
+| `tensor.to(device)` | Move to CPU or GPU |
+
+---
+
+## Key Takeaways
+
+- Tensors are multi dimensional arrays (like NumPy arrays but better for deep learning)
+- You can create tensors from lists, or use helpers like `zeros()`, `ones()`, `rand()`
+- Important properties: shape, dtype, device, requires_grad
+- Basic operations work element wise (`+`, `*`)
+- Use `@` or `matmul()` for matrix multiplication
+- Tensors can live on CPU or GPU
+
+---
+
+## What's Next?
+
+Now that we understand tensors, we're ready to learn about **Autograd** in Part 2. Autograd is PyTorch's automatic differentiation engine. It's what makes training neural networks possible.
+
+See you in Part 2!
