@@ -101,6 +101,11 @@
         "title": "Confluent Kafka Tutorials",
         "url": "https://developer.confluent.io/tutorials/",
         "description": "Hands-on tutorials for Kafka development"
+      },
+      {
+        "title": "AxonOps Kafka Guide",
+        "url": "https://axonops.com/docs/data-platforms/kafka/",
+        "description": "Comprehensive guide to Kafka monitoring, management, and best practices"
       }
     ]
   },
