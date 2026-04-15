@@ -1,0 +1,580 @@
+---
+title: 'Working with Git as a Team — GitFlow and Best Practices'
+description: 'Learn how teams work with Git using GitFlow branching strategy. Master feature branches, release management, hotfixes, and day-to-day commands that keep projects healthy.'
+pubDate: 2025-04-15
+author: 'Amrit Adhikari'
+tags: ['git', 'devops', 'best practices']
+draft: false
+---
+
+import Alert from '../../../components/Alert.astro';
+
+Git is the backbone of every modern software team. But here's something I've learned the hard way: knowing the commands is only half the job. Knowing **how to use them together** with your team is what actually keeps projects healthy.
+
+In this article, we'll walk through GitFlow, the branching model most teams rely on, with real commands and explanations for every step. Whether you're joining a new team or setting up workflows for your own project, this guide will give you a solid foundation.
+
+---
+
+## Why Do We Need a Branching Strategy?
+
+Before we dive into GitFlow, let's understand **why** we need a branching strategy in the first place.
+
+Imagine a team of five developers all working on the same codebase. Without clear rules:
+- Alice pushes half-finished code to `main` and breaks production
+- Bob's feature conflicts with Carol's changes
+- Dave can't deploy a hotfix because `main` has untested code
+- Everyone is afraid to deploy on Friday
+
+Sound familiar? A branching strategy solves these problems by giving every type of work its own space and clear rules for how changes flow through the system.
+
+---
+
+## What is GitFlow?
+
+GitFlow is a branching strategy introduced by Vincent Driessen. It gives every type of work — features, releases, hotfixes — its own branch, with clear rules for where branches start and where they merge back.
+
+Here's the visual:
+
+```
+main         ─────●─────────────────────────────●─────▶
+                  │                             │
+develop      ─────●──────●──────────────────────●─────▶
+                         │                     │
+feature/login     ───────●──────────────────●───
+                                            │
+release/1.0                          ───────●───●───
+                                                │
+hotfix/crash                                    ──●──●──
+```
+
+The five branch types work together like this:
+
+| Branch | Purpose | Branches from | Merges into |
+|--------|---------|--------------|-------------|
+| `main` | Production code. Always stable. | — | — |
+| `develop` | Integration branch. Latest delivered work. | `main` | — |
+| `feature/*` | A single new feature. | `develop` | `develop` |
+| `release/*` | Prepares a release. Bug fixes only. | `develop` | `main` + `develop` |
+| `hotfix/*` | Emergency production fix. | `main` | `main` + `develop` |
+
+<Alert type="info">
+**The key insight:** You can always ship a hotfix without dragging in unfinished features, every deployment is a tagged commit, and code reviews happen naturally as part of the flow.
+</Alert>
+
+---
+
+## Initial Repository Setup
+
+One developer does this once when the project starts.
+
+```bash
+# Create the repository
+git init insurance-portal
+cd insurance-portal
+
+# First commit on main
+echo "# Insurance Portal" > README.md
+git add README.md
+git commit -m "chore: initial commit"
+
+# Create and push main
+git branch -M main
+git remote add origin git@github.com:your-org/insurance-portal.git
+git push -u origin main
+
+# Create develop off main
+git checkout -b develop
+git push -u origin develop
+```
+
+Everyone else on the team then clones the repo and tracks both branches:
+
+```bash
+git clone git@github.com:your-org/insurance-portal.git
+cd insurance-portal
+
+# Track develop locally
+git checkout -b develop origin/develop
+```
+
+---
+
+## Feature Branches — Day-to-Day Development
+
+This is where you'll spend most of your time. Every piece of new work — a new screen, a new endpoint, a bug fix in development — lives on its own feature branch.
+
+### Starting a Feature
+
+Always branch off the latest `develop`:
+
+```bash
+# Make sure develop is up to date first
+git checkout develop
+git pull origin develop
+
+# Create your feature branch
+git checkout -b feature/quote-rating-engine
+```
+
+Name branches descriptively. Good patterns:
+
+```bash
+feature/quote-rating-engine      # new feature
+feature/JIRA-1042-add-fnol-form  # with ticket reference
+bugfix/fix-premium-calculation   # bug found in development
+```
+
+### Working on the Feature
+
+Commit often. Small, focused commits are easier to review and easier to revert if something goes wrong.
+
+```bash
+# Make changes to files...
+
+# Stage specific files (not "git add ." blindly)
+git add src/main/java/com/insurance/quote/RatingEngine.java
+git add src/test/java/com/insurance/quote/RatingEngineTest.java
+
+# Commit with a meaningful message
+git commit -m "feat(quote): add base rate calculation for HO3 product"
+
+# Another round of changes...
+git add src/main/java/com/insurance/quote/RiskFactor.java
+git commit -m "feat(quote): add age and construction type risk factors"
+
+# Push to remote so your work is backed up and visible to the team
+git push -u origin feature/quote-rating-engine
+```
+
+### Commit Message Convention
+
+Teams that agree on a format save a lot of confusion. [Conventional Commits](https://www.conventionalcommits.org) is widely adopted:
+
+```
+<type>(<scope>): <short description>
+
+feat(quote): add base rate calculation
+fix(billing): correct monthly instalment rounding
+docs(readme): add local setup instructions
+test(policy): add cancellation flow integration test
+chore(deps): upgrade Spring Boot to 3.2.1
+refactor(claim): extract document upload to service layer
+```
+
+Common types: `feat`, `fix`, `docs`, `test`, `chore`, `refactor`, `style`, `perf`.
+
+<Alert type="info">
+**Why bother with conventions?** Consistent commit messages make `git log` actually useful. You can grep for all features, auto-generate changelogs, and understand what happened months later without reading code.
+</Alert>
+
+### Keeping Your Branch Up to Date
+
+If `develop` moves forward while you're working on your feature, pull those changes in regularly so you don't fall too far behind:
+
+```bash
+# Fetch what everyone else has pushed
+git fetch origin
+
+# Rebase your feature on top of the latest develop
+git checkout feature/quote-rating-engine
+git rebase origin/develop
+```
+
+Why rebase instead of merge here? It keeps your branch's history linear and clean. When you eventually raise a pull request, reviewers see only your changes, not a tangle of merge commits. For a deeper dive into this topic, check out [this video on Git Rebase vs Merge](https://www.youtube.com/watch?v=DkWDHzmMvyg).
+
+If a conflict comes up during rebase:
+
+```bash
+# Git pauses and tells you which file has a conflict
+# Open the file, resolve the conflict markers, then:
+git add src/main/java/com/insurance/quote/RatingEngine.java
+git rebase --continue
+
+# If you want to abandon the rebase entirely:
+git rebase --abort
+```
+
+<Alert type="warning">
+**Never rebase branches that others are working on.** Rebasing rewrites history, which causes problems when multiple people have the same branch checked out. Only rebase your own feature branches before they're merged.
+</Alert>
+
+### Finishing a Feature — Pull Request
+
+When the feature is done:
+
+1. Push your latest commits:
+
+```bash
+git push origin feature/quote-rating-engine
+```
+
+2. Open a Pull Request on GitHub/GitLab targeting `develop`.
+
+3. A teammate reviews the code and leaves comments.
+
+4. You address feedback:
+
+```bash
+# Make the requested changes
+git add src/main/java/com/insurance/quote/RatingEngine.java
+git commit -m "fix(quote): address review feedback — extract constants"
+git push origin feature/quote-rating-engine
+```
+
+5. Once approved, merge into `develop` — use **Squash and Merge** if you want one clean commit per feature, or **Merge Commit** if you want to preserve the full history.
+
+6. Delete the feature branch after merge:
+
+```bash
+git branch -d feature/quote-rating-engine              # local
+git push origin --delete feature/quote-rating-engine   # remote
+```
+
+---
+
+## Release Branches — Shipping to Production
+
+When `develop` has everything you want in the next release, you cut a release branch. No new features go in here — only version bumps and last-minute bug fixes.
+
+```bash
+# Start from the latest develop
+git checkout develop
+git pull origin develop
+
+# Create the release branch
+git checkout -b release/1.2.0
+```
+
+On the release branch, bump the version and fix only what's blocking the release:
+
+```bash
+# Update version in pom.xml or package.json
+sed -i 's/<version>1.1.0<\/version>/<version>1.2.0<\/version>/' pom.xml
+
+git add pom.xml
+git commit -m "chore(release): bump version to 1.2.0"
+
+# Fix a small bug found during QA testing
+git add src/main/java/com/insurance/policy/PolicyService.java
+git commit -m "fix(policy): correct timezone handling on effective date"
+
+git push -u origin release/1.2.0
+```
+
+Once QA signs off:
+
+```bash
+# 1. Merge into main and tag it
+git checkout main
+git pull origin main
+git merge --no-ff release/1.2.0
+git tag -a v1.2.0 -m "Release 1.2.0 — quote rating and billing improvements"
+git push origin main
+git push origin v1.2.0
+
+# 2. Merge back into develop so the bug fix is not lost
+git checkout develop
+git pull origin develop
+git merge --no-ff release/1.2.0
+git push origin develop
+
+# 3. Delete the release branch
+git branch -d release/1.2.0
+git push origin --delete release/1.2.0
+```
+
+<Alert type="info">
+The `--no-ff` flag forces a merge commit even when a fast-forward would be possible. This preserves the record that a release branch existed, which is useful when reading history.
+</Alert>
+
+---
+
+## Hotfix Branches — Emergency Production Fixes
+
+A critical bug is in production right now and can't wait for the next release cycle. Hotfixes branch directly off `main`.
+
+```bash
+# Branch off main — NOT develop
+git checkout main
+git pull origin main
+git checkout -b hotfix/fix-premium-overflow
+
+# Fix the bug
+git add src/main/java/com/insurance/billing/PremiumCalculator.java
+git commit -m "fix(billing): prevent integer overflow on large coverage amounts"
+
+git push -u origin hotfix/fix-premium-overflow
+```
+
+After review:
+
+```bash
+# 1. Merge into main and tag
+git checkout main
+git merge --no-ff hotfix/fix-premium-overflow
+git tag -a v1.2.1 -m "Hotfix 1.2.1 — fix premium overflow"
+git push origin main
+git push origin v1.2.1
+
+# 2. Merge into develop so the fix is in the next release too
+git checkout develop
+git merge --no-ff hotfix/fix-premium-overflow
+git push origin develop
+
+# 3. Clean up
+git branch -d hotfix/fix-premium-overflow
+git push origin --delete hotfix/fix-premium-overflow
+```
+
+<Alert type="warning">
+**Don't skip the merge back to develop!** If you only merge to `main`, you'll fix production but the bug will reappear in your next release. Always merge hotfixes into both `main` and `develop`.
+</Alert>
+
+---
+
+## Useful Commands for Day-to-Day Team Work
+
+Let's cover the commands you'll reach for constantly.
+
+### See What's Happening
+
+```bash
+# Compact, decorated log — one line per commit
+git log --oneline --graph --decorate --all
+
+# Who changed what in a file
+git log --follow -p src/main/java/com/insurance/policy/PolicyService.java
+
+# What is staged vs unstaged
+git status
+
+# What changed in the last commit
+git show HEAD
+
+# What is different between develop and your branch
+git diff develop...feature/quote-rating-engine
+```
+
+### Stashing — Switch Context Without Losing Work
+
+```bash
+# You are mid-feature and need to quickly check something on develop
+git stash push -m "WIP: rating engine — half done"
+
+git checkout develop
+# ... do what you need to do ...
+git checkout feature/quote-rating-engine
+
+# Bring your work back
+git stash pop
+```
+
+### Undoing Mistakes
+
+```bash
+# Undo the last commit but keep the changes staged
+git reset --soft HEAD~1
+
+# Undo the last commit and unstage the changes (files are untouched)
+git reset HEAD~1
+
+# Throw away the last commit AND all changes (dangerous — cannot be undone)
+git reset --hard HEAD~1
+
+# Undo a commit that has already been pushed — creates a new "undo" commit
+git revert abc1234
+git push origin develop
+
+# Fix the message of the last commit (before pushing)
+git commit --amend -m "feat(quote): add base rate calculation for HO3"
+
+# Add a forgotten file to the last commit (before pushing)
+git add src/main/java/com/insurance/quote/RatingConstants.java
+git commit --amend --no-edit
+```
+
+### Cleaning Up
+
+```bash
+# See all local branches
+git branch
+
+# See all remote branches
+git branch -r
+
+# Delete a local branch you are done with
+git branch -d feature/old-feature
+
+# Prune remote-tracking references that no longer exist on remote
+git fetch --prune
+
+# Remove untracked files and directories (dry run first)
+git clean -n
+git clean -fd
+```
+
+---
+
+## Branch Protection Rules
+
+Set these up in GitHub or GitLab settings. They stop common mistakes before they happen.
+
+**For `main`:**
+- Require pull request reviews before merging (at least 1 approval)
+- Require status checks to pass (CI must be green)
+- Restrict who can push directly (nobody — all changes go through PRs)
+- Require branches to be up to date before merging
+
+**For `develop`:**
+- Require pull request reviews before merging (at least 1 approval)
+- Require status checks to pass
+
+<Alert type="info">
+**In real teams**, these rules save you from accidental pushes to production. Yes, it adds friction. That friction is the point — it forces code review and passing tests before anything reaches production.
+</Alert>
+
+---
+
+## .gitignore — What Not to Commit
+
+A shared `.gitignore` at the root of the repository prevents compiled files, secrets, and IDE noise from polluting the history.
+
+```gitignore
+# Build output
+target/
+build/
+*.class
+*.jar
+*.war
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+*.suo
+*.user
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment and secrets — NEVER commit these
+.env
+.env.local
+application-prod.yml
+*.pem
+*.key
+
+# Spring Boot
+/HELP.md
+spring-shell.log
+```
+
+If you accidentally commit a file that should be ignored:
+
+```bash
+# Remove it from tracking without deleting it from disk
+git rm --cached application-prod.yml
+
+# Add it to .gitignore, then commit both changes
+git add .gitignore
+git commit -m "chore: stop tracking application-prod.yml"
+```
+
+<Alert type="warning">
+**Once a secret is committed, assume it's compromised.** Even if you remove it, it lives in Git history forever. If you accidentally commit credentials, rotate them immediately.
+</Alert>
+
+---
+
+## A Complete Team Workflow — End to End
+
+Let's see what a normal sprint looks like for a team using GitFlow.
+
+```
+Monday morning — sprint starts
+──────────────────────────────────────────────────────────
+  Alice:  git checkout develop && git pull origin develop
+          git checkout -b feature/add-fnol-wizard
+          # works for 2 days, commits regularly, pushes daily
+
+  Bob:    git checkout develop && git pull origin develop
+          git checkout -b feature/billing-dashboard
+          # works in parallel, no conflict with Alice
+
+Wednesday — Alice opens a PR
+──────────────────────────────────────────────────────────
+  Alice:  git push origin feature/add-fnol-wizard
+          # Opens PR on GitHub → develop
+
+  Bob:    # Reviews Alice's PR, leaves a comment
+
+  Alice:  # Addresses feedback
+          git add . && git commit -m "fix: address review comments"
+          git push origin feature/add-fnol-wizard
+          # PR approved → merged into develop
+
+Thursday — Bob resyncs
+──────────────────────────────────────────────────────────
+  Bob:    git fetch origin
+          git rebase origin/develop
+          # Replays Bob's commits on top of Alice's merged work
+
+Friday — release day
+──────────────────────────────────────────────────────────
+  Lead:   git checkout develop && git pull origin develop
+          git checkout -b release/1.3.0
+          # Bumps version, final QA, one small fix
+          # Merges into main + tag + merges back into develop
+          # CI/CD deploys from main to production
+```
+
+---
+
+## Quick Reference Card
+
+```bash
+# ── Setup ─────────────────────────────────────────────────────────
+git clone <url>                         # clone a repo
+git checkout -b develop origin/develop  # track remote branch locally
+
+# ── Feature flow ──────────────────────────────────────────────────
+git checkout develop && git pull        # always start from latest develop
+git checkout -b feature/my-feature      # create feature branch
+git add <files>                         # stage specific files
+git commit -m "feat(scope): message"    # commit with convention
+git push -u origin feature/my-feature   # push and set upstream
+git rebase origin/develop               # stay up to date
+# → Open Pull Request → Review → Merge → Delete branch
+
+# ── Release flow ──────────────────────────────────────────────────
+git checkout -b release/1.0.0           # from develop
+git tag -a v1.0.0 -m "Release 1.0.0"   # tag after merging to main
+git push origin v1.0.0
+
+# ── Hotfix flow ───────────────────────────────────────────────────
+git checkout -b hotfix/fix-crash main   # from main, not develop
+# fix, merge to main + tag, merge to develop
+
+# ── Daily helpers ─────────────────────────────────────────────────
+git log --oneline --graph --all         # visual branch history
+git stash push -m "WIP: description"    # save work in progress
+git stash pop                           # restore saved work
+git diff develop...HEAD                 # what did I change vs develop
+git reset --soft HEAD~1                 # undo last commit, keep changes
+git revert <hash>                       # undo a pushed commit safely
+git fetch --prune                       # clean up deleted remote branches
+```
+
+---
+
+## Key Takeaways
+
+- **GitFlow gives structure**: Features branch off `develop`, releases stabilize before going to `main`, and hotfixes can bypass everything when production is down
+- **Branch protection is your safety net**: Require reviews and passing CI before anything reaches `main`
+- **Commit conventions pay off**: Consistent messages make history readable and changelogs automatic
+- **Rebase for clean history, merge for record-keeping**: Use `--no-ff` on release and hotfix merges to preserve the trail
+- **Delete branches after merging**: Don't let stale branches accumulate — they just add confusion
+- **Never commit secrets**: Use `.gitignore` proactively, and rotate any credentials that slip through
+
+The discipline pays off quickly: you can always ship a hotfix without dragging in unfinished features, every deployment is a tagged commit, and code reviews happen naturally as part of the flow rather than as an afterthought.

@@ -130,6 +130,16 @@
     ]
   },
   {
+    "topic": "Git",
+    "links": [
+      {
+        "title": "Git Rebase vs Merge",
+        "url": "https://www.youtube.com/watch?v=DkWDHzmMvyg",
+        "description": "Understanding the difference between rebase and merge in Git"
+      }
+    ]
+  },
+  {
     "topic": "Kubernetes & Docker",
     "links": [
       {
