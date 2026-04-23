@@ -1,0 +1,451 @@
+---
+title: 'Code Reviews: My thoughts on PRs, What to Comment and What to Skip during reviews'
+description: 'A senior developer perspective on reviewing Java Spring Boot code effectively. Learn which comments add value and which ones waste time.'
+pubDate: 2020-04-23
+author: 'Amrit Adhikari'
+tags: ['spring-boot']
+draft: false
+---
+
+import Alert from '../../../components/Alert.astro';
+
+When I started my career as a Java Spring Boot developer, I thought code reviews were just about finding mistakes. I used to open a pull request, scan the code quickly, and leave comments like "fix this" or "this is wrong." At that time, I believed being strict meant being a good reviewer.
+
+But after working on real production systems, I understood something important. Code review is not about showing your knowledge. It is about protecting the system and helping your team grow.
+
+<Alert type="info">
+**The mindset shift:** Code review is a collaborative process, not an audit. Your goal is to improve the code AND the developer who wrote it.
+</Alert>
+
+---
+
+## How I Approach Pull Requests Now
+
+When I open a pull request, I don't start with the code. I first try to understand the purpose:
+
+- What problem is this solving?
+- Is this the right way to solve it?
+- Does this change make sense in our architecture?
+
+Only after understanding the context, I go line by line.
+
+---
+
+## What to Comment On
+
+### 1. Correctness and Edge Cases
+
+The first thing I look for is correctness. Does the code actually work?
+
+I check for edge cases. What happens if the input is null? What if the API fails? Many bugs in production come from these small missed cases.
+
+**Instead of:**
+```
+"This is wrong."
+```
+
+**Try:**
+```
+"Hey, what happens if this value is null here?"
+```
+
+**Example scenario:**
+
+```java
+@GetMapping("/users/{id}")
+public User getUser(@PathVariable Long id) {
+    return userRepository.findById(id).get(); // What if user doesn't exist?
+}
+```
+
+A good review comment:
+```
+"What happens if findById returns empty? Should we throw a custom exception
+or return 404?"
+```
+
+### 2. Design and Layer Separation
+
+In Spring Boot applications, design is very important. I often see business logic mixed inside controllers or repositories.
+
+**Instead of:**
+```
+"Move this to service layer."
+```
+
+**Try:**
+```
+"Do you think moving this logic to the service layer would make it
+easier to test and maintain?"
+```
+
+This small change in tone makes a big difference. The developer doesn't feel attacked. Instead, they feel involved.
+
+**Example:**
+
+```java
+@RestController
+public class OrderController {
+
+    @PostMapping("/orders")
+    public Order createOrder(@RequestBody OrderRequest request) {
+        // Validation logic here
+        if (request.getItems().isEmpty()) {
+            throw new BadRequestException("Items cannot be empty");
+        }
+
+        // Price calculation here
+        BigDecimal total = BigDecimal.ZERO;
+        for (Item item : request.getItems()) {
+            total = total.add(item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
+        }
+
+        // Discount logic here
+        if (total.compareTo(BigDecimal.valueOf(100)) > 0) {
+            total = total.multiply(BigDecimal.valueOf(0.9));
+        }
+
+        // Save order
+        Order order = new Order();
+        order.setTotal(total);
+        return orderRepository.save(order);
+    }
+}
+```
+
+A good review comment:
+```
+"This controller is handling validation, pricing, and discount logic.
+Would it be cleaner to extract this into an OrderService? It would also
+make unit testing easier since we won't need to mock the web layer."
+```
+
+### 3. Readability
+
+Code is not written for computers, it is written for other developers. If I cannot understand something in 10 seconds, it needs improvement.
+
+**Example:**
+
+```java
+public void process(List<Order> orders) {
+    orders.stream()
+        .filter(o -> o.getStatus().equals("PENDING") &&
+                     o.getCreatedAt().isBefore(LocalDateTime.now().minusDays(7)) &&
+                     o.getTotal().compareTo(BigDecimal.valueOf(50)) > 0 &&
+                     o.getCustomer().getType().equals("PREMIUM"))
+        .forEach(o -> {
+            o.setStatus("PROCESSING");
+            o.setProcessedAt(LocalDateTime.now());
+            orderRepository.save(o);
+            emailService.sendNotification(o.getCustomer().getEmail());
+            auditService.log("Order processed: " + o.getId());
+        });
+}
+```
+
+A good review comment:
+```
+"This method is doing multiple things. It filters, updates, saves,
+emails, and audits. Can we split it into smaller methods? Maybe
+something like findEligibleOrders() and processOrder(Order order)?"
+```
+
+### 4. Performance Issues
+
+Performance is something I learned the hard way. One time in a Spring Boot project, we had a loop that was calling the database again and again. Everything worked fine in testing, but in production with thousands of records, it became very slow.
+
+<Alert type="warning">
+**N+1 Query Problem:** This is one of the most common performance issues in Spring Boot applications using JPA. Always check for database calls inside loops.
+</Alert>
+
+**Example:**
+
+```java
+public List<OrderDto> getOrdersWithCustomerNames() {
+    List<Order> orders = orderRepository.findAll();
+
+    return orders.stream()
+        .map(order -> {
+            Customer customer = customerRepository.findById(order.getCustomerId()).get();
+            return new OrderDto(order.getId(), customer.getName(), order.getTotal());
+        })
+        .collect(Collectors.toList());
+}
+```
+
+A good review comment:
+```
+"Will this cause N+1 database calls? If we have 100 orders, we'll make
+100 additional queries for customers. Should we fetch everything in one
+query using a JOIN or batch the customer lookups?"
+```
+
+**Better approach:**
+
+```java
+public List<OrderDto> getOrdersWithCustomerNames() {
+    return orderRepository.findAllWithCustomers(); // Single query with JOIN
+}
+```
+
+### 5. Security Concerns
+
+Logging full request or response objects might expose sensitive data. Always check what is being logged.
+
+**Example:**
+
+```java
+@PostMapping("/login")
+public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
+    log.info("Login attempt: {}", request); // Logs password!
+    // ...
+}
+```
+
+A good review comment:
+```
+"Does this log contain any sensitive user information? The LoginRequest
+likely has the password field. Should we log only the username?"
+```
+
+<Alert type="error">
+**Security Rule:** Never log passwords, tokens, credit card numbers, or any PII (Personally Identifiable Information).
+</Alert>
+
+### 6. Missing Tests
+
+Good code without tests is risky. So I gently ask about test coverage.
+
+**Instead of:**
+```
+"Add tests."
+```
+
+**Try:**
+```
+"Can we add a test case for the scenario where the customer has
+insufficient balance? This seems like an important edge case."
+```
+
+---
+
+## What NOT to Comment On
+
+Not every observation needs to be a comment. Here are things I usually skip:
+
+### 1. Style Preferences That Don't Matter
+
+```java
+// Don't comment on this
+if (user != null) {
+    return user.getName();
+}
+return "Unknown";
+
+// vs
+return user != null ? user.getName() : "Unknown";
+```
+
+Both are fine. Unless your team has a clear style guide, don't enforce personal preferences.
+
+### 2. Minor Formatting Issues
+
+If your project has a formatter (Checkstyle, Spotless, etc.), let the tool handle it. Don't waste human review time on spacing and indentation.
+
+### 3. Things That Are Already Working
+
+If the code works, is readable, and follows team patterns, you don't need to suggest a "better" way just because you would have done it differently.
+
+### 4. Nitpicks on Variable Names
+
+```java
+// Don't argue about this
+List<User> users vs List<User> userList vs List<User> allUsers
+```
+
+Unless the name is genuinely confusing or misleading, let it go.
+
+---
+
+## Communication Makes the Difference
+
+Earlier, my comments sounded like orders. Now I try to sound like a teammate.
+
+**Instead of:**
+| Old Style | New Style |
+|-----------|-----------|
+| "Fix this" | "One alternative could be..." |
+| "This is wrong" | "Do you think we can simplify this?" |
+| "Change this" | "Can you explain your approach here?" |
+
+This creates a healthy discussion instead of arguments.
+
+<Alert type="success">
+**Pro tip:** Also appreciate good code. If someone writes clean and simple logic, mention it: "Nice use of abstraction here." It may look small, but it builds team confidence.
+</Alert>
+
+---
+
+## A Simple Code Review Checklist
+
+If you are a beginner, don't worry about being perfect. Just follow a simple checklist:
+
+```
+1. Does it work correctly?
+   - Happy path
+   - Edge cases (null, empty, boundary values)
+   - Error handling
+
+2. Is it easy to read?
+   - Clear method and variable names
+   - Small, focused methods
+   - No unnecessary complexity
+
+3. Is the design clean?
+   - Proper layer separation (Controller → Service → Repository)
+   - No business logic in controllers
+   - Dependencies injected, not created
+
+4. Are there any performance risks?
+   - Database calls in loops
+   - Missing indexes for query patterns
+   - Large objects in memory
+
+5. Are there security concerns?
+   - Sensitive data in logs
+   - Input validation
+   - Proper authorization checks
+
+6. Are tests included?
+   - Unit tests for service logic
+   - Integration tests for APIs
+   - Edge cases covered
+```
+
+---
+
+## Writing Good Pull Request Descriptions
+
+As a developer raising a pull request, you can make the reviewer's job much easier. A good PR description saves time and leads to faster approvals.
+
+### What to Include in Your PR Description
+
+1. **What** does this PR do?
+2. **Why** is this change needed?
+3. **How** did you implement it?
+4. **How** can the reviewer test it?
+
+### PR Description Template
+
+```
+## Summary
+Brief description of what this PR does.
+
+## Why
+Explain the problem or feature request this addresses.
+Link to the ticket or issue if available.
+
+## Changes
+- List the main changes made
+- Keep it high level
+- Focus on what matters for review
+
+## Testing
+- How did you test this?
+- Any specific scenarios to verify?
+
+## Screenshots (if applicable)
+Add screenshots for UI changes.
+```
+
+### Example 1: Bug Fix
+
+```
+## Summary
+Fix null pointer exception when user profile image is not set.
+
+## Why
+Users without profile images were seeing a 500 error on the dashboard.
+Fixes JIRA-1234.
+
+## Changes
+- Added null check in UserService.getProfileImage()
+- Return default avatar URL when image is null
+- Added unit test for this scenario
+
+## Testing
+- Tested with user that has no profile image
+- Verified existing users with images still work
+- Added unit test: UserServiceTest.shouldReturnDefaultAvatarWhenImageIsNull()
+```
+
+### Example 2: New Feature
+
+```
+## Summary
+Add endpoint to export user orders as CSV.
+
+## Why
+Finance team needs to download order reports for monthly reconciliation.
+Requested in JIRA-5678.
+
+## Changes
+- Added GET /api/orders/export endpoint in OrderController
+- Created OrderExportService with CSV generation logic
+- Added date range query parameters (startDate, endDate)
+- Limited export to 10000 records to prevent memory issues
+
+## Testing
+- Tested with various date ranges
+- Verified CSV format opens correctly in Excel
+- Tested edge case with no orders in range (returns empty CSV with headers)
+- Load tested with 10000 records
+
+## Notes for Reviewer
+- Used OpenCSV library for CSV generation (already in our dependencies)
+- Consider if we need pagination for larger exports in future
+```
+
+### Example 3: Refactoring
+
+```
+## Summary
+Extract payment logic from OrderService into dedicated PaymentService.
+
+## Why
+OrderService has grown to 800 lines. Payment logic is reusable
+and should be separate for better testing and maintenance.
+
+## Changes
+- Created PaymentService with all payment related methods
+- Moved validatePayment(), processPayment(), refundPayment() from OrderService
+- Updated OrderService to use PaymentService
+- No changes to public API or behavior
+
+## Testing
+- All existing tests pass
+- Added new unit tests for PaymentService
+- Manually tested checkout flow end to end
+
+## Notes for Reviewer
+- This is a pure refactor with no behavior changes
+- OrderService now has 400 lines (down from 800)
+```
+
+<Alert type="info">
+**Tip:** A well written PR description shows respect for the reviewer's time. It also helps future developers understand why changes were made when they look at git history.
+</Alert>
+
+---
+
+## Key Takeaways
+
+- Code review is about protecting the system and helping your team grow, not showing your knowledge
+- Understand the purpose before reviewing the code
+- Ask questions instead of giving orders
+- Focus on correctness, design, readability, performance, security, and tests
+- Skip style preferences and minor nitpicks
+- Appreciate good code when you see it
+- Not every pull request needs many comments. Sometimes "looks good to me" is enough
+
+With time, you will naturally get better. Code reviews are not just a process. They are one of the best ways to learn, teach, and build strong systems together.
