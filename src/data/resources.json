@@ -1,5 +1,15 @@
 [
   {
+    "topic": "P&C Insurance Domain",
+    "links": [
+      {
+        "title": "P&C Insurance Data Model Explorer",
+        "url": "/pc_insurance_explorer.html",
+        "description": "Interactive tool for exploring property and casualty insurance data models"
+      }
+    ]
+  },
+  {
     "topic": "AI ML NLP",
     "links": [
       {

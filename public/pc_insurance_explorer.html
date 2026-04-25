@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>P&C Insurance Data Model Explorer</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,400&family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+/* ── Base ────────────────────────────────────────── */
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#faf8f4;--bg2:#f2efe8;--bg3:#eae6dc;
+  --ink:#1a1814;--ink2:#4a4540;--ink3:#8a8278;
+  --border:#ddd9d0;--border2:#ccc8be;
+  --mono:'DM Mono',monospace;--sans:'Outfit',sans-serif;--serif:'Fraunces',Georgia,serif;
+  --radius:12px;--shadow:0 2px 12px #00000010;--shadow2:0 8px 32px #00000018;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.6;min-height:100vh}
+
+/* ── Layout ──────────────────────────────────────── */
+#app{display:grid;grid-template-columns:240px 1fr;grid-template-rows:56px 1fr;height:100vh;overflow:hidden}
+#topbar{grid-column:1/-1;background:var(--bg);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 20px;position:sticky;top:0;z-index:50}
+#sidebar{border-right:1px solid var(--border);overflow-y:auto;background:var(--bg2);padding:12px 0 20px;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+#content{overflow-y:auto;padding:32px 40px 60px;scrollbar-width:thin}
+
+/* ── Topbar ──────────────────────────────────────── */
+.logo{font-family:var(--serif);font-size:17px;font-weight:700;color:var(--ink);letter-spacing:-.01em}
+.logo span{color:var(--dc,#6366f1)}
+#search{margin-left:auto;display:flex;align-items:center;gap:8px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;width:260px}
+#search input{border:none;background:none;outline:none;font-family:var(--sans);font-size:13px;color:var(--ink);width:100%}
+#search input::placeholder{color:var(--ink3)}
+.search-icon{color:var(--ink3);font-size:14px;flex-shrink:0}
+#stats-bar{display:flex;gap:16px;margin-left:16px}
+.stat{font-family:var(--mono);font-size:10px;color:var(--ink3);white-space:nowrap}
+.stat strong{color:var(--ink2)}
+
+/* ── Sidebar ──────────────────────────────────────── */
+.sb-label{font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);padding:4px 18px 6px;margin-top:8px}
+.domain-btn{display:flex;align-items:center;gap:10px;padding:9px 18px;cursor:pointer;border:none;background:none;width:100%;text-align:left;font-family:var(--sans);font-size:13px;font-weight:500;color:var(--ink2);transition:all .15s;border-left:2px solid transparent;position:relative}
+.domain-btn:hover{background:var(--bg3);color:var(--ink)}
+.domain-btn.active{background:var(--bg);color:var(--ink);border-left-color:var(--dc);font-weight:600}
+.domain-btn .dot{width:8px;height:8px;border-radius:50%;background:var(--dc);flex-shrink:0}
+.domain-btn .cnt{font-family:var(--mono);font-size:9px;color:var(--ink3);margin-left:auto;background:var(--bg3);padding:1px 6px;border-radius:8px}
+.domain-btn.active .cnt{background:var(--bg2)}
+
+/* ── Content Sections ────────────────────────────── */
+.domain-header{margin-bottom:28px}
+.domain-eyebrow{font-family:var(--mono);font-size:10px;color:var(--ink3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.domain-eyebrow::before{content:'';width:20px;height:2px;background:var(--dc);border-radius:2px;display:inline-block}
+.domain-title{font-family:var(--serif);font-size:32px;font-weight:700;color:var(--ink);line-height:1.1;margin-bottom:6px;letter-spacing:-.02em}
+.domain-title .accent{color:var(--dc)}
+.domain-desc{font-size:14px;color:var(--ink2);max-width:640px;line-height:1.7}
+.domain-pills{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.pill{font-family:var(--mono);font-size:10px;padding:3px 10px;border-radius:20px;border:1px solid var(--border2);color:var(--ink3);background:var(--bg2)}
+
+/* ── Tabs ────────────────────────────────────────── */
+.tabs{display:flex;gap:2px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:3px;margin-bottom:24px;width:fit-content}
+.tab{padding:7px 16px;border-radius:7px;border:none;background:none;font-family:var(--sans);font-size:13px;font-weight:500;color:var(--ink3);cursor:pointer;transition:all .15s}
+.tab.active{background:var(--bg);color:var(--ink);box-shadow:var(--shadow)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* ── Use Case Box ────────────────────────────────── */
+.usecase{background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--dc);border-radius:0 10px 10px 0;padding:18px 22px;margin-bottom:24px}
+.usecase-tag{font-family:var(--mono);font-size:9px;font-weight:500;color:var(--dc);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.usecase-text{font-size:13.5px;color:var(--ink2);line-height:1.85}
+.usecase-text strong{color:var(--ink)}
+.usecase-text code{font-family:var(--mono);font-size:11px;background:var(--bg3);padding:1px 5px;border-radius:3px;color:var(--ink2)}
+
+/* ── Key Insights ────────────────────────────────── */
+.insights{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin-bottom:28px}
+.insight{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;transition:border-color .2s}
+.insight:hover{border-color:var(--dc)}
+.insight-icon{font-size:20px;margin-bottom:6px}
+.insight-title{font-family:var(--sans);font-size:12px;font-weight:600;color:var(--ink);margin-bottom:4px}
+.insight-desc{font-size:11.5px;color:var(--ink2);line-height:1.55}
+
+/* ── Entity Grid ──────────────────────────────────── */
+.entity-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-bottom:28px}
+.entity-card{background:var(--bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer;transition:all .2s}
+.entity-card:hover{border-color:var(--dc);box-shadow:var(--shadow)}
+.entity-card.expanded{border-color:var(--dc)}
+.ec-head{padding:10px 14px;display:flex;align-items:center;gap:9px;background:var(--bg2);border-bottom:1px solid var(--border)}
+.ec-dot{width:7px;height:7px;border-radius:50%;background:var(--dc);flex-shrink:0}
+.ec-name{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--ink)}
+.ec-type{font-size:10px;color:var(--ink3);margin-left:auto;background:var(--bg3);padding:2px 7px;border-radius:5px;border:1px solid var(--border)}
+.ec-toggle{font-size:11px;color:var(--ink3);margin-left:6px;transition:transform .2s}
+.entity-card.expanded .ec-toggle{transform:rotate(180deg)}
+.ec-fields{padding:10px 14px;display:none}
+.entity-card.expanded .ec-fields{display:block}
+.ec-field{display:flex;align-items:center;gap:6px;padding:3px 0;font-family:var(--mono);font-size:11px;color:var(--ink2);border-bottom:1px solid var(--border);gap:5px}
+.ec-field:last-child{border:none}
+.ec-fn{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ec-ft{color:var(--ink3);font-size:10px;white-space:nowrap}
+.badge-pk{font-size:8px;font-weight:600;color:#16a34a;border:1px solid #16a34a;border-radius:3px;padding:0 3px;white-space:nowrap}
+.badge-fk{font-size:8px;font-weight:600;color:#7c3aed;border:1px solid #7c3aed;border-radius:3px;padding:0 3px;white-space:nowrap}
+.badge-idx{font-size:8px;font-weight:600;color:#d97706;border:1px solid #d97706;border-radius:3px;padding:0 3px;white-space:nowrap}
+
+/* ── SQL Block ───────────────────────────────────── */
+.sql-section{display:flex;flex-direction:column;gap:14px}
+.sql-card{background:var(--bg);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.sql-head{padding:9px 14px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;font-weight:500;color:var(--ink2)}
+.sql-new{font-size:8px;font-weight:600;color:#16a34a;border:1px solid #16a34a;border-radius:3px;padding:0 4px;margin-left:auto}
+pre.sql-code{padding:14px 16px;font-family:var(--mono);font-size:11.5px;line-height:1.8;color:#3d3830;overflow-x:auto;tab-size:2}
+.kw{color:#1d4ed8;font-weight:600}
+.ty{color:#b45309}
+.cm{color:#9ca3af;font-style:italic}
+.pk-c{color:#15803d;font-weight:600}
+.fk-c{color:#7c3aed}
+.cn{color:#6b7280}
+.nm{color:#1a1814}
+
+/* ── Data Tables ──────────────────────────────────── */
+.data-section{display:flex;flex-direction:column;gap:16px}
+.table-container{background:var(--bg);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.table-caption{padding:10px 14px;background:var(--bg2);border-bottom:1px solid var(--border);font-size:12.5px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:8px}
+.table-caption-note{font-size:11px;color:var(--ink3);font-weight:400;margin-left:auto}
+.table-scroll{overflow-x:auto}
+table.dt{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11.5px}
+table.dt th{padding:8px 12px;background:var(--bg3);color:var(--ink3);font-size:10px;font-weight:600;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;text-transform:uppercase;letter-spacing:.05em}
+table.dt td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--ink2);white-space:nowrap}
+table.dt tr:last-child td{border:none}
+table.dt tr:hover td{background:var(--bg2)}
+.v-pk{color:#15803d;font-weight:600}
+.v-fk{color:#7c3aed}
+.v-hi{color:var(--dc);font-weight:500}
+.v-null{color:var(--ink3);font-style:italic}
+
+/* ── Relationship Section ────────────────────────── */
+.rel-section{display:flex;flex-direction:column;gap:12px}
+.rel-card{background:var(--bg);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.rel-head{padding:10px 14px;background:var(--bg2);border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:8px}
+.rel-dot{width:8px;height:8px;border-radius:50%;background:var(--dc)}
+.rel-item{display:grid;grid-template-columns:minmax(200px,auto) 1fr;border-bottom:1px solid var(--border)}
+.rel-item:last-child{border:none}
+.rel-from{padding:10px 14px;background:var(--bg2);border-right:1px solid var(--border);font-family:var(--mono);font-size:10.5px;display:flex;flex-direction:column;gap:4px;justify-content:center}
+.rel-ent{font-weight:600;color:var(--dc)}
+.rel-card-label{font-size:9px;color:var(--ink3);border:1px solid var(--border2);border-radius:3px;padding:1px 5px;width:fit-content}
+.rel-desc{padding:10px 14px;font-size:12.5px;color:var(--ink2);line-height:1.65}
+.rel-desc strong{color:var(--ink)}
+.rel-desc code{font-family:var(--mono);font-size:10.5px;background:var(--bg3);padding:1px 4px;border-radius:3px}
+
+/* ── Cross-domain links ──────────────────────────── */
+.xlinks{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-top:24px}
+.xlinks-title{font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.xlinks-title::before{content:'↗';font-size:13px;color:var(--dc)}
+.xlink-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+.xlink{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 14px;transition:border-color .2s}
+.xlink:hover{border-color:var(--dc)}
+.xlink-target{font-size:12px;font-weight:600;color:var(--ink);margin-bottom:5px;display:flex;align-items:center;gap:7px}
+.xlink-via{font-family:var(--mono);font-size:9.5px;color:var(--ink3);margin-bottom:5px;word-break:break-all;line-height:1.4}
+.xlink-why{font-size:11.5px;color:var(--ink2);line-height:1.5}
+
+/* ── Search Results ──────────────────────────────── */
+#search-results{position:absolute;top:50px;right:20px;width:400px;background:var(--bg);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow2);z-index:200;display:none;max-height:380px;overflow-y:auto}
+.sr-item{padding:10px 16px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .1s}
+.sr-item:last-child{border:none}
+.sr-item:hover{background:var(--bg2)}
+.sr-domain{font-size:10px;color:var(--ink3);font-family:var(--mono);margin-bottom:2px;display:flex;align-items:center;gap:5px}
+.sr-name{font-size:13px;font-weight:600;color:var(--ink)}
+.sr-hint{font-size:11px;color:var(--ink2);margin-top:2px}
+.sr-empty{padding:20px;text-align:center;color:var(--ink3);font-size:13px}
+
+/* ── Hero / Home ──────────────────────────────────── */
+#home{animation:fadeUp .4s ease both}
+.hero-title{font-family:var(--serif);font-size:42px;font-weight:700;line-height:1.08;letter-spacing:-.03em;color:var(--ink);margin-bottom:14px}
+.hero-title span{color:#6366f1}
+.hero-sub{font-size:16px;color:var(--ink2);max-width:580px;line-height:1.75;margin-bottom:32px}
+.home-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:40px}
+.home-card{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:18px 20px;cursor:pointer;transition:all .2s;text-decoration:none;color:inherit}
+.home-card:hover{border-color:var(--dc);transform:translateY(-2px);box-shadow:var(--shadow2)}
+.hc-num{font-family:var(--mono);font-size:9px;color:var(--ink3);margin-bottom:8px;letter-spacing:.1em}
+.hc-dot{width:10px;height:10px;border-radius:50%;margin-bottom:10px}
+.hc-name{font-family:var(--sans);font-size:14px;font-weight:600;color:var(--ink);margin-bottom:4px}
+.hc-count{font-family:var(--mono);font-size:11px;color:var(--ink3)}
+.hc-desc{font-size:12px;color:var(--ink2);margin-top:6px;line-height:1.5}
+.home-stats{display:flex;gap:32px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:24px 32px;margin-bottom:32px}
+.hstat{text-align:center}
+.hstat-n{font-family:var(--serif);font-size:36px;font-weight:700;color:var(--ink);letter-spacing:-.03em}
+.hstat-l{font-family:var(--mono);font-size:9px;color:var(--ink3);text-transform:uppercase;letter-spacing:.1em;margin-top:2px}
+.story-section{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:24px 28px;margin-bottom:32px}
+.story-title{font-family:var(--serif);font-size:20px;font-weight:700;color:var(--ink);margin-bottom:10px}
+.story-text{font-size:14px;color:var(--ink2);line-height:1.85}
+.story-text strong{color:var(--ink)}
+
+/* ── Animations ──────────────────────────────────── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.domain-view{animation:fadeUp .3s ease both}
+
+/* ── Scrollbar ───────────────────────────────────── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* ── Inheritance tree ────────────────────────────── */
+.tree{font-family:var(--mono);font-size:11.5px;line-height:2.1;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:24px;color:var(--ink2)}
+.tree-root{color:var(--dc);font-weight:600;font-size:12.5px}
+.tree-l1{padding-left:18px;color:var(--ink2)}
+.tree-l1::before{content:'├─ ';color:var(--ink3)}
+.tree-l2{padding-left:36px;color:var(--ink3)}
+.tree-l2::before{content:'├─ ';color:var(--border2)}
+.tree-l3{padding-left:54px;color:var(--ink3);font-size:10.5px}
+.tree-l3::before{content:'└─ ';color:var(--border2)}
+.tree-note{color:var(--ink3);font-size:9.5px;padding-left:5px}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- TOPBAR -->
+<header id="topbar">
+  <div class="logo">P&C <span>Insurance</span> Explorer</div>
+  <div id="stats-bar">
+    <div class="stat"><strong>10</strong> Domains</div>
+    <div class="stat"><strong>~200</strong> Entities</div>
+    <div class="stat"><strong>~500</strong> Relationships</div>
+  </div>
+  <div id="search" style="position:relative">
+    <span class="search-icon">🔍</span>
+    <input type="text" placeholder="Search entities, tables, fields…" id="searchInput" autocomplete="off"/>
+    <div id="search-results"></div>
+  </div>
+</header>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="sb-label">Navigate</div>
+  <button class="domain-btn active" onclick="showHome()" id="btn-home" style="--dc:#6366f1">
+    <span class="dot"></span> Overview
+  </button>
+  <div class="sb-label" style="margin-top:8px">Domains</div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<main id="content"></main>
+
+</div>
+
+<script>
+// ─── DATA ────────────────────────────────────────────────────────────────────
+const DOMAINS = [
+{id:'party',name:'Party',color:'#3b82f6',num:'01',role:'Foundation',
+ entities:12,desc:'Every actor in insurance — persons, organizations, households — and how they relate and communicate.',
+ story:`Sarah Chen walks into a Texas insurance agency. Before any quote is generated, the insurer builds her identity from the ground up. A <strong>PARTY</strong> row is created — the universal identity anchor (party_id=1001). A <strong>PERSON</strong> row extends it with her name and birth date. Her husband Mike gets his own <strong>PARTY + PERSON</strong> chain. Her LLC "Chen Consulting" gets a <strong>PARTY + ORGANIZATION</strong> pair. The family is grouped as a <strong>HOUSEHOLD</strong>. Her phone, email, and home address become three <strong>COMMUNICATION_IDENTITY</strong> rows, bridged to her via <strong>PARTY_COMMUNICATION</strong>. Her marriage to Mike is a <strong>PARTY_RELATIONSHIP</strong> row (type=SPOUSE). From now on, every single domain — policy, claim, assessment — references Sarah solely through party_id=1001. She never gets a second identity record.`,
+ insights:[
+  {icon:'🔑',title:'Single Identity Anchor',desc:'One PARTY row per actor. Every FK across the model points here — never directly to PERSON or ORG.'},
+  {icon:'🎭',title:'Roles Live Elsewhere',desc:'"Named Insured" is NOT in PERSON. It lives in AGREEMENT_PARTY_ROLE so one party can play unlimited roles.'},
+  {icon:'🔗',title:'Self-referencing',desc:'PARTY_RELATIONSHIP has two FKs pointing to PARTY — spouse, employer, owner — all in one table.'},
+  {icon:'📱',title:'Decoupled Contact',desc:'COMMUNICATION_IDENTITY is independent. Multiple parties can share one address row without duplication.'},
+ ],
+ entities_data:[
+  {name:'PARTY',type:'supertype · root',fields:[{n:'party_id',t:'BIGINT',pk:1},{n:'party_type_code',t:'CHAR(1)',note:'P/O/G'},{n:'party_name',t:'VARCHAR(100)'},{n:'begin_date',t:'DATE'},{n:'end_date',t:'DATE'}]},
+  {name:'PERSON',type:'subtype of PARTY',fields:[{n:'person_id',t:'BIGINT',pk:1,fk:1,note:'FK→party'},{n:'first_name',t:'VARCHAR(40)'},{n:'last_name',t:'VARCHAR(40)'},{n:'middle_name',t:'VARCHAR(40)'},{n:'birth_date',t:'DATE'},{n:'gender_code',t:'CHAR(1)'}]},
+  {name:'ORGANIZATION',type:'subtype of PARTY',fields:[{n:'org_id',t:'BIGINT',pk:1,fk:1,note:'FK→party'},{n:'org_name',t:'VARCHAR(100)'},{n:'org_type_code',t:'VARCHAR(20)',note:'LLC/CORP'},{n:'industry_code',t:'VARCHAR(20)',note:'SIC'},{n:'duns_id',t:'INT'}]},
+  {name:'ORGANIZATION_UNIT',type:'subtype of ORG',fields:[{n:'org_id',t:'BIGINT',pk:1,fk:1,note:'FK→org'},{n:'org_unit_name',t:'VARCHAR(100)'},{n:'accounting_code',t:'VARCHAR(20)'},{n:'work_site_type_code',t:'VARCHAR(20)'}]},
+  {name:'GROUPING',type:'subtype of PARTY',fields:[{n:'grouping_id',t:'BIGINT',pk:1,fk:1,note:'FK→party'},{n:'grouping_name',t:'VARCHAR(100)'}]},
+  {name:'HOUSEHOLD',type:'subtype of GROUPING',fields:[{n:'household_id',t:'BIGINT',pk:1,fk:1,note:'FK→grouping'}]},
+  {name:'PARTY_RELATIONSHIP',type:'self-referencing bridge',fields:[{n:'party_id',t:'BIGINT',pk:1,fk:1},{n:'related_party_id',t:'BIGINT',pk:1,fk:1},{n:'begin_date',t:'DATE',pk:1},{n:'relationship_type_code',t:'VARCHAR(20)',note:'SPOUSE/OWNER'},{n:'end_date',t:'DATE'}]},
+  {name:'COMMUNICATION_IDENTITY',type:'contact channel',fields:[{n:'comm_id',t:'INT',pk:1},{n:'comm_type_code',t:'VARCHAR(20)',note:'PHONE/EMAIL/MAIL'},{n:'comm_value',t:'VARCHAR(1000)'},{n:'geo_location_id',t:'INT',fk:1}]},
+  {name:'PARTY_COMMUNICATION',type:'bridge',fields:[{n:'party_id',t:'BIGINT',pk:1,fk:1},{n:'comm_id',t:'INT',pk:1,fk:1},{n:'begin_date',t:'DATE',pk:1},{n:'party_locality_code',t:'VARCHAR(20)',note:'HOME/WORK'},{n:'end_date',t:'DATE'}]},
+  {name:'LEGAL_JURISDICTION',type:'reference',fields:[{n:'legal_jurisdiction_id',t:'INT',pk:1},{n:'legal_jurisdiction_name',t:'VARCHAR(100)'}]},
+  {name:'LEGAL_JURISDICTION_PARTY_IDENTITY',type:'bridge',fields:[{n:'legal_jurisdiction_id',t:'INT',pk:1,fk:1},{n:'party_id',t:'BIGINT',pk:1,fk:1},{n:'legal_classification_code',t:'VARCHAR(20)'},{n:'legal_jurisdiction_party_id',t:'INT'}]},
+  {name:'PERSON_PROFESSION',type:'employment history',fields:[{n:'person_id',t:'BIGINT',pk:1,fk:1},{n:'occupation_code',t:'VARCHAR(20)',pk:1},{n:'begin_date',t:'DATE',pk:1},{n:'employer_party_id',t:'BIGINT',fk:1},{n:'annual_income_amount',t:'DECIMAL(15,2)'},{n:'end_date',t:'DATE'}]},
+ ],
+ sample_tables:[
+  {caption:'PARTY — root identity rows for every actor type',note:'3 types shown',cols:['party_id','party_type_code','party_name','begin_date','end_date'],
+   rows:[['1001','P','Sarah Chen','2024-03-15',null],['1002','P','Mike Chen','2024-03-15',null],['1003','O','Chen Consulting LLC','2024-03-15',null],['1004','G','Chen Household','2024-03-15',null],['1005','O','State Farm Insurance','2020-01-01',null]],
+   pk:0,fk:[],hi:[1]},
+  {caption:'PARTY_RELATIONSHIP — self-referencing; both FKs point to PARTY',cols:['party_id (FK)','related_party_id (FK)','relationship_type_code','begin_date','end_date'],
+   rows:[['1001','1002','SPOUSE','2012-06-15',null],['1001','1003','OWNER','2018-01-01',null],['1006','1005','EMPLOYEE','2021-06-01',null]],
+   pk:-1,fk:[0,1],hi:[2]},
+  {caption:'PARTY_COMMUNICATION — bridges parties to contact channels',cols:['party_id (FK)','comm_id (FK)','begin_date','party_locality_code','end_date'],
+   rows:[['1001','201','2024-03-15','HOME',null],['1001','202','2024-03-15','WORK',null],['1001','203','2024-03-15','HOME',null],['1002','203','2024-03-15','HOME',null]],
+   pk:-1,fk:[0,1],hi:[3]},
+ ],
+ rels:[
+  {from:'PARTY',to:'PERSON / ORG / GROUPING',card:'1 ──── 0..1',desc:'<strong>Supertype → Subtype (Table-Per-Subtype inheritance).</strong> Every PERSON row requires one matching PARTY row with the same PK. <code>person.person_id = party.party_id</code>. The PARTY table is the identity anchor; subtype tables add domain-specific columns.'},
+  {from:'PARTY',to:'PARTY (self)',card:'0..* ──── 0..*',desc:'<strong>Self-referencing many-to-many via PARTY_RELATIONSHIP.</strong> Sarah (1001) relates to Mike (1002) as SPOUSE and to her LLC (1003) as OWNER. Composite PK <code>(party_id, related_party_id, begin_date)</code> allows multiple relationship types between same two parties over time.'},
+  {from:'PARTY',to:'PARTY_COMMUNICATION',card:'1 ──── 0..*',desc:'<strong>One party, many contact channels.</strong> Sarah has phone, email, and address. Mike also links to the same address comm_id — shared endpoint, zero duplication.'},
+  {from:'COMMUNICATION_IDENTITY',to:'PARTY_COMMUNICATION',card:'1 ──── 0..*',desc:'<strong>One contact endpoint, many parties.</strong> The shared home address (comm_id=203) is linked to both Sarah and Mike. Update the address once — both parties reflect it.'},
+ ],
+ xlinks:[
+  {domain:'Agreement & Policy',color:'#8b5cf6',via:'agreement_party_role.party_id → party.party_id',why:'Every named insured, agent, mortgagee on a policy is a party playing a typed role.'},
+  {domain:'Claims',color:'#ef4444',via:'claim_party_role.party_id → party.party_id',why:'Claimants, adjusters, attorneys, witnesses — every claim participant is a party record.'},
+  {domain:'Insurable Object',color:'#f59e0b',via:'insurable_object_party_role.party_id → party.party_id',why:'Owner, primary driver, lienholder — party roles on the physical insured item.'},
+  {domain:'Assessment',color:'#6366f1',via:'assessment_party_role.party_id + party_assessment.party_id',why:'Assessors who conduct evaluations and subjects of credit/fraud scoring.'},
+ ],
+ sql_tables:[
+  {name:'PARTY',code:`<span class="kw">CREATE TABLE</span> party (
+  <span class="pk-c">party_id</span>        <span class="ty">BIGINT</span>       <span class="kw">NOT NULL</span>,  <span class="cm">-- PK · universal actor ID</span>
+  party_type_code <span class="ty">CHAR(1)</span>      <span class="kw">NOT NULL</span>,  <span class="cm">-- P=Person O=Org G=Group</span>
+  party_name      <span class="ty">VARCHAR(100)</span>,
+  begin_date      <span class="ty">DATE</span>,
+  end_date        <span class="ty">DATE</span>,
+  <span class="cn">CONSTRAINT pk_party</span> <span class="kw">PRIMARY KEY</span> (<span class="pk-c">party_id</span>)
+);`},
+  {name:'PERSON',code:`<span class="kw">CREATE TABLE</span> person (
+  <span class="pk-c">person_id</span>       <span class="ty">BIGINT</span>       <span class="kw">NOT NULL</span>,  <span class="cm">-- PK = FK → party</span>
+  first_name      <span class="ty">VARCHAR(40)</span>,
+  last_name       <span class="ty">VARCHAR(40)</span>,
+  middle_name     <span class="ty">VARCHAR(40)</span>,
+  birth_date      <span class="ty">DATE</span>,
+  gender_code     <span class="ty">CHAR(1)</span>,
+  prefix_name     <span class="ty">VARCHAR(20)</span>,
+  <span class="cn">CONSTRAINT pk_person</span>     <span class="kw">PRIMARY KEY</span> (<span class="pk-c">person_id</span>),
+  <span class="cn">CONSTRAINT fk_person_pty</span> <span class="kw">FOREIGN KEY</span> (<span class="fk-c">person_id</span>)
+    <span class="kw">REFERENCES</span> party(<span class="pk-c">party_id</span>)
+);`},
+  {name:'PARTY_RELATIONSHIP',code:`<span class="kw">CREATE TABLE</span> party_relationship (
+  <span class="pk-c">party_id</span>               <span class="ty">BIGINT</span> <span class="kw">NOT NULL</span>,  <span class="cm">-- PK, FK → party</span>
+  <span class="pk-c">related_party_id</span>       <span class="ty">BIGINT</span> <span class="kw">NOT NULL</span>,  <span class="cm">-- PK, FK → party (self)</span>
+  <span class="pk-c">begin_date</span>             <span class="ty">DATE</span>   <span class="kw">NOT NULL</span>,  <span class="cm">-- PK</span>
+  relationship_type_code <span class="ty">VARCHAR(20)</span>,      <span class="cm">-- SPOUSE/OWNER/EMPLOYER</span>
+  end_date               <span class="ty">DATE</span>,
+  <span class="cn">CONSTRAINT pk_pty_rel</span>      <span class="kw">PRIMARY KEY</span> (<span class="pk-c">party_id</span>, <span class="pk-c">related_party_id</span>, <span class="pk-c">begin_date</span>),
+  <span class="cn">CONSTRAINT fk_pty_rel_from</span> <span class="kw">FOREIGN KEY</span> (<span class="fk-c">party_id</span>)
+    <span class="kw">REFERENCES</span> party(<span class="pk-c">party_id</span>),
+  <span class="cn">CONSTRAINT fk_pty_rel_to</span>   <span class="kw">FOREIGN KEY</span> (<span class="fk-c">related_party_id</span>)
+    <span class="kw">REFERENCES</span> party(<span class="pk-c">party_id</span>)
+);`},
+ ]
+},
+{id:'agreement',name:'Agreement & Policy',color:'#8b5cf6',num:'02',role:'Core Contract',
+ entities:9,desc:'Policy contracts, accounts, party roles, and policy-to-policy linkages.',
+ story:`The underwriter approves Sarah's application. An <strong>AGREEMENT</strong> record is created — the generic contract concept — immediately specialized as a <strong>POLICY</strong> with a policy number, effective/expiration date, and status. Her auto and umbrella are separate POLICY records. All three bundle under one <strong>ACCOUNT</strong> via <strong>ACCOUNT_AGREEMENT</strong> bridge rows — one consolidated bill. Sarah gets an <strong>AGREEMENT_PARTY_ROLE</strong> row (role=NI, Named Insured) on all three policies. Mike is Additional Insured (role=AI) on auto. The umbrella and auto are linked by a <strong>POLICY_RELATIONSHIP</strong> record (umbrella follows-form on auto). Two <strong>POLICY_FORM</strong> stamps: "HO-3" and "HO-3/TX."`,
+ insights:[
+  {icon:'🏛️',title:'AGREEMENT is the Parent',desc:'Policies, reinsurance treaties, agency contracts all share one AGREEMENT supertype — same party-role and event infrastructure.'},
+  {icon:'🗂️',title:'ACCOUNT Consolidates',desc:'An ACCOUNT groups multiple policies for billing. ACCOUNT_AGREEMENT bridge means one policy can belong to multiple accounts.'},
+  {icon:'👥',title:'Role Bridge, Not Columns',desc:'"Named Insured" is NOT a column on POLICY. It\'s an AGREEMENT_PARTY_ROLE row with role_code="NI".'},
+  {icon:'🔗',title:'Policy-to-Policy Links',desc:'POLICY_RELATIONSHIP records that an umbrella follows form on a primary auto — no redundant data.'},
+ ],
+ entities_data:[
+  {name:'AGREEMENT',type:'supertype · all contracts',fields:[{n:'agreement_id',t:'INT',pk:1},{n:'agreement_name',t:'VARCHAR(100)'},{n:'agreement_type_code',t:'VARCHAR(5)',note:'POL/REIN/AGCY'},{n:'agreement_original_inception_date',t:'DATE'},{n:'product_id',t:'INT',fk:1}]},
+  {name:'POLICY',type:'subtype of AGREEMENT',fields:[{n:'policy_id',t:'INT',pk:1,fk:1,note:'FK→agreement'},{n:'policy_number',t:'VARCHAR(50)'},{n:'effective_date',t:'DATE'},{n:'expiration_date',t:'DATE'},{n:'status_code',t:'VARCHAR(20)',note:'ACTIVE/CANCELLED'},{n:'geo_location_id',t:'INT',fk:1}]},
+  {name:'ACCOUNT',type:'billing grouping',fields:[{n:'account_id',t:'INT',pk:1},{n:'account_type_code',t:'VARCHAR(5)'},{n:'account_name',t:'VARCHAR(100)'}]},
+  {name:'ACCOUNT_AGREEMENT',type:'bridge',fields:[{n:'account_id',t:'INT',pk:1,fk:1},{n:'agreement_id',t:'INT',pk:1,fk:1}]},
+  {name:'AGREEMENT_PARTY_ROLE',type:'party roles on agreement',fields:[{n:'agreement_id',t:'INT',pk:1,fk:1},{n:'party_id',t:'BIGINT',pk:1,fk:1},{n:'effective_date',t:'DATE',pk:1},{n:'party_role_code',t:'VARCHAR(20)',note:'NI/AI/AGENT'},{n:'expiration_date',t:'DATE'}]},
+  {name:'ACCOUNT_PARTY_ROLE',type:'party roles on account',fields:[{n:'account_id',t:'INT',pk:1,fk:1},{n:'party_id',t:'BIGINT',pk:1,fk:1},{n:'party_role_code',t:'VARCHAR(20)',pk:1}]},
+  {name:'POLICY_RELATIONSHIP',type:'policy-to-policy link',fields:[{n:'policy_id',t:'INT',pk:1,fk:1},{n:'related_policy_id',t:'INT',pk:1,fk:1},{n:'effective_date',t:'DATE',pk:1},{n:'relationship_code',t:'VARCHAR(20)',note:'FOLLOWS_FORM'},{n:'expiration_date',t:'DATE'}]},
+  {name:'POLICY_FORM',type:'legal form stamps',fields:[{n:'policy_form_number',t:'VARCHAR(50)',pk:1},{n:'policy_id',t:'INT',pk:1,fk:1},{n:'form_value',t:'VARCHAR(50)'}]},
+  {name:'POLICY_COVERAGE_PART',type:'coverage parts',fields:[{n:'policy_id',t:'INT',pk:1,fk:1},{n:'coverage_part_code',t:'VARCHAR(20)',pk:1},{n:'effective_date',t:'DATE',pk:1}]},
+ ],
+ sample_tables:[
+  {caption:'AGREEMENT — parent record for all contract types',cols:['agreement_id','agreement_type_code','agreement_name','product_id (FK)','inception_date'],
+   rows:[['5001','POL','Chen Homeowners 2024','301','2024-04-01'],['5002','POL','Chen Auto 2024','302','2024-04-01'],['5003','POL','Chen Umbrella 2024','303','2024-04-01'],['5004','REIN','QS Treaty 2024 – XYZ Re',null,'2024-01-01']],pk:0,fk:[3],hi:[1]},
+  {caption:'AGREEMENT_PARTY_ROLE — who plays what role on each policy',cols:['agreement_id (FK)','party_id (FK)','effective_date','party_role_code'],
+   rows:[['5001','1001','2024-04-01','NI'],['5001','1002','2024-04-01','AI'],['5002','1001','2024-04-01','NI'],['5002','1002','2024-04-01','NI'],['5001','1006','2024-04-01','AGENT']],pk:-1,fk:[0,1],hi:[3]},
+  {caption:'POLICY_RELATIONSHIP — umbrella follows form on auto',cols:['policy_id (FK)','related_policy_id (FK)','relationship_code','effective_date'],
+   rows:[['5003','5002','FOLLOWS_FORM','2024-04-01']],pk:-1,fk:[0,1],hi:[2]},
+ ],
+ rels:[
+  {from:'POLICY',to:'AGREEMENT',card:'||──||',desc:'<strong>Subtype inheritance.</strong> Every POLICY row extends one AGREEMENT row sharing the same PK. <code>policy.policy_id = agreement.agreement_id</code>. AGREEMENT holds generic contract attributes; POLICY adds insurance-specific fields.'},
+  {from:'ACCOUNT',to:'AGREEMENT',card:'0..* ──── 0..*',desc:'<strong>Many-to-many via ACCOUNT_AGREEMENT.</strong> One account holds many policies (multi-policy household). One policy can belong to multiple accounts. Bridge PK <code>(account_id, agreement_id)</code> enforces no duplicate memberships.'},
+  {from:'AGREEMENT',to:'AGREEMENT_PARTY_ROLE',card:'1 ──── 0..*',desc:'<strong>One agreement, many party roles.</strong> Policy 5001 has Sarah as NI, Mike as AI, and the agent as AGENT. Adding a mortgagee just adds another row. <code>party_role_code</code> is the discriminator; <code>effective_date</code>+<code>expiration_date</code> make roles time-bounded.'},
+  {from:'POLICY',to:'POLICY (self)',card:'0..* ──── 0..*',desc:'<strong>Self-referencing via POLICY_RELATIONSHIP.</strong> Umbrella (5003) follows-form on auto (5002). Directed relationship — the umbrella depends on the auto\'s coverage definitions.'},
+ ],
+ xlinks:[
+  {domain:'Party',color:'#3b82f6',via:'agreement_party_role.party_id → party.party_id',why:'Every role on a policy (NI, AI, agent, lienholder) links to a party record.'},
+  {domain:'Coverage',color:'#22c55e',via:'policy_coverage_detail.policy_id → policy.policy_id',why:'The three-way intersection table attaches coverage lines to policies.'},
+  {domain:'Policy Amounts',color:'#10b981',via:'policy_amount.policy_id → policy.policy_id',why:'Every premium, tax, surcharge, and fee rolls up to policy_id.'},
+  {domain:'Events',color:'#f472b6',via:'policy_event.policy_id → policy.policy_id',why:'Quote, binding, endorsement, renewal, cancellation — the complete lifecycle audit trail.'},
+ ],
+ sql_tables:[
+  {name:'AGREEMENT + POLICY',code:`<span class="kw">CREATE TABLE</span> agreement (
+  <span class="pk-c">agreement_id</span>                      <span class="ty">INT</span>          <span class="kw">NOT NULL</span>,
+  agreement_name                    <span class="ty">VARCHAR(100)</span>,
+  agreement_type_code               <span class="ty">VARCHAR(5)</span>,   <span class="cm">-- POL/REIN/AGCY/STAFF</span>
+  agreement_original_inception_date <span class="ty">DATE</span>,
+  <span class="fk-c">product_id</span>                        <span class="ty">INT</span>,          <span class="cm">-- FK → product (Coverage domain)</span>
+  <span class="cn">CONSTRAINT pk_agreement</span> <span class="kw">PRIMARY KEY</span> (<span class="pk-c">agreement_id</span>)
+);
+
+<span class="kw">CREATE TABLE</span> policy (
+  <span class="pk-c">policy_id</span>       <span class="ty">INT</span>         <span class="kw">NOT NULL</span>,  <span class="cm">-- PK = FK → agreement</span>
+  policy_number   <span class="ty">VARCHAR(50)</span>,
+  effective_date  <span class="ty">DATE</span>,
+  expiration_date <span class="ty">DATE</span>,
+  status_code     <span class="ty">VARCHAR(20)</span>,
+  <span class="fk-c">geo_location_id</span> <span class="ty">INT</span>,               <span class="cm">-- FK → geographic_location</span>
+  <span class="cn">CONSTRAINT pk_policy</span>     <span class="kw">PRIMARY KEY</span> (<span class="pk-c">policy_id</span>),
+  <span class="cn">CONSTRAINT fk_policy_agr</span> <span class="kw">FOREIGN KEY</span> (<span class="fk-c">policy_id</span>)
+    <span class="kw">REFERENCES</span> agreement(<span class="pk-c">agreement_id</span>)
+);`},
+  {name:'AGREEMENT_PARTY_ROLE',code:`<span class="kw">CREATE TABLE</span> agreement_party_role (
+  <span class="pk-c">agreement_id</span>    <span class="ty">INT</span>         <span class="kw">NOT NULL</span>,  <span class="cm">-- PK, FK → agreement</span>
+  <span class="pk-c">party_id</span>        <span class="ty">BIGINT</span>      <span class="kw">NOT NULL</span>,  <span class="cm">-- PK, FK → party</span>
+  <span class="pk-c">effective_date</span>  <span class="ty">DATE</span>        <span class="kw">NOT NULL</span>,  <span class="cm">-- PK</span>
+  party_role_code <span class="ty">VARCHAR(20)</span>,            <span class="cm">-- NI/AI/AGENT/LIEN/MORT</span>
+  expiration_date <span class="ty">DATE</span>,
+  <span class="cn">CONSTRAINT pk_agr_pty_role</span>  <span class="kw">PRIMARY KEY</span> (<span class="pk-c">agreement_id</span>, <span class="pk-c">party_id</span>, <span class="pk-c">effective_date</span>),
+  <span class="cn">CONSTRAINT fk_apr_agreement</span> <span class="kw">FOREIGN KEY</span> (<span class="fk-c">agreement_id</span>)
+    <span class="kw">REFERENCES</span> agreement(<span class="pk-c">agreement_id</span>),
+  <span class="cn">CONSTRAINT fk_apr_party</span>     <span class="kw">FOREIGN KEY</span> (<span class="fk-c">party_id</span>)
+    <span class="kw">REFERENCES</span> party(<span class="pk-c">party_id</span>)
+);`},
+ ]
+},
+{id:'coverage',name:'Coverage',color:'#22c55e',num:'03',role:'Coverage Catalog',
+ entities:11,desc:'Products, lines of business, coverage definitions, and the critical three-way intersection linking policies to covered objects.',
+ story:`Sarah's homeowners policy is an HO-3 product under the Homeowners <strong>LINE_OF_BUSINESS</strong> under the Property <strong>INSURANCE_CLASS</strong>. That product includes four <strong>COVERAGE</strong> definitions from the catalog: Coverage A (Dwelling), B (Other Structures), C (Personal Property), D (Loss of Use) — linked via <strong>PRODUCT_COVERAGE</strong>. When the policy is issued, four <strong>POLICY_COVERAGE_DETAIL</strong> rows are created — the critical three-way intersection: <em>this policy × this coverage × this insurable object</em>. Coverage A has a <strong>POLICY_LIMIT</strong> ($285,000 per-occurrence) and a <strong>POLICY_DEDUCTIBLE</strong> ($1,000). Coverage D has a limit but no deductible. Limits live on the detail row — not on the coverage definition — because Sarah's values differ from other policyholders with the same product.`,
+ insights:[
+  {icon:'📋',title:'Catalog vs Contract',desc:'COVERAGE is the reusable catalog definition. POLICY_COVERAGE_DETAIL is the contractual instance at specific limits for a specific policy.'},
+  {icon:'🔀',title:'Three-Way Intersection',desc:'POLICY_COVERAGE_DETAIL ties Policy × Coverage × Insurable Object. It\'s the most-referenced table in the model.'},
+  {icon:'🏭',title:'Five-Level LOB Hierarchy',desc:'Insurance Class → LOB Group → LOB → Product → Coverage. Each level enables regulatory or actuarial grouping.'},
+  {icon:'💰',title:'Limits & Deductibles Separate',desc:'POLICY_LIMIT and POLICY_DEDUCTIBLE are separate tables — one coverage detail can have multiple limit types simultaneously.'},
+ ],
+ entities_data:[
+  {name:'INSURANCE_CLASS',type:'top classification',fields:[{n:'insurance_class_id',t:'INT',pk:1},{n:'insurance_class_name',t:'VARCHAR(100)'}]},
+  {name:'LINE_OF_BUSINESS',type:'LOB',fields:[{n:'lob_id',t:'INT',pk:1},{n:'lob_code',t:'VARCHAR(20)'},{n:'lob_name',t:'VARCHAR(100)'},{n:'lob_group_id',t:'INT',fk:1},{n:'insurance_class_id',t:'INT',fk:1}]},
+  {name:'PRODUCT',type:'offered product',fields:[{n:'product_id',t:'INT',pk:1},{n:'licensed_product_name',t:'VARCHAR(100)'},{n:'product_description',t:'VARCHAR(2000)'},{n:'line_of_business_id',t:'INT',fk:1}]},
+  {name:'COVERAGE',type:'catalog definition',fields:[{n:'coverage_id',t:'INT',pk:1},{n:'coverage_name',t:'VARCHAR(200)'},{n:'coverage_description',t:'VARCHAR(5000)'},{n:'coverage_type_id',t:'INT',fk:1},{n:'coverage_group_id',t:'INT',fk:1},{n:'coverage_part_code',t:'VARCHAR(20)'}]},
+  {name:'COVERAGE_TYPE',type:'reference',fields:[{n:'coverage_type_id',t:'INT',pk:1},{n:'coverage_type_name',t:'VARCHAR(100)'}]},
+  {name:'PRODUCT_COVERAGE',type:'bridge',fields:[{n:'coverage_id',t:'INT',pk:1,fk:1},{n:'product_id',t:'INT',pk:1,fk:1}]},
+  {name:'POLICY_COVERAGE_DETAIL',type:'⭐ three-way intersection',fields:[{n:'policy_coverage_detail_id',t:'INT',pk:1},{n:'policy_id',t:'INT',fk:1},{n:'coverage_id',t:'INT',fk:1},{n:'insurable_object_id',t:'INT',fk:1},{n:'coverage_inclusion_exclusion_code',t:'CHAR(1)',note:'I/E'},{n:'effective_date',t:'DATE'},{n:'expiration_date',t:'DATE'}]},
+  {name:'POLICY_LIMIT',type:'limit on coverage detail',fields:[{n:'policy_limit_id',t:'INT',pk:1},{n:'policy_coverage_detail_id',t:'INT',fk:1},{n:'limit_type_code',t:'VARCHAR(20)',note:'PER_OCC/AGG'},{n:'limit_value',t:'VARCHAR(100)'},{n:'limit_basis_code',t:'VARCHAR(20)'},{n:'effective_date',t:'DATE'}]},
+  {name:'POLICY_DEDUCTIBLE',type:'deductible on coverage detail',fields:[{n:'policy_deductible_id',t:'INT',pk:1},{n:'policy_coverage_detail_id',t:'INT',fk:1},{n:'deductible_type_code',t:'VARCHAR(20)'},{n:'deductible_value',t:'VARCHAR(100)'},{n:'effective_date',t:'DATE'}]},
+  {name:'COVERAGE_LEVEL',type:'pre-packaged pricing tiers',fields:[{n:'coverage_id',t:'INT',pk:1,fk:1},{n:'coverage_level_id',t:'INT',pk:1},{n:'aggregate_limit_amount',t:'DECIMAL(15,2)'},{n:'max_per_claim_amount',t:'DECIMAL(15,2)'},{n:'deductible_rate',t:'DECIMAL(5,5)'}]},
+  {name:'LINE_OF_BUSINESS_GROUP',type:'LOB grouping',fields:[{n:'lob_group_id',t:'INT',pk:1},{n:'lob_group_name',t:'VARCHAR(100)'}]},
+ ],
+ sample_tables:[
+  {caption:'COVERAGE — reusable catalog definitions shared across products',cols:['coverage_id','coverage_name','coverage_type_id (FK)','coverage_part_code'],
+   rows:[['401','Coverage A – Dwelling','10','PROP'],['402','Coverage B – Other Structures','10','PROP'],['403','Coverage C – Personal Property','10','PROP'],['404','Coverage D – Loss of Use','11','PROP'],['405','Bodily Injury Liability','12','LIAB']],pk:0,fk:[2],hi:[1]},
+  {caption:'POLICY_COVERAGE_DETAIL — 3-way intersection: Policy × Coverage × Insurable Object',cols:['pcd_id','policy_id (FK)','coverage_id (FK)','insurable_object_id (FK)','incl/excl','effective_date'],
+   rows:[['701','5001','401','8001','I','2024-04-01'],['702','5001','402','8001','I','2024-04-01'],['703','5001','403','8001','I','2024-04-01'],['704','5001','404','8001','I','2024-04-01'],['705','5002','405','8002','I','2024-04-01']],pk:0,fk:[1,2,3],hi:[4]},
+  {caption:'POLICY_LIMIT — multiple limit types per coverage detail (see pcd 705 with two limits)',cols:['policy_limit_id','pcd_id (FK)','limit_type_code','limit_value','limit_basis_code'],
+   rows:[['801','701','PER_OCC','285000','REPLACEMENT_COST'],['802','702','PER_OCC','28500','REPLACEMENT_COST'],['805','705','PER_OCC','100000','COMBINED_SINGLE'],['806','705','AGGREGATE','300000','COMBINED_SINGLE']],pk:0,fk:[1],hi:[2]},
+ ],
+ rels:[
+  {from:'PRODUCT',to:'COVERAGE',card:'0..* ──── 0..*',desc:'<strong>Many-to-many via PRODUCT_COVERAGE.</strong> HO-3 product includes 4 coverage definitions (A, B, C, D). Coverage A could also appear in other products (e.g., Dwelling Fire DP-3). Bridge allows any product to bundle any set of catalog entries.'},
+  {from:'POLICY_COVERAGE_DETAIL',to:'POLICY_LIMIT',card:'1 ──── 0..*',desc:'<strong>One detail, potentially multiple limits.</strong> Auto liability detail (pcd 705) has TWO limit rows — per-occurrence ($100K) and aggregate ($300K). Separate table because a single coverage detail frequently needs multiple simultaneous limit types.'},
+  {from:'INSURANCE_CLASS',to:'LINE_OF_BUSINESS',card:'1 ──── 0..*',desc:'<strong>Five-level classification hierarchy.</strong> Insurance Class → LOB Group → LOB → Product → Coverage. Enables regulatory grouping, actuarial analysis, and product catalog management at different granularities.'},
+ ],
+ xlinks:[
+  {domain:'Agreement & Policy',color:'#8b5cf6',via:'policy_coverage_detail.policy_id → policy.policy_id',why:'The three-way intersection attaches coverage lines to policies. Every coverage detail belongs to exactly one policy.'},
+  {domain:'Insurable Object',color:'#f59e0b',via:'policy_coverage_detail.insurable_object_id → insurable_object',why:'Coverage A applies to the dwelling (8001); BI liability applies to the Camry (8002). Explicit and queryable.'},
+  {domain:'Claims',color:'#ef4444',via:'claim_coverage.policy_coverage_detail_id → policy_coverage_detail',why:'When a claim is filed, it links to the exact PCD that responds — necessary for reserving and reinsurance allocation.'},
+  {domain:'Policy Amounts',color:'#10b981',via:'policy_amount.policy_coverage_detail_id → policy_coverage_detail',why:'Premium broken down at coverage-detail level — enables per-coverage premium reporting.'},
+ ],
+ sql_tables:[
+  {name:'POLICY_COVERAGE_DETAIL',code:`<span class="kw">CREATE TABLE</span> policy_coverage_detail (
+  <span class="pk-c">policy_coverage_detail_id</span>         <span class="ty">INT</span>    <span class="kw">NOT NULL</span>,  <span class="cm">-- PK</span>
+  <span class="fk-c">policy_id</span>                         <span class="ty">INT</span>    <span class="kw">NOT NULL</span>,  <span class="cm">-- FK → policy</span>
+  <span class="fk-c">coverage_id</span>                       <span class="ty">INT</span>,              <span class="cm">-- FK → coverage</span>
+  <span class="fk-c">insurable_object_id</span>               <span class="ty">INT</span>,              <span class="cm">-- FK → insurable_object</span>
+  coverage_part_code                <span class="ty">VARCHAR(20)</span>,
+  coverage_inclusion_exclusion_code <span class="ty">CHAR(1)</span>,          <span class="cm">-- I=Include E=Exclude</span>
+  effective_date                    <span class="ty">DATE</span>,
+  expiration_date                   <span class="ty">DATE</span>,
+  <span class="cn">CONSTRAINT pk_pcd</span>     <span class="kw">PRIMARY KEY</span> (<span class="pk-c">policy_coverage_detail_id</span>),
+  <span class="cn">CONSTRAINT fk_pcd_pol</span> <span class="kw">FOREIGN KEY</span> (<span class="fk-c">policy_id</span>)
+    <span class="kw">REFERENCES</span> policy(<span class="pk-c">policy_id</span>),
+  <span class="cn">CONSTRAINT fk_pcd_cov</span> <span class="kw">FOREIGN KEY</span> (<span class="fk-c">coverage_id</span>)
+    <span class="kw">REFERENCES</span> coverage(<span class="pk-c">coverage_id</span>),
+  <span class="cn">CONSTRAINT fk_pcd_ins</span> <span class="kw">FOREIGN KEY</span> (<span class="fk-c">insurable_object_id</span>)
+    <span class="kw">REFERENCES</span> insurable_object(<span class="pk-c">insurable_object_id</span>)
+);`},
+ ]
+},
+{id:'insurable',name:'Insurable Object',color:'#f59e0b',num:'04',role:'Physical Items',
+ entities:18,desc:'Vehicles, structures, animals, watercraft, farm equipment — everything that can be insured, in a deep inheritance hierarchy.',
+ story:`Sarah has three insured items: her <strong>home at 123 Main St</strong> (INSURABLE_OBJECT → STRUCTURE → RESIDENTIAL_STRUCTURE → DWELLING), her <strong>2023 Toyota Camry</strong> (INSURABLE_OBJECT → VEHICLE → AUTOMOBILE), and her <strong>diamond ring, $8K appraised</strong> (INSURABLE_OBJECT → SCHEDULED_ITEM). Sarah is OWNER on all three via <strong>INSURABLE_OBJECT_PARTY_ROLE</strong>. Mike is PRIMARY_DRIVER on the Camry — a different role row on the same object. The Camry's <code>geo_location_id</code> points to Austin ZIP 78702, which maps to Rating Territory TX-Central-512 for premium calculation. A neighboring farm policy covers a John Deere 8R (<strong>TRACTOR</strong> → FARM_EQUIPMENT), a prize stallion (<strong>ANIMAL</strong>), and a 22-ft bass boat (<strong>WATERCRAFT</strong>) — all using the same INSURABLE_OBJECT supertype.`,
+ insights:[
+  {icon:'🏠',title:'Table-Per-Subtype',desc:'Every subtype uses the same PK as its parent. "What type is insured?" answered by which leaf table has a row for a given ID.'},
+  {icon:'🔑',title:'Three-Level Chains',desc:'Dwelling chains through 4 tables: insurable_object → structure → residential_structure → dwelling. Each level adds only what\'s meaningful at that level.'},
+  {icon:'🚗',title:'18 Object Subtypes',desc:'Vehicles, 4 structure types, animal, watercraft, 3 farm equipment types, workers comp class, scheduled item, body object, household content.'},
+  {icon:'👤',title:'Object Roles ≠ Policy Roles',desc:'Owner on the dwelling (object role) vs Named Insured on the policy (agreement role). These are different — a bank lienholder plays object-level Loss Payee, not policy NI.'},
+ ],
+ entities_data:[
+  {name:'INSURABLE_OBJECT',type:'supertype · root',fields:[{n:'insurable_object_id',t:'INT',pk:1},{n:'insurable_object_type_code',t:'VARCHAR(20)'},{n:'geo_location_id',t:'INT',fk:1}]},
+  {name:'VEHICLE',type:'subtype',fields:[{n:'insurable_object_id',t:'INT',pk:1,fk:1},{n:'vehicle_identification_number',t:'VARCHAR(100)'},{n:'vehicle_make_name',t:'VARCHAR(40)'},{n:'vehicle_model_name',t:'VARCHAR(40)'},{n:'vehicle_model_year',t:'NUMERIC(4)'},{n:'vehicle_driving_wheel_qty',t:'INT'}]},
+  {name:'AUTOMOBILE / MOTORCYCLE / TRUCK / VAN / BUS / RV',type:'subtypes of VEHICLE',fields:[{n:'insurable_object_id',t:'INT',pk:1,fk:1,note:'FK→vehicle'}]},
+  {name:'STRUCTURE',type:'subtype',fields:[{n:'insurable_object_id',t:'INT',pk:1,fk:1,note:'FK→insurable_object'}]},
+  {name:'RESIDENTIAL_STRUCTURE',type:'subtype of STRUCTURE',fields:[{n:'insurable_object_id',t:'INT',pk:1,fk:1,note:'FK→structure'}]},
+  {name:'DWELLING',type:'subtype of RESIDENTIAL',fields:[{n:'insurable_object_id',t:'INT',pk:1,fk:1,note:'FK→residential_structure'}]},
+  {name:'MOBILE_HOME',type:'subtype of RESIDENTIAL',fields:[{n:'insurable_object_id',t:'INT',pk:1,fk:1,note:'FK→residential_structure'}]},
+  {name:'COMMERCIAL_STRUCTURE',type:'subtype of STRUCTURE',fields:[{n:'insurable_object_id',t:'INT',pk:1,fk:1}]},
+  {name:'ANIMAL',type:'subtype',fields:[{n:'insurable_object_id',t:'INT',pk:1,fk:1},{n:'animal_species_code',t:'VARCHAR(20)'},{n:'animal_breed_name',t:'VARCHAR(40)'},{n:'animal_name',t:'VARCHAR(40)'}]},
+  {name:'WATERCRAFT',type:'subtype',fields:[{n:'insurable_object_id',t:'INT',pk:1,fk:1},{n:'watercraft_length_value',t:'DECIMAL(6,2)'},{n:'engine_horsepower_qty',t:'INT'},{n:'watercraft_make_name',t:'VARCHAR(40)'}]},
+  {name:'FARM_EQUIPMENT',type:'subtype',fields:[{n:'insurable_object_id',t:'INT',pk:1,fk:1},{n:'equipment_make_name',t:'VARCHAR(40)'},{n:'equipment_model_name',t:'VARCHAR(40)'}]},
+  {name:'TRACTOR / COMBINE / MILKING_MACHINE',type:'subtypes of FARM_EQUIPMENT',fields:[{n:'insurable_object_id',t:'INT',pk:1,fk:1,note:'FK→farm_equipment'}]},
+  {name:'WORKERS_COMP_CLASS',type:'WC exposure class',fields:[{n:'insurable_object_id',t:'INT',pk:1,fk:1},{n:'workers_comp_class_code',t:'VARCHAR(20)'},{n:'workers_comp_class_name',t:'VARCHAR(100)'}]},
+  {name:'SCHEDULED_ITEM',type:'floater / inland marine',fields:[{n:'insurable_object_id',t:'INT',pk:1,fk:1},{n:'scheduled_item_description',t:'VARCHAR(2000)'},{n:'appraised_value_amount',t:'DECIMAL(15,2)'}]},
+  {name:'HOUSEHOLD_CONTENT',type:'contents group',fields:[{n:'insurable_object_id',t:'INT',pk:1,fk:1},{n:'household_content_description',t:'VARCHAR(2000)'},{n:'replacement_cost_amount',t:'DECIMAL(15,2)'}]},
+  {name:'BODY_OBJECT',type:'body part (WC/health)',fields:[{n:'insurable_object_id',t:'INT',pk:1,fk:1}]},
+  {name:'INSURABLE_OBJECT_PARTY_ROLE',type:'party roles on object',fields:[{n:'insurable_object_id',t:'INT',pk:1,fk:1},{n:'party_id',t:'BIGINT',pk:1,fk:1},{n:'effective_date',t:'DATE',pk:1},{n:'party_role_code',t:'VARCHAR(20)',note:'OWNER/DRIVER/LIEN'},{n:'expiration_date',t:'DATE'}]},
+  {name:'MANUFACTURED_OBJECT',type:'subtype',fields:[{n:'insurable_object_id',t:'INT',pk:1,fk:1},{n:'serial_number',t:'VARCHAR(100)'},{n:'manufacturer_name',t:'VARCHAR(100)'}]},
+ ],
+ sample_tables:[
+  {caption:'INSURABLE_OBJECT — one row per insured item regardless of type',cols:['insurable_object_id','insurable_object_type_code','geo_location_id (FK)'],
+   rows:[['8001','STR','5001'],['8002','VEH','5002'],['8003','SCH',null],['8004','ANI','5010'],['8005','BOAT','5010']],pk:0,fk:[2],hi:[1]},
+  {caption:'VEHICLE — adds vehicle details to insurable_object row 8002',cols:['insurable_object_id (FK)','VIN','make','model','year'],
+   rows:[['8002','1HGCM82633A004352','Toyota','Camry','2023']],pk:-1,fk:[0],hi:[1]},
+  {caption:'INSURABLE_OBJECT_PARTY_ROLE — ownership and driver roles on the Camry',cols:['insurable_object_id (FK)','party_id (FK)','party_role_code','effective_date'],
+   rows:[['8002','1001','OWNER','2024-04-01'],['8002','1002','PRIMARY_DRIVER','2024-04-01'],['8001','1001','OWNER','2024-04-01'],['8001','1002','CO_OWNER','2024-04-01']],pk:-1,fk:[0,1],hi:[2]},
+ ],
+ rels:[
+  {from:'INSURABLE_OBJECT',to:'VEHICLE → AUTOMOBILE',card:'1 ──── 0..1 (each level)',desc:'<strong>Table-per-subtype chain.</strong> To get Camry details: join insurable_object → vehicle → automobile on the same PK. Three-table join, no extra discriminator needed — existence of an automobile row proves it\'s a car.'},
+  {from:'INSURABLE_OBJECT',to:'INSURABLE_OBJECT_PARTY_ROLE',card:'1 ──── 0..*',desc:'<strong>Object-level party roles are separate from policy roles.</strong> Sarah is OWNER on the dwelling (object role) AND Named Insured on the homeowners policy (agreement role). They can differ — a bank lienholder is Loss Payee on the object but not listed as NI on the agreement.'},
+ ],
+ xlinks:[
+  {domain:'Coverage',color:'#22c55e',via:'policy_coverage_detail.insurable_object_id → insurable_object',why:'Coverage A applies to the dwelling (8001); BI liability applies to the Camry (8002). Binding is explicit.'},
+  {domain:'Claims',color:'#ef4444',via:'claim.insurable_object_id → insurable_object',why:'The specific physical item involved in the loss — enables object-level claim history and total loss decisions.'},
+  {domain:'Geographic Location',color:'#22d3ee',via:'insurable_object.geo_location_id → geographic_location',why:'Garaging address / property address drives Rating Territory lookup for premium calculation.'},
+  {domain:'Assessment',color:'#818cf8',via:'object_assessment.insurable_object_id → insurable_object',why:'Home inspections, vehicle appraisals, condition reports link to the specific object evaluated.'},
+ ],
+ sql_tables:[
+  {name:'INSURABLE_OBJECT + VEHICLE + AUTOMOBILE',code:`<span class="kw">CREATE TABLE</span> insurable_object (
+  <span class="pk-c">insurable_object_id</span>        <span class="ty">INT</span>         <span class="kw">NOT NULL</span>,
+  insurable_object_type_code <span class="ty">VARCHAR(20)</span>,            <span class="cm">-- VEH/STR/ANI/BOAT/FARM/SCH</span>
+  <span class="fk-c">geo_location_id</span>            <span class="ty">INT</span>,                    <span class="cm">-- FK → geographic_location</span>
+  <span class="cn">CONSTRAINT pk_ins_obj</span> <span class="kw">PRIMARY KEY</span> (<span class="pk-c">insurable_object_id</span>)
+);
+
+<span class="kw">CREATE TABLE</span> vehicle (
+  <span class="pk-c">insurable_object_id</span>           <span class="ty">INT</span>         <span class="kw">NOT NULL</span>,  <span class="cm">-- PK = FK → insurable_object</span>
+  vehicle_identification_number <span class="ty">VARCHAR(100)</span>,
+  vehicle_make_name             <span class="ty">VARCHAR(40)</span>,
+  vehicle_model_name            <span class="ty">VARCHAR(40)</span>,
+  vehicle_model_year            <span class="ty">NUMERIC(4)</span>,
+  <span class="cn">CONSTRAINT pk_vehicle</span>     <span class="kw">PRIMARY KEY</span> (<span class="pk-c">insurable_object_id</span>),
+  <span class="cn">CONSTRAINT fk_veh_ins_obj</span> <span class="kw">FOREIGN KEY</span> (<span class="fk-c">insurable_object_id</span>)
+    <span class="kw">REFERENCES</span> insurable_object(<span class="pk-c">insurable_object_id</span>)
+);
+
+<span class="kw">CREATE TABLE</span> automobile (
+  <span class="pk-c">insurable_object_id</span> <span class="ty">INT</span> <span class="kw">NOT NULL</span>,
+  <span class="cn">CONSTRAINT pk_auto</span>   <span class="kw">PRIMARY KEY</span> (<span class="pk-c">insurable_object_id</span>),
+  <span class="cn">CONSTRAINT fk_auto_v</span> <span class="kw">FOREIGN KEY</span> (<span class="fk-c">insurable_object_id</span>)
+    <span class="kw">REFERENCES</span> vehicle(<span class="pk-c">insurable_object_id</span>)
+);
+<span class="cm">-- Motorcycle, Truck, Van, Bus, RV follow identical pattern</span>`},
+ ]
+},
+{id:'geo',name:'Geographic Location',color:'#22d3ee',num:'05',role:'Connective Tissue',
+ entities:7,desc:'Self-referencing geo hierarchy (Country→State→County→City→ZIP), addresses, GPS coordinates, and rating territories.',
+ story:`Sarah's home sits at 30.2672°N, 97.7431°W in Austin, TX. In the model that's five <strong>GEOGRAPHIC_LOCATION</strong> records chained by <code>parent_geo_location_id</code>: USA → Texas → Travis County → Austin → ZIP 78701. The Austin node holds a <strong>LOCATION_ADDRESS</strong> (line1, city, state, ZIP) and a <strong>PHYSICAL_LOCATION</strong> (precise lat/long used for flood zone lookup). ZIP 78701 maps to <strong>RATING_TERRITORY</strong> "TX-Central-512" via <strong>RATING_TERRITORY_GEOGRAPHIC_LOCATION</strong>. That territory code is what the rating engine uses to find the base premium multiplier. State Farm's <strong>COMPANY</strong> is licensed in Texas via <strong>COMPANY_JURISDICTION</strong>. This same geographic location node appears as a FK in 6 of the 10 domains.`,
+ insights:[
+  {icon:'🌎',title:'One Table, Full Hierarchy',desc:'parent_geo_location_id chains Country→State→County→City→ZIP→Risk Area. Any level can be queried independently.'},
+  {icon:'📍',title:'Dual Coordinates',desc:'LOCATION_ADDRESS for postal/structured address; PHYSICAL_LOCATION for GPS coordinates (flood zone, proximity-to-coast rating).'},
+  {icon:'💰',title:'Rating Territory Bridge',desc:'ZIP codes map to RATING_TERRITORY via a bridge table — the connection between geography and premium rates.'},
+  {icon:'⚖️',title:'Company Licensing',desc:'COMPANY_JURISDICTION records which states each insurer is licensed in — regulatory compliance at the data level.'},
+ ],
+ entities_data:[
+  {name:'GEOGRAPHIC_LOCATION',type:'self-referencing hierarchy',fields:[{n:'geo_location_id',t:'INT',pk:1},{n:'geo_location_type_code',t:'VARCHAR(20)',note:'COUNTRY/STATE/COUNTY/CITY/POSTAL'},{n:'location_name',t:'VARCHAR(100)'},{n:'state_code',t:'CHAR(2)'},{n:'location_code',t:'VARCHAR(20)'},{n:'location_address_id',t:'INT',fk:1},{n:'physical_location_id',t:'INT',fk:1},{n:'parent_geo_location_id',t:'INT',fk:1,note:'FK→self'}]},
+  {name:'LOCATION_ADDRESS',type:'structured address',fields:[{n:'location_address_id',t:'INT',pk:1},{n:'line1_address',t:'VARCHAR(200)'},{n:'line2_address',t:'VARCHAR(200)'},{n:'municipality_name',t:'VARCHAR(100)'},{n:'state_code',t:'CHAR(2)'},{n:'postal_code',t:'VARCHAR(20)'},{n:'country_code',t:'CHAR(3)'}]},
+  {name:'PHYSICAL_LOCATION',type:'GPS coordinates',fields:[{n:'physical_location_id',t:'INT',pk:1},{n:'latitude_value',t:'VARCHAR(20)'},{n:'longitude_value',t:'VARCHAR(20)'},{n:'altitude_value',t:'VARCHAR(100)'},{n:'horizontal_accuracy_value',t:'VARCHAR(100)'},{n:'location_address_id',t:'INT',fk:1}]},
+  {name:'RATING_TERRITORY',type:'premium rating zone',fields:[{n:'rating_territory_id',t:'INT',pk:1},{n:'rating_territory_code',t:'VARCHAR(20)'},{n:'rating_territory_assigning_org_id',t:'BIGINT',fk:1}]},
+  {name:'RATING_TERRITORY_GEOGRAPHIC_LOCATION',type:'bridge',fields:[{n:'geo_location_id',t:'INT',pk:1,fk:1},{n:'rating_territory_id',t:'INT',pk:1,fk:1}]},
+  {name:'COMPANY',type:'insurer entity',fields:[{n:'company_id',t:'INT',pk:1},{n:'company_code',t:'CHAR(5)'},{n:'company_name',t:'VARCHAR(100)'}]},
+  {name:'COMPANY_JURISDICTION',type:'licensing bridge',fields:[{n:'company_id',t:'INT',pk:1,fk:1},{n:'geo_location_id',t:'INT',pk:1,fk:1}]},
+  {name:'STATE',type:'reference',fields:[{n:'state_code',t:'CHAR(2)',pk:1},{n:'state_name',t:'VARCHAR(100)'},{n:'country_code',t:'CHAR(3)'}]},
+ ],
+ sample_tables:[
+  {caption:'GEOGRAPHIC_LOCATION — self-referencing hierarchy: USA → Texas → Travis County → Austin → ZIP',cols:['geo_location_id','geo_location_type_code','location_name','state_code','parent_geo_location_id (FK→self)'],
+   rows:[['4001','COUNTRY','United States',null,null],['4002','STATE','Texas','TX','4001'],['4003','COUNTY','Travis County','TX','4002'],['4004','CITY','Austin','TX','4003'],['5001','POSTAL','ZIP 78701','TX','4004'],['5002','POSTAL','ZIP 78702','TX','4004']],pk:0,fk:[4],hi:[1]},
+  {caption:'RATING_TERRITORY_GEOGRAPHIC_LOCATION — ZIP codes mapped to rating zones',cols:['geo_location_id (FK)','rating_territory_id (FK)'],
+   rows:[['5001','601'],['5002','601']],pk:-1,fk:[0,1],hi:[]},
+ ],
+ rels:[
+  {from:'GEOGRAPHIC_LOCATION',to:'GEOGRAPHIC_LOCATION (self)',card:'1 ──── 0..*',desc:'<strong>Self-referencing hierarchy.</strong> <code>parent_geo_location_id</code> chains the full geo hierarchy in one table. To find the Rating Territory for an object: look up its geo_location_id, then walk up (or join directly) to the ZIP-level RATING_TERRITORY_GEOGRAPHIC_LOCATION entry.'},
+  {from:'GEOGRAPHIC_LOCATION',to:'RATING_TERRITORY',card:'0..* ──── 0..*',desc:'<strong>Many-to-many via bridge.</strong> One ZIP belongs to one rating territory (typically). One territory covers many ZIPs. Bridge allows unusual configurations where a territory spans multiple postal areas.'},
+ ],
+ xlinks:[
+  {domain:'Insurable Object',color:'#f59e0b',via:'insurable_object.geo_location_id → geographic_location',why:'Garaging address (auto) or property address (structure) — drives Rating Territory for premium rating.'},
+  {domain:'Agreement & Policy',color:'#8b5cf6',via:'policy.geo_location_id → geographic_location',why:'Primary risk location for the policy — used when no specific object geography is available.'},
+  {domain:'Claims',color:'#ef4444',via:'occurrence.geo_location_id → geographic_location',why:'Where the loss occurred — CAT tagging, adjuster dispatch, geographic concentration reporting.'},
+  {domain:'Policy Amounts',color:'#10b981',via:'policy_amount.geo_location_id → geographic_location',why:'State-specific taxes and surcharges look up the correct rate via the geo jurisdiction.'},
+  {domain:'Party',color:'#3b82f6',via:'communication_identity.geo_location_id → geographic_location',why:'A mail contact channel links to the geographic hierarchy — connecting address to rating territory.'},
+ ],
+ sql_tables:[
+  {name:'GEOGRAPHIC_LOCATION',code:`<span class="kw">CREATE TABLE</span> geographic_location (
+  <span class="pk-c">geo_location_id</span>        <span class="ty">INT</span>         <span class="kw">NOT NULL</span>,
+  geo_location_type_code <span class="ty">VARCHAR(20)</span>,            <span class="cm">-- COUNTRY/STATE/COUNTY/CITY/POSTAL/RISK</span>
+  location_name          <span class="ty">VARCHAR(100)</span>,
+  state_code             <span class="ty">CHAR(2)</span>,
+  location_code          <span class="ty">VARCHAR(20)</span>,
+  <span class="fk-c">location_address_id</span>    <span class="ty">INT</span>,                    <span class="cm">-- FK → location_address</span>
+  <span class="fk-c">physical_location_id</span>   <span class="ty">INT</span>,                    <span class="cm">-- FK → physical_location</span>
+  <span class="fk-c">parent_geo_location_id</span> <span class="ty">INT</span>,                    <span class="cm">-- FK → self (hierarchy chain)</span>
+  <span class="cn">CONSTRAINT pk_geo_loc</span>    <span class="kw">PRIMARY KEY</span> (<span class="pk-c">geo_location_id</span>),
+  <span class="cn">CONSTRAINT fk_geo_parent</span> <span class="kw">FOREIGN KEY</span> (<span class="fk-c">parent_geo_location_id</span>)
+    <span class="kw">REFERENCES</span> geographic_location(<span class="pk-c">geo_location_id</span>)  <span class="cm">-- self-reference</span>
+);`},
+ ]
+},
+{id:'claims',name:'Claims',color:'#ef4444',num:'06',role:'Loss Events',
+ entities:12,desc:'Occurrences, claims, party roles, coverage links, document folders, settlement offers, arbitration, and litigation.',
+ story:`A hailstorm hits Austin on April 5th — one <strong>OCCURRENCE</strong>, geo-tagged, flagged catastrophic. Sarah calls in roof damage — a <strong>CLAIM</strong> is opened against that occurrence, linked to her dwelling (insurable_object 8001). Her homeowners Coverage A responds via <strong>CLAIM_COVERAGE</strong> → POLICY_COVERAGE_DETAIL. Sarah is Claimant ("CLM") in <strong>CLAIM_PARTY_ROLE</strong>; adjuster James is assigned ("ADJ"). James uploads his inspection report to the <strong>CLAIM_FOLDER</strong> as a <strong>CLAIM_FOLDER_DOCUMENT</strong>. A settlement of $9,800 is proposed as a <strong>CLAIM_OFFER</strong>. Sarah accepts. A separate fender-bender enters <strong>ARBITRATION</strong>. A slip-and-fall at Sarah's home goes to <strong>LITIGATION</strong>. All three claims share the same hailstorm OCCURRENCE but are separate CLAIM records.`,
+ insights:[
+  {icon:'⛈️',title:'OCCURRENCE ≠ CLAIM',desc:'One storm generates many claims across different policyholders. Keeping them separate enables CAT aggregation — sum all claims for catastrophe_id=201 to get total CAT exposure.'},
+  {icon:'📁',title:'Folder = One-to-One',desc:'Every claim gets exactly one CLAIM_FOLDER, using claim_id as both PK and FK. Documents attach as ordered sequence rows.'},
+  {icon:'🤝',title:'Multiple Offers are Normal',desc:'CLAIM_OFFER tracks every offer in negotiation. History is preserved for litigation discovery and regulatory audits.'},
+  {icon:'⚖️',title:'Both Dispute Paths',desc:'Arbitration (ADR/extrajudicial) and Litigation (court proceedings) are modeled as separate entities with their own party roles.'},
+ ],
+ entities_data:[
+  {name:'OCCURRENCE',type:'triggering event',fields:[{n:'occurrence_id',t:'INT',pk:1},{n:'occurrence_begin_date',t:'DATE'},{n:'occurrence_begin_time',t:'TIME'},{n:'occurrence_end_date',t:'DATE'},{n:'occurrence_name',t:'VARCHAR(100)'},{n:'geo_location_id',t:'INT',fk:1},{n:'catastrophic_event_indicator',t:'CHAR(1)'}]},
+  {name:'CATASTROPHE',type:'named CAT reference',fields:[{n:'catastrophe_id',t:'INT',pk:1},{n:'catastrophe_name',t:'VARCHAR(100)'},{n:'catastrophe_type_code',t:'VARCHAR(20)'},{n:'company_catastrophe_code',t:'VARCHAR(20)'},{n:'industry_catastrophe_code',t:'VARCHAR(20)'}]},
+  {name:'CLAIM',type:'core claim record',fields:[{n:'claim_id',t:'INT',pk:1},{n:'occurrence_id',t:'INT',fk:1},{n:'claim_status_code',t:'CHAR(5)',note:'OPEN/CLSD/REOP'},{n:'claim_open_date',t:'DATE'},{n:'claim_reported_date',t:'DATE'},{n:'claim_close_date',t:'DATE'},{n:'company_claim_number',t:'VARCHAR(20)'},{n:'insurable_object_id',t:'INT',fk:1},{n:'catastrophe_id',t:'INT',fk:1}]},
+  {name:'CLAIM_PARTY_ROLE',type:'bridge',fields:[{n:'claim_id',t:'INT',pk:1,fk:1},{n:'party_id',t:'BIGINT',pk:1,fk:1},{n:'begin_date',t:'DATE',pk:1},{n:'party_role_code',t:'VARCHAR(20)',note:'CLM/ADJ/ATT/WIT'},{n:'end_date',t:'DATE'}]},
+  {name:'CLAIM_COVERAGE',type:'bridge',fields:[{n:'claim_id',t:'INT',pk:1,fk:1},{n:'effective_date',t:'DATE',pk:1},{n:'policy_coverage_detail_id',t:'INT',fk:1}]},
+  {name:'CLAIM_FOLDER',type:'document container',fields:[{n:'claim_id',t:'INT',pk:1,fk:1,note:'PK=FK→claim'},{n:'claim_folder_label_name',t:'VARCHAR(100)'}]},
+  {name:'CLAIM_FOLDER_DOCUMENT',type:'document link',fields:[{n:'claim_id',t:'INT',pk:1,fk:1},{n:'document_sequence_number',t:'SMALLINT',pk:1},{n:'document_link_value',t:'VARCHAR(1000)'}]},
+  {name:'CLAIM_OFFER',type:'settlement proposal',fields:[{n:'claim_offer_id',t:'INT',pk:1},{n:'claim_id',t:'INT',fk:1},{n:'arbitration_id',t:'INT',fk:1},{n:'litigation_id',t:'INT',fk:1},{n:'settlement_offer_amount',t:'DECIMAL(15,2)'},{n:'settlement_offer_provision_description',t:'VARCHAR(5000)'}]},
+  {name:'ARBITRATION',type:'alternative dispute resolution',fields:[{n:'arbitration_id',t:'INT',pk:1},{n:'arbitration_description',t:'VARCHAR(5000)'}]},
+  {name:'ARBITRATION_PARTY_ROLE',type:'bridge',fields:[{n:'arbitration_id',t:'INT',pk:1,fk:1},{n:'claim_id',t:'INT',pk:1,fk:1},{n:'begin_date',t:'DATE',pk:1},{n:'party_id',t:'BIGINT',fk:1},{n:'party_role_code',t:'VARCHAR(20)'}]},
+  {name:'LITIGATION',type:'court proceedings',fields:[{n:'litigation_id',t:'INT',pk:1},{n:'court_id',t:'INT',fk:1},{n:'jurisdiction_id',t:'INT',fk:1},{n:'litigation_description',t:'VARCHAR(5000)'}]},
+  {name:'LITIGATION_PARTY_ROLE',type:'bridge',fields:[{n:'claim_id',t:'INT',pk:1,fk:1},{n:'begin_date',t:'DATE',pk:1},{n:'litigation_id',t:'INT',pk:1,fk:1},{n:'party_id',t:'BIGINT',fk:1},{n:'party_role_code',t:'VARCHAR(20)'}]},
+ ],
+ sample_tables:[
+  {caption:'OCCURRENCE — one storm, three claims',cols:['occurrence_id','occurrence_name','occurrence_begin_date','geo_location_id (FK)','catastrophic_indicator'],
+   rows:[['3001','Austin Hailstorm Apr 2024','2024-04-05','4004','Y']],pk:0,fk:[3],hi:[1]},
+  {caption:'CLAIM — three claims from the same occurrence',cols:['claim_id','occurrence_id (FK)','claim_status_code','claim_open_date','insurable_object_id (FK)','catastrophe_id (FK)'],
+   rows:[['6001','3001','OPEN','2024-04-06','8001','201'],['6002','3001','CLSD','2024-04-06','8002','201'],['6003','3001','OPEN','2024-04-07','8001','201']],pk:0,fk:[1,4,5],hi:[2]},
+  {caption:'CLAIM_PARTY_ROLE — every participant in claims',cols:['claim_id (FK)','party_id (FK)','party_role_code','begin_date'],
+   rows:[['6001','1001','CLM','2024-04-06'],['6001','1006','ADJ','2024-04-06'],['6002','1002','CLM','2024-04-06'],['6002','1006','ADJ','2024-04-06']],pk:-1,fk:[0,1],hi:[2]},
+  {caption:'CLAIM_OFFER — settlement proposals (claim 6001 had two rounds of negotiation)',cols:['claim_offer_id','claim_id (FK)','settlement_offer_amount','arbitration_id (FK)'],
+   rows:[['701','6001','9800.00',null],['702','6001','11200.00',null]],pk:0,fk:[1],hi:[2]},
+ ],
+ rels:[
+  {from:'OCCURRENCE',to:'CLAIM',card:'1 ──── 0..*',desc:'<strong>One storm, many claims.</strong> The April 5th hailstorm generates three separate claims — each goes through independent adjustment, has different adjusters, reserves, and settlement amounts. Keeping OCCURRENCE separate enables CAT aggregation without denormalizing individual claim records.'},
+  {from:'CLAIM',to:'CLAIM_FOLDER',card:'1 ──── 1',desc:'<strong>One-to-one.</strong> CLAIM_FOLDER uses claim_id as both PK and FK — table-per-subtype relationship. Each claim has exactly one folder created at claim open. Documents attach as ordered CLAIM_FOLDER_DOCUMENT rows.'},
+  {from:'CLAIM',to:'CLAIM_OFFER',card:'1 ──── 0..*',desc:'<strong>Multiple offers are normal.</strong> Claim 6001 shows $9,800 and $11,200 (a counter-offer). History preserved for litigation discovery. The accepted offer is later linked to the final CLAIM_PAYMENT in the Claim Amounts domain.'},
+ ],
+ xlinks:[
+  {domain:'Coverage',color:'#22c55e',via:'claim_coverage.policy_coverage_detail_id → policy_coverage_detail',why:'Links each claim to the exact coverage line that responds — necessary for reserving and reinsurance allocation.'},
+  {domain:'Claim Amounts',color:'#fb923c',via:'claim_amount.claim_id → claim.claim_id',why:'All financial movements (reserves, payments, recoveries) hang off claim_id.'},
+  {domain:'Party',color:'#3b82f6',via:'claim_party_role.party_id → party.party_id',why:'Every claim participant — claimant, adjuster, attorney — is a party playing a typed role.'},
+  {domain:'Assessment',color:'#818cf8',via:'claim_assessment.claim_id → claim.claim_id',why:'Fraud scores, IME results, salvage appraisals, and formal claim evaluations link to the claim.'},
+ ],
+ sql_tables:[
+  {name:'CLAIM',code:`<span class="kw">CREATE TABLE</span> claim (
+  <span class="pk-c">claim_id</span>               <span class="ty">INT</span>         <span class="kw">NOT NULL</span>,
+  <span class="fk-c">occurrence_id</span>          <span class="ty">INT</span>,                    <span class="cm">-- FK → occurrence</span>
+  claim_status_code      <span class="ty">CHAR(5)</span>,                <span class="cm">-- OPEN/CLSD/REOP</span>
+  claim_open_date        <span class="ty">DATE</span>,
+  claim_reported_date    <span class="ty">DATE</span>,
+  claim_close_date       <span class="ty">DATE</span>,
+  company_claim_number   <span class="ty">VARCHAR(20)</span>,
+  <span class="fk-c">insurable_object_id</span>    <span class="ty">INT</span>,                    <span class="cm">-- FK → insurable_object</span>
+  <span class="fk-c">catastrophe_id</span>         <span class="ty">INT</span>,                    <span class="cm">-- FK → catastrophe</span>
+  claim_description      <span class="ty">VARCHAR(5000)</span>,
+  <span class="cn">CONSTRAINT pk_claim</span>     <span class="kw">PRIMARY KEY</span> (<span class="pk-c">claim_id</span>),
+  <span class="cn">CONSTRAINT fk_clm_occur</span> <span class="kw">FOREIGN KEY</span> (<span class="fk-c">occurrence_id</span>)
+    <span class="kw">REFERENCES</span> occurrence(<span class="pk-c">occurrence_id</span>),
+  <span class="cn">CONSTRAINT fk_clm_ins</span>   <span class="kw">FOREIGN KEY</span> (<span class="fk-c">insurable_object_id</span>)
+    <span class="kw">REFERENCES</span> insurable_object(<span class="pk-c">insurable_object_id</span>)
+);`},
+ ]
+},
+{id:'clm_amt',name:'Claim Amounts',color:'#fb923c',num:'07',role:'Claim Financials',
+ entities:17,desc:'Payments, reserves, and recoveries for claims — organized by insurance type (Direct/Assumed/Ceded), direction (debit/credit), and category.',
+ story:`Sarah's roof hail claim has a complete financial lifecycle. When opened: adjuster sets a <strong>LOSS_RESERVE</strong> of $12,000. Contractor paid $10,500 as a <strong>LOSS_PAYMENT</strong>. James' inspection costs $400 as an <strong>EXPENSE_PAYMENT</strong>. Sarah pays her $1,000 deductible → <strong>DEDUCTIBLE_RECOVERY</strong> (money back to the insurer). The insurer pursues the roofing contractor → $1,500 <strong>SUBROGATION</strong>. The insurer ceded 20% to XYZ Re → <strong>REINSURANCE_RECOVERY</strong> of $2,100. All six are rows in <strong>CLAIM_AMOUNT</strong> — differentiated across three axes: insurance type (D/A/C), debit/credit direction, and leaf category. Unified rollup: <code>SUM(claim_amount) WHERE claim_id=6001</code>. Detailed drill-down: join to loss_payment for just contractor payments.`,
+ insights:[
+  {icon:'📊',title:'4-Level Deep Inheritance',desc:'CLAIM_AMOUNT → DIRECT → DEBIT → PAYMENT → LOSS_PAYMENT. Each level encodes one business dimension.'},
+  {icon:'🔄',title:'Three Insurance Types',desc:'D=Direct (own book), A=Assumed (received from ceding company), C=Ceded (passed to reinsurer). Parallel sets of rows enable tri-partite ledger view.'},
+  {icon:'↩️',title:'Recoveries = Money Back',desc:'SUBROGATION, SALVAGE, REINSURANCE_RECOVERY, DEDUCTIBLE_RECOVERY — all subtypes of RECOVERY under DEBIT, representing inflows to the insurer.'},
+  {icon:'🔗',title:'Offer Link',desc:'claim_amount.claim_offer_id links a payment to the specific accepted offer — enabling payment-to-offer reconciliation audit.'},
+ ],
+ entities_data:[
+  {name:'CLAIM_AMOUNT',type:'supertype · all financials',fields:[{n:'claim_amount_id',t:'BIGINT',pk:1},{n:'claim_id',t:'INT',fk:1},{n:'amount_type_code',t:'VARCHAR(20)',note:'discriminator'},{n:'claim_amount',t:'DECIMAL(15,2)'},{n:'insurance_type_code',t:'CHAR(1)',note:'D/A/C'},{n:'event_date',t:'DATE'},{n:'claim_offer_id',t:'INT',fk:1}]},
+  {name:'DIRECT_CLAIM_AMOUNT',type:'IS-A (insurance_type=D)',fields:[{n:'claim_amount_id',t:'BIGINT',pk:1,fk:1}]},
+  {name:'ASSUMED_CLAIM_AMOUNT',type:'IS-A (insurance_type=A)',fields:[{n:'claim_amount_id',t:'BIGINT',pk:1,fk:1}]},
+  {name:'CEDED_CLAIM_AMOUNT',type:'IS-A (insurance_type=C)',fields:[{n:'claim_amount_id',t:'BIGINT',pk:1,fk:1}]},
+  {name:'DEBIT_CLAIM_AMOUNT',type:'IS-A (outflows)',fields:[{n:'claim_amount_id',t:'BIGINT',pk:1,fk:1}]},
+  {name:'CREDIT_CLAIM_AMOUNT',type:'IS-A (reversals)',fields:[{n:'claim_amount_id',t:'BIGINT',pk:1,fk:1}]},
+  {name:'CLAIM_PAYMENT',type:'payment subtype',fields:[{n:'claim_amount_id',t:'BIGINT',pk:1,fk:1}]},
+  {name:'LOSS_PAYMENT',type:'covers the loss',fields:[{n:'claim_amount_id',t:'BIGINT',pk:1,fk:1}]},
+  {name:'EXPENSE_PAYMENT',type:'covers LAE/ALAE',fields:[{n:'claim_amount_id',t:'BIGINT',pk:1,fk:1}]},
+  {name:'CLAIM_RESERVE',type:'estimated future obligation',fields:[{n:'claim_amount_id',t:'BIGINT',pk:1,fk:1}]},
+  {name:'LOSS_RESERVE',type:'expected loss payout',fields:[{n:'claim_amount_id',t:'BIGINT',pk:1,fk:1}]},
+  {name:'EXPENSE_RESERVE',type:'expected expense payout',fields:[{n:'claim_amount_id',t:'BIGINT',pk:1,fk:1}]},
+  {name:'RECOVERY',type:'money back to insurer',fields:[{n:'claim_amount_id',t:'BIGINT',pk:1,fk:1}]},
+  {name:'SUBROGATION',type:'from at-fault 3rd party',fields:[{n:'claim_amount_id',t:'BIGINT',pk:1,fk:1}]},
+  {name:'SALVAGE',type:'from total-loss asset sale',fields:[{n:'claim_amount_id',t:'BIGINT',pk:1,fk:1}]},
+  {name:'REINSURANCE_RECOVERY',type:'from reinsurer',fields:[{n:'claim_amount_id',t:'BIGINT',pk:1,fk:1}]},
+  {name:'DEDUCTIBLE_RECOVERY',type:'from insured deductible',fields:[{n:'claim_amount_id',t:'BIGINT',pk:1,fk:1}]},
+ ],
+ sample_tables:[
+  {caption:"CLAIM_AMOUNT — Sarah's roof claim (6001) complete financial lifecycle",cols:['claim_amount_id','claim_id (FK)','amount_type_code','claim_amount','ins_type','event_date'],
+   rows:[['9001','6001','LOSS_RESERVE','12000.00','D','2024-04-06'],['9002','6001','LOSS_PAYMENT','10500.00','D','2024-04-28'],['9003','6001','EXPENSE_PAYMENT','400.00','D','2024-04-28'],['9004','6001','DEDUCTIBLE_RECOVERY','1000.00','D','2024-04-28'],['9005','6001','SUBROGATION','1500.00','D','2024-05-15'],['9006','6001','REINSURANCE_RECOVERY','2100.00','C','2024-04-30']],pk:0,fk:[1],hi:[2]},
+ ],
+ rels:[
+  {from:'CLAIM_AMOUNT',to:'DIRECT/ASSUMED/CEDED',card:'1 ──── 0..1 each',desc:'<strong>Insurance type discrimination.</strong> The same claim can have Direct amounts (Sarah\'s policy), Assumed amounts (if the insurer assumed reinsurance on other policies), and Ceded amounts (what they passed to XYZ Re). All three views exist simultaneously in the same table.'},
+  {from:'DEBIT_CLAIM_AMOUNT',to:'PAYMENT / RESERVE / RECOVERY',card:'1 ──── 0..1 each',desc:'<strong>Category discrimination.</strong> Three fundamentally different financial categories — actual cash out (payment), estimated future liability (reserve), and money recovered back (recovery) — all share the same root supertype for unified reporting.'},
+ ],
+ xlinks:[
+  {domain:'Claims',color:'#ef4444',via:'claim_amount.claim_id → claim.claim_id',why:'Primary link — all financial movements belong to a claim. The claim domain generates; Claim Amounts records.'},
+  {domain:'Claims (offer)',color:'#ef4444',via:'claim_amount.claim_offer_id → claim_offer.claim_offer_id',why:'Links a payment to the specific accepted offer for payment-to-offer reconciliation audit.'},
+ ],
+ sql_tables:[
+  {name:'CLAIM_AMOUNT + subtypes',code:`<span class="kw">CREATE TABLE</span> claim_amount (
+  <span class="pk-c">claim_amount_id</span>      <span class="ty">BIGINT</span>        <span class="kw">NOT NULL</span>,
+  <span class="fk-c">claim_id</span>            <span class="ty">INT</span>,                       <span class="cm">-- FK → claim</span>
+  amount_type_code    <span class="ty">VARCHAR(20)</span>,               <span class="cm">-- discriminator</span>
+  claim_amount        <span class="ty">DECIMAL(15,2)</span>,
+  insurance_type_code <span class="ty">CHAR(1)</span>,                    <span class="cm">-- D=Direct A=Assumed C=Ceded</span>
+  event_date          <span class="ty">DATE</span>,
+  <span class="fk-c">claim_offer_id</span>      <span class="ty">INT</span>,                       <span class="cm">-- FK → claim_offer</span>
+  <span class="cn">CONSTRAINT pk_claim_amount</span> <span class="kw">PRIMARY KEY</span> (<span class="pk-c">claim_amount_id</span>),
+  <span class="cn">CONSTRAINT fk_ca_claim</span>     <span class="kw">FOREIGN KEY</span> (<span class="fk-c">claim_id</span>) <span class="kw">REFERENCES</span> claim(<span class="pk-c">claim_id</span>)
+);
+
+<span class="cm">-- Every subtype uses same PK=FK pattern up the chain:</span>
+<span class="kw">CREATE TABLE</span> debit_claim_amount  ( <span class="pk-c">claim_amount_id</span> <span class="ty">BIGINT</span> <span class="kw">NOT NULL</span> <span class="kw">PRIMARY KEY</span>, <span class="kw">FOREIGN KEY</span> (<span class="fk-c">claim_amount_id</span>) <span class="kw">REFERENCES</span> claim_amount );
+<span class="kw">CREATE TABLE</span> claim_payment       ( <span class="pk-c">claim_amount_id</span> <span class="ty">BIGINT</span> <span class="kw">NOT NULL</span> <span class="kw">PRIMARY KEY</span>, <span class="kw">FOREIGN KEY</span> (<span class="fk-c">claim_amount_id</span>) <span class="kw">REFERENCES</span> debit_claim_amount );
+<span class="kw">CREATE TABLE</span> loss_payment        ( <span class="pk-c">claim_amount_id</span> <span class="ty">BIGINT</span> <span class="kw">NOT NULL</span> <span class="kw">PRIMARY KEY</span>, <span class="kw">FOREIGN KEY</span> (<span class="fk-c">claim_amount_id</span>) <span class="kw">REFERENCES</span> claim_payment );
+<span class="kw">CREATE TABLE</span> claim_reserve       ( <span class="pk-c">claim_amount_id</span> <span class="ty">BIGINT</span> <span class="kw">NOT NULL</span> <span class="kw">PRIMARY KEY</span>, <span class="kw">FOREIGN KEY</span> (<span class="fk-c">claim_amount_id</span>) <span class="kw">REFERENCES</span> debit_claim_amount );
+<span class="kw">CREATE TABLE</span> recovery            ( <span class="pk-c">claim_amount_id</span> <span class="ty">BIGINT</span> <span class="kw">NOT NULL</span> <span class="kw">PRIMARY KEY</span>, <span class="kw">FOREIGN KEY</span> (<span class="fk-c">claim_amount_id</span>) <span class="kw">REFERENCES</span> debit_claim_amount );
+<span class="kw">CREATE TABLE</span> subrogation         ( <span class="pk-c">claim_amount_id</span> <span class="ty">BIGINT</span> <span class="kw">NOT NULL</span> <span class="kw">PRIMARY KEY</span>, <span class="kw">FOREIGN KEY</span> (<span class="fk-c">claim_amount_id</span>) <span class="kw">REFERENCES</span> recovery );
+<span class="kw">CREATE TABLE</span> deductible_recovery ( <span class="pk-c">claim_amount_id</span> <span class="ty">BIGINT</span> <span class="kw">NOT NULL</span> <span class="kw">PRIMARY KEY</span>, <span class="kw">FOREIGN KEY</span> (<span class="fk-c">claim_amount_id</span>) <span class="kw">REFERENCES</span> recovery );`},
+ ]
+},
+{id:'pol_amt',name:'Policy Amounts',color:'#10b981',num:'08',role:'Policy Financials',
+ entities:10,desc:'Premiums, taxes, surcharges, fees — with earning dates for pro-rata calculation and tri-partite Direct/Assumed/Ceded accounting.',
+ story:`Sarah's auto policy generates four amounts at inception: a $1,200 annual <strong>PREMIUM</strong>, $14 state filing <strong>FEE</strong>, $24 Texas <strong>SURCHARGE</strong>, and $5.80 premium <strong>TAX</strong>. Each has <code>earning_begin_date=Jan 1</code> and <code>earning_end_date=Dec 31</code> — the earning period. Six months in, a second vehicle is added (Mid-Term Endorsement): new POLICY_AMOUNT rows with <code>earning_begin=Jul 1, earning_end=Dec 31</code> — automatically half the annual amounts. When Sarah cancels in October, a <strong>CREDIT_POLICY_AMOUNT</strong> (return premium) appears for Oct–Dec. The reinsurance treaty produces parallel <strong>CEDED_POLICY_AMOUNT</strong> rows at 20% of each direct amount. Pro-rata earned premium = <code>SUM(amount × remaining_days / total_days)</code> — no calendar logic needed; it's in the data.`,
+ insights:[
+  {icon:'📅',title:'Earning Dates = Pro-Rata Data',desc:'earning_begin_date / earning_end_date encode the earning period. No procedural calendar logic needed — the data drives the calculation.'},
+  {icon:'📊',title:'Three Insurance Types',desc:'DIRECT (own premium), ASSUMED (premium received from ceding company), CEDED (premium passed to reinsurer). Complete tri-partite ledger.'},
+  {icon:'🎯',title:'Coverage-Level Attribution',desc:'policy_coverage_detail_id FK enables premium attribution at the individual coverage line — how much of the HO premium is for Coverage A vs D?'},
+  {icon:'🗺️',title:'State Tax Jurisdiction',desc:'geo_location_id FK links each amount row to its tax jurisdiction — correct Texas vs California premium tax rates without a separate lookup table.'},
+ ],
+ entities_data:[
+  {name:'POLICY_AMOUNT',type:'supertype · all policy financials',fields:[{n:'policy_amount_id',t:'BIGINT',pk:1},{n:'policy_id',t:'INT',fk:1},{n:'policy_coverage_detail_id',t:'INT',fk:1},{n:'amount_type_code',t:'VARCHAR(20)'},{n:'policy_amount',t:'DECIMAL(15,2)'},{n:'insurance_type_code',t:'CHAR(1)',note:'D/A/C'},{n:'effective_date',t:'DATE'},{n:'earning_begin_date',t:'DATE'},{n:'earning_end_date',t:'DATE'},{n:'geo_location_id',t:'INT',fk:1},{n:'insurable_object_id',t:'INT',fk:1}]},
+  {name:'DIRECT_POLICY_AMOUNT',type:'IS-A (own book D)',fields:[{n:'policy_amount_id',t:'BIGINT',pk:1,fk:1}]},
+  {name:'ASSUMED_POLICY_AMOUNT',type:'IS-A (assumed A)',fields:[{n:'policy_amount_id',t:'BIGINT',pk:1,fk:1}]},
+  {name:'CEDED_POLICY_AMOUNT',type:'IS-A (ceded C)',fields:[{n:'policy_amount_id',t:'BIGINT',pk:1,fk:1}]},
+  {name:'DEBIT_POLICY_AMOUNT',type:'charges to insured',fields:[{n:'policy_amount_id',t:'BIGINT',pk:1,fk:1}]},
+  {name:'CREDIT_POLICY_AMOUNT',type:'credits to insured',fields:[{n:'policy_amount_id',t:'BIGINT',pk:1,fk:1}]},
+  {name:'PREMIUM',type:'base insurance charge',fields:[{n:'policy_amount_id',t:'BIGINT',pk:1,fk:1}]},
+  {name:'TAX',type:'government premium tax',fields:[{n:'policy_amount_id',t:'BIGINT',pk:1,fk:1}]},
+  {name:'SURCHARGE',type:'risk-based surcharge',fields:[{n:'policy_amount_id',t:'BIGINT',pk:1,fk:1}]},
+  {name:'FEE',type:'service / admin fee',fields:[{n:'policy_amount_id',t:'BIGINT',pk:1,fk:1}]},
+ ],
+ sample_tables:[
+  {caption:'POLICY_AMOUNT — auto policy 5002 amounts at inception + mid-term endorsement + cancellation',cols:['policy_amount_id','policy_id (FK)','amount_type_code','policy_amount','ins_type','earning_begin','earning_end'],
+   rows:[['1101','5002','PREMIUM','1200.00','D','2024-01-01','2024-12-31'],['1102','5002','FEE','14.00','D','2024-01-01','2024-12-31'],['1103','5002','SURCHARGE','24.00','D','2024-01-01','2024-12-31'],['1104','5002','TAX','5.80','D','2024-01-01','2024-12-31'],['1105','5002','PREMIUM (2nd vehicle)','950.00','D','2024-07-01','2024-12-31'],['1106','5002','PREMIUM (return)','−200.00','D','2024-10-01','2024-12-31']],pk:0,fk:[1],hi:[2]},
+ ],
+ rels:[
+  {from:'earning_begin_date / earning_end_date',to:'Pro-Rata Calculation',card:'data-driven',desc:'<strong>Earned premium = data, not logic.</strong> <code>SUM(amount × (MIN(as_of_date, earning_end_date) − earning_begin_date) / (earning_end_date − earning_begin_date))</code>. A mid-term endorsement inserts a new row with the remaining period as its earning dates — no stored procedure required.'},
+  {from:'POLICY_AMOUNT',to:'POLICY_COVERAGE_DETAIL',card:'0..* ──── 0..1',desc:'<strong>Per-coverage premium attribution.</strong> By setting policy_coverage_detail_id on each premium row, the model supports per-coverage premium disclosure. Without this FK, premium would only be attributable at the policy level.'},
+ ],
+ xlinks:[
+  {domain:'Agreement & Policy',color:'#8b5cf6',via:'policy_amount.policy_id → policy.policy_id',why:'Every charge rolls up to policy_id — the primary aggregation key for billing and premium reporting.'},
+  {domain:'Coverage',color:'#22c55e',via:'policy_amount.policy_coverage_detail_id → policy_coverage_detail',why:'Premium at coverage-detail level — per-coverage premium disclosure without post-hoc allocation.'},
+  {domain:'Geographic Location',color:'#22d3ee',via:'policy_amount.geo_location_id → geographic_location',why:'State-specific taxes and surcharges look up the correct jurisdiction-specific rate.'},
+  {domain:'Insurable Object',color:'#f59e0b',via:'policy_amount.insurable_object_id → insurable_object',why:'Premium attributed to a specific insured object — per-vehicle pricing on a multi-car policy.'},
+ ],
+ sql_tables:[
+  {name:'POLICY_AMOUNT + leaf types',code:`<span class="kw">CREATE TABLE</span> policy_amount (
+  <span class="pk-c">policy_amount_id</span>          <span class="ty">BIGINT</span>        <span class="kw">NOT NULL</span>,
+  <span class="fk-c">policy_id</span>                 <span class="ty">INT</span>,                       <span class="cm">-- FK → policy</span>
+  <span class="fk-c">policy_coverage_detail_id</span> <span class="ty">INT</span>,                       <span class="cm">-- FK → policy_coverage_detail</span>
+  amount_type_code          <span class="ty">VARCHAR(20)</span>,               <span class="cm">-- discriminator</span>
+  policy_amount             <span class="ty">DECIMAL(15,2)</span>,
+  insurance_type_code       <span class="ty">CHAR(1)</span>,                    <span class="cm">-- D/A/C</span>
+  effective_date            <span class="ty">DATE</span>,
+  earning_begin_date        <span class="ty">DATE</span>,                      <span class="cm">-- ← pro-rata period start</span>
+  earning_end_date          <span class="ty">DATE</span>,                      <span class="cm">-- ← pro-rata period end</span>
+  <span class="fk-c">geo_location_id</span>           <span class="ty">INT</span>,                       <span class="cm">-- FK → geographic_location (tax jurisdiction)</span>
+  <span class="fk-c">insurable_object_id</span>       <span class="ty">INT</span>,                       <span class="cm">-- FK → insurable_object</span>
+  <span class="cn">CONSTRAINT pk_policy_amount</span> <span class="kw">PRIMARY KEY</span> (<span class="pk-c">policy_amount_id</span>)
+);
+
+<span class="cm">-- Subtype leaf tables:</span>
+<span class="kw">CREATE TABLE</span> premium   ( <span class="pk-c">policy_amount_id</span> <span class="ty">BIGINT</span> <span class="kw">NOT NULL</span> <span class="kw">PRIMARY KEY</span>, <span class="kw">FOREIGN KEY</span> (<span class="fk-c">policy_amount_id</span>) <span class="kw">REFERENCES</span> debit_policy_amount );
+<span class="kw">CREATE TABLE</span> tax       ( <span class="pk-c">policy_amount_id</span> <span class="ty">BIGINT</span> <span class="kw">NOT NULL</span> <span class="kw">PRIMARY KEY</span>, <span class="kw">FOREIGN KEY</span> (<span class="fk-c">policy_amount_id</span>) <span class="kw">REFERENCES</span> debit_policy_amount );
+<span class="kw">CREATE TABLE</span> surcharge ( <span class="pk-c">policy_amount_id</span> <span class="ty">BIGINT</span> <span class="kw">NOT NULL</span> <span class="kw">PRIMARY KEY</span>, <span class="kw">FOREIGN KEY</span> (<span class="fk-c">policy_amount_id</span>) <span class="kw">REFERENCES</span> debit_policy_amount );
+<span class="kw">CREATE TABLE</span> fee       ( <span class="pk-c">policy_amount_id</span> <span class="ty">BIGINT</span> <span class="kw">NOT NULL</span> <span class="kw">PRIMARY KEY</span>, <span class="kw">FOREIGN KEY</span> (<span class="fk-c">policy_amount_id</span>) <span class="kw">REFERENCES</span> debit_policy_amount );`},
+ ]
+},
+{id:'events',name:'Events',color:'#f472b6',num:'09',role:'Lifecycle Audit Trail',
+ entities:16,desc:'Policy lifecycle events (quote, bind, endorse, renew, cancel), life events, business events, and claim events — unified audit trail.',
+ story:`Sarah's auto policy generates a chronological chain. Day 1: <strong>QUOTE</strong> event. She accepts → <strong>BINDING</strong>. Policy incepts → <strong>NEW_BUSINESS</strong>. Three months later, second car → <strong>ENDORSEMENT</strong> (specifically <strong>MID_TERM</strong>, prospective from change date). At 12 months → <strong>RENEWAL</strong>. Six months into renewal, switches insurers → <strong>CANCEL</strong> (specifically <strong>PRO_RATA</strong>, proportional refund for unused days). Sarah's marriage is a <strong>LIFE_EVENT</strong> on her Person record — triggers underwriting review. Her LLC's address change is a <strong>BUSINESS_EVENT</strong> on the Organization. The hailstorm claim status change is a <strong>CLAIM_EVENT</strong>. All share EVENT supertype and one event_id sequence — enabling a unified chronological audit log across all subjects.`,
+ insights:[
+  {icon:'📋',title:'Unified Event Sequence',desc:'All event types share one EVENT supertype and one event_id PK sequence — enables a chronological audit log across policies, life events, and claims.'},
+  {icon:'📝',title:'Cancel Subtypes Drive Finance',desc:'FLAT, PRO_RATA, SHORT_RATE determine how return premium is calculated — the data model captures which type; financial logic reads it.'},
+  {icon:'🔀',title:'Endorsement Subtypes',desc:'FULL_TERM (retroactive to inception) vs MID_TERM (prospective from change date) — different earning period math in Policy Amounts domain.'},
+  {icon:'🔗',title:'Three Non-Policy Event Types',desc:'LIFE_EVENT (person), BUSINESS_EVENT (organization), CLAIM_EVENT (claim) — each links to its own domain anchor via FK.'},
+ ],
+ entities_data:[
+  {name:'EVENT',type:'supertype · root',fields:[{n:'event_id',t:'INT',pk:1}]},
+  {name:'POLICY_EVENT',type:'subtype · policy lifecycle',fields:[{n:'event_id',t:'INT',pk:1,fk:1,note:'FK→event'},{n:'policy_id',t:'INT',fk:1},{n:'effective_date',t:'DATE'},{n:'event_date',t:'DATE'},{n:'event_type_code',t:'VARCHAR(20)',note:'discriminator'},{n:'event_sub_type_code',t:'VARCHAR(20)'}]},
+  {name:'NEW_BUSINESS',type:'new policy',fields:[{n:'event_id',t:'INT',pk:1,fk:1,note:'FK→policy_event'}]},
+  {name:'BINDING',type:'policy bound',fields:[{n:'event_id',t:'INT',pk:1,fk:1}]},
+  {name:'QUOTE',type:'quote issued',fields:[{n:'event_id',t:'INT',pk:1,fk:1}]},
+  {name:'PRE_QUALIFICATION',type:'eligibility check',fields:[{n:'event_id',t:'INT',pk:1,fk:1}]},
+  {name:'ENDORSEMENT',type:'policy change',fields:[{n:'event_id',t:'INT',pk:1,fk:1}]},
+  {name:'FULL_TERM',type:'subtype of ENDORSEMENT',fields:[{n:'event_id',t:'INT',pk:1,fk:1,note:'FK→endorsement'}]},
+  {name:'MID_TERM',type:'subtype of ENDORSEMENT',fields:[{n:'event_id',t:'INT',pk:1,fk:1,note:'FK→endorsement'}]},
+  {name:'RENEWAL',type:'policy renewed',fields:[{n:'event_id',t:'INT',pk:1,fk:1}]},
+  {name:'CANCEL',type:'policy cancelled',fields:[{n:'event_id',t:'INT',pk:1,fk:1}]},
+  {name:'FLAT',type:'subtype of CANCEL',fields:[{n:'event_id',t:'INT',pk:1,fk:1,note:'FK→cancel'}]},
+  {name:'PRO_RATA',type:'subtype of CANCEL',fields:[{n:'event_id',t:'INT',pk:1,fk:1,note:'FK→cancel'}]},
+  {name:'SHORT_RATE',type:'subtype of CANCEL',fields:[{n:'event_id',t:'INT',pk:1,fk:1,note:'FK→cancel'}]},
+  {name:'REINSTATEMENT',type:'reinstates lapsed policy',fields:[{n:'event_id',t:'INT',pk:1,fk:1}]},
+  {name:'AUDIT',type:'premium audit',fields:[{n:'event_id',t:'INT',pk:1,fk:1}]},
+  {name:'BUSINESS_EVENT',type:'org lifecycle event',fields:[{n:'event_id',t:'INT',pk:1,fk:1},{n:'party_id',t:'BIGINT',fk:1,note:'FK→party(org)'}]},
+  {name:'LIFE_EVENT',type:'personal life event',fields:[{n:'event_id',t:'INT',pk:1,fk:1},{n:'party_id',t:'BIGINT',fk:1,note:'FK→party(person)'}]},
+  {name:'CLAIM_EVENT',type:'claim lifecycle event',fields:[{n:'event_id',t:'INT',pk:1,fk:1},{n:'claim_id',t:'INT',fk:1}]},
+ ],
+ sample_tables:[
+  {caption:"POLICY_EVENT — Sarah's auto policy 5002 chronological audit trail",cols:['event_id','policy_id (FK)','event_type_code','event_date','effective_date'],
+   rows:[['2001','5002','QUOTE','2024-03-20','2024-04-01'],['2002','5002','BINDING','2024-03-28','2024-04-01'],['2003','5002','NEW_BUSINESS','2024-04-01','2024-04-01'],['2004','5002','ENDORSEMENT (MID_TERM)','2024-07-01','2024-07-01'],['2005','5002','RENEWAL','2025-04-01','2025-04-01'],['2006','5002','CANCEL (PRO_RATA)','2025-10-15','2025-10-15']],pk:0,fk:[1],hi:[2]},
+ ],
+ rels:[
+  {from:'EVENT',to:'POLICY_EVENT / LIFE_EVENT / BUSINESS_EVENT / CLAIM_EVENT',card:'1 ──── 0..1 each',desc:'<strong>Single event_id sequence.</strong> All event types share one supertype with a single PK sequence. A unified chronological log query: <code>SELECT * FROM event e LEFT JOIN policy_event pe ON e.event_id = pe.event_id LEFT JOIN life_event le ON e.event_id = le.event_id ORDER BY e.event_id</code> — complete customer timeline in one sorted list.'},
+  {from:'CANCEL',to:'FLAT / PRO_RATA / SHORT_RATE',card:'1 ──── 0..1 each',desc:'<strong>Cancel subtypes drive financial calculation.</strong> FLAT = 100% refund; PRO_RATA = proportional refund (uses earning_end_date in Policy Amounts); SHORT_RATE = insured-initiated with penalty. The data model captures which type; financial logic reads the type code and selects the correct calculation.'},
+ ],
+ xlinks:[
+  {domain:'Agreement & Policy',color:'#8b5cf6',via:'policy_event.policy_id → policy.policy_id',why:'Every policy lifecycle event links to policy_id — a chronological list of rows is the complete policy history.'},
+  {domain:'Party',color:'#3b82f6',via:'life_event.party_id + business_event.party_id → party.party_id',why:'Marriage, divorce, org address change — life and business events anchor to the party record they affect.'},
+  {domain:'Claims',color:'#ef4444',via:'claim_event.claim_id → claim.claim_id',why:'Claim lifecycle events (reopened, SIU referred, settlement approved) build the chronological claim audit trail.'},
+ ],
+ sql_tables:[
+  {name:'EVENT + POLICY_EVENT + CANCEL subtypes',code:`<span class="kw">CREATE TABLE</span> event (
+  <span class="pk-c">event_id</span> <span class="ty">INT</span> <span class="kw">NOT NULL</span>,
+  <span class="cn">CONSTRAINT pk_event</span> <span class="kw">PRIMARY KEY</span> (<span class="pk-c">event_id</span>)
+);
+
+<span class="kw">CREATE TABLE</span> policy_event (
+  <span class="pk-c">event_id</span>            <span class="ty">INT</span>         <span class="kw">NOT NULL</span>,  <span class="cm">-- PK = FK → event</span>
+  <span class="fk-c">policy_id</span>           <span class="ty">INT</span>,                    <span class="cm">-- FK → policy</span>
+  effective_date      <span class="ty">DATE</span>,
+  event_date          <span class="ty">DATE</span>,
+  event_type_code     <span class="ty">VARCHAR(20)</span>,
+  event_sub_type_code <span class="ty">VARCHAR(20)</span>,
+  <span class="cn">CONSTRAINT pk_policy_event</span> <span class="kw">PRIMARY KEY</span> (<span class="pk-c">event_id</span>),
+  <span class="cn">CONSTRAINT fk_pe_event</span>     <span class="kw">FOREIGN KEY</span> (<span class="fk-c">event_id</span>)  <span class="kw">REFERENCES</span> event(<span class="pk-c">event_id</span>),
+  <span class="cn">CONSTRAINT fk_pe_policy</span>    <span class="kw">FOREIGN KEY</span> (<span class="fk-c">policy_id</span>) <span class="kw">REFERENCES</span> policy(<span class="pk-c">policy_id</span>)
+);
+
+<span class="cm">-- All policy event subtypes follow this pattern:</span>
+<span class="kw">CREATE TABLE</span> cancel   ( <span class="pk-c">event_id</span> <span class="ty">INT</span> <span class="kw">NOT NULL</span> <span class="kw">PRIMARY KEY</span>, <span class="kw">FOREIGN KEY</span> (<span class="fk-c">event_id</span>) <span class="kw">REFERENCES</span> policy_event );
+<span class="kw">CREATE TABLE</span> flat     ( <span class="pk-c">event_id</span> <span class="ty">INT</span> <span class="kw">NOT NULL</span> <span class="kw">PRIMARY KEY</span>, <span class="kw">FOREIGN KEY</span> (<span class="fk-c">event_id</span>) <span class="kw">REFERENCES</span> cancel );
+<span class="kw">CREATE TABLE</span> pro_rata ( <span class="pk-c">event_id</span> <span class="ty">INT</span> <span class="kw">NOT NULL</span> <span class="kw">PRIMARY KEY</span>, <span class="kw">FOREIGN KEY</span> (<span class="fk-c">event_id</span>) <span class="kw">REFERENCES</span> cancel );`},
+ ]
+},
+{id:'assessment',name:'Assessment',color:'#818cf8',num:'10',role:'Risk Evaluation',
+ entities:15,desc:'Underwriting, credit, fraud, financial valuation, and approval assessments — on any subject: party, object, claim, or agreement.',
+ story:`Before binding Sarah's homeowners policy, four parallel assessments run. (1) An <strong>UNDERWRITING_ASSESSMENT</strong> on the Agreement: risk score "B+", recommendation "Accept-Standard." (2) A <strong>CREDIT_RATING</strong> on Sarah: score 740 from Experian — stored as ASSESSMENT_RESULT linked via <strong>PARTY_ASSESSMENT</strong>. (3) A <strong>FINANCIAL_VALUATION</strong> on her dwelling: replacement cost $285,000 via Marshall & Swift — linked via <strong>OBJECT_ASSESSMENT</strong>. (4) A <strong>FRAUD_ASSESSMENT</strong> on the agreement: score 0.02. The field inspector is an <strong>ASSESSMENT_PARTY_ROLE</strong> (role=Inspector). The underwriting manager who reviewed all four and approved binding is also a role, and their decision is an <strong>APPROVAL</strong> assessment result (status=APR, approved_by_party_id=1006). One assessment event can produce multiple results simultaneously.`,
+ insights:[
+  {icon:'🎯',title:'Assessment → Results Separation',desc:'One ASSESSMENT event (the evaluation) produces multiple ASSESSMENT_RESULT rows (the outcomes). A field inspection produces both a Physical Object Assessment AND a Financial Valuation.'},
+  {icon:'🌐',title:'Universal Subject Types',desc:'PARTY_ASSESSMENT, OBJECT_ASSESSMENT, CLAIM_ASSESSMENT, AGREEMENT_ASSESSMENT — any subject type can be evaluated without schema changes.'},
+  {icon:'📈',title:'Many Score Types',desc:'Underwriting, Credit, Fraud, Demographic, Customer, Channel, Risk Factor — 8+ scoring subtypes, all sharing one ASSESSMENT_RESULT table with one event_id sequence.'},
+  {icon:'✅',title:'APPROVAL is an Assessment Result',desc:'The binding decision (approve/decline/refer) is modeled as an Assessment Result subtype — linking the decision to the assessment that produced it and the person who made it.'},
+ ],
+ entities_data:[
+  {name:'ASSESSMENT',type:'evaluation event',fields:[{n:'assessment_id',t:'INT',pk:1},{n:'assessment_description',t:'VARCHAR(5000)'},{n:'assessment_reason_description',t:'VARCHAR(2000)'},{n:'begin_date',t:'DATE'},{n:'end_date',t:'DATE'}]},
+  {name:'ASSESSMENT_RESULT',type:'outcome of assessment',fields:[{n:'assessment_result_id',t:'INT',pk:1},{n:'assessment_id',t:'INT',fk:1},{n:'assessment_result_type_code',t:'VARCHAR(20)',note:'discriminator'}]},
+  {name:'ASSESSMENT_PARTY_ROLE',type:'who participated',fields:[{n:'assessment_id',t:'INT',pk:1,fk:1},{n:'party_id',t:'BIGINT',pk:1,fk:1},{n:'party_role_code',t:'VARCHAR(20)',pk:1,note:'Inspector/Reviewer'}]},
+  {name:'PARTY_ASSESSMENT',type:'subject = party',fields:[{n:'assessment_result_id',t:'INT',pk:1,fk:1},{n:'party_id',t:'BIGINT',fk:1}]},
+  {name:'OBJECT_ASSESSMENT',type:'subject = insurable object',fields:[{n:'assessment_result_id',t:'INT',pk:1,fk:1},{n:'insurable_object_id',t:'INT',fk:1}]},
+  {name:'CLAIM_ASSESSMENT',type:'subject = claim',fields:[{n:'assessment_result_id',t:'INT',pk:1,fk:1},{n:'claim_id',t:'INT',fk:1}]},
+  {name:'AGREEMENT_ASSESSMENT',type:'subject = agreement',fields:[{n:'assessment_result_id',t:'INT',pk:1,fk:1},{n:'agreement_id',t:'INT',fk:1}]},
+  {name:'UNDERWRITING_ASSESSMENT',type:'UW risk score',fields:[{n:'assessment_result_id',t:'INT',pk:1,fk:1},{n:'risk_score',t:'VARCHAR(20)'},{n:'recommendation_code',t:'VARCHAR(20)',note:'Accept/Decline/Refer'}]},
+  {name:'CREDIT_RATING',type:'credit bureau score',fields:[{n:'assessment_result_id',t:'INT',pk:1,fk:1},{n:'credit_score',t:'VARCHAR(20)'},{n:'credit_agency_code',t:'VARCHAR(20)',note:'Experian/TransUnion'}]},
+  {name:'FRAUD_ASSESSMENT',type:'fraud risk score',fields:[{n:'assessment_result_id',t:'INT',pk:1,fk:1},{n:'fraud_score',t:'VARCHAR(20)'},{n:'fraud_indicator_code',t:'VARCHAR(20)'}]},
+  {name:'FINANCIAL_VALUATION',type:'replacement cost / ACV',fields:[{n:'assessment_result_id',t:'INT',pk:1,fk:1},{n:'valuation_amount',t:'DECIMAL(15,2)'},{n:'valuation_method_code',t:'VARCHAR(20)',note:'Marshall&Swift/NADA'}]},
+  {name:'PHYSICAL_OBJECT_ASSESSMENT',type:'condition inspection',fields:[{n:'assessment_result_id',t:'INT',pk:1,fk:1},{n:'condition_code',t:'VARCHAR(20)'},{n:'inspection_date',t:'DATE'}]},
+  {name:'DEMOGRAPHIC_SCORE',type:'analytics score',fields:[{n:'assessment_result_id',t:'INT',pk:1,fk:1},{n:'score_value',t:'DECIMAL(8,4)'},{n:'score_type_code',t:'VARCHAR(20)'}]},
+  {name:'PLACE_ASSESSMENT',type:'geographic risk',fields:[{n:'assessment_result_id',t:'INT',pk:1,fk:1},{n:'place_risk_score',t:'VARCHAR(20)'}]},
+  {name:'APPROVAL',type:'underwriting decision',fields:[{n:'assessment_result_id',t:'INT',pk:1,fk:1},{n:'approval_status_code',t:'VARCHAR(20)',note:'APR/DEC/REF'},{n:'approved_by_party_id',t:'BIGINT',fk:1},{n:'approval_date',t:'DATE'}]},
+ ],
+ sample_tables:[
+  {caption:'ASSESSMENT — four evaluations before binding homeowners policy 5001',cols:['assessment_id','assessment_description','begin_date','end_date'],
+   rows:[['A001','UW risk assessment – policy 5001','2024-03-28','2024-03-28'],['A002','Experian credit pull – Sarah Chen','2024-03-28','2024-03-28'],['A003','Field inspection – 123 Main St dwelling','2024-03-26','2024-03-26'],['A004','Fraud score – policy 5001','2024-03-28','2024-03-28']],pk:0,fk:[],hi:[1]},
+  {caption:'ASSESSMENT_RESULT — outcomes of the four assessments',cols:['assessment_result_id','assessment_id (FK)','assessment_result_type_code'],
+   rows:[['R001','A001','UNDERWRITING_ASSESSMENT'],['R002','A002','CREDIT_RATING'],['R003','A003','FINANCIAL_VALUATION'],['R004','A003','PHYSICAL_OBJECT_ASSESSMENT'],['R005','A004','FRAUD_ASSESSMENT'],['R006','A001','APPROVAL']],pk:0,fk:[1],hi:[2]},
+  {caption:'APPROVAL — binding decision linked back to the underwriting assessment',cols:['assessment_result_id (FK)','approval_status_code','approved_by_party_id (FK)','approval_date'],
+   rows:[['R006','APR','1006','2024-03-28']],pk:-1,fk:[0,2],hi:[1]},
+ ],
+ rels:[
+  {from:'ASSESSMENT',to:'ASSESSMENT_RESULT',card:'1 ──── 0..*',desc:'<strong>Assessment → Results separation.</strong> One field inspection (A003) produces TWO result rows — R003 (Financial Valuation, $285K) and R004 (Physical Object Assessment, condition=Good). The assessment is the event; results are what it found. Multiple results can coexist for one assessment event.'},
+  {from:'ASSESSMENT_RESULT',to:'PARTY / OBJECT / CLAIM / AGREEMENT subtypes',card:'1 ──── 0..1 each',desc:'<strong>Subject-type subtypes encode who/what was evaluated.</strong> PARTY_ASSESSMENT (credit rating subject = Sarah), OBJECT_ASSESSMENT (valuation subject = dwelling), AGREEMENT_ASSESSMENT (UW assessment subject = policy). Different subject type, same result infrastructure.'},
+ ],
+ xlinks:[
+  {domain:'Party',color:'#3b82f6',via:'assessment_party_role.party_id + party_assessment.party_id → party',why:'Assessors who conduct evaluations, and parties who are subjects of scoring (credit, fraud, demographic).'},
+  {domain:'Agreement & Policy',color:'#8b5cf6',via:'agreement_assessment.agreement_id → agreement.agreement_id',why:'Underwriting decisions and risk scores on the policy as a whole — policy-level view of risk evaluation.'},
+  {domain:'Insurable Object',color:'#f59e0b',via:'object_assessment.insurable_object_id → insurable_object',why:'Home inspections, vehicle appraisals, condition reports linked to the specific evaluated object.'},
+  {domain:'Claims',color:'#ef4444',via:'claim_assessment.claim_id → claim.claim_id',why:'Fraud scores, IME results, and claim evaluation findings linked to the specific claim.'},
+ ],
+ sql_tables:[
+  {name:'ASSESSMENT + ASSESSMENT_RESULT + APPROVAL',code:`<span class="kw">CREATE TABLE</span> assessment (
+  <span class="pk-c">assessment_id</span>                 <span class="ty">INT</span>           <span class="kw">NOT NULL</span>,
+  assessment_description        <span class="ty">VARCHAR(5000)</span>,
+  assessment_reason_description <span class="ty">VARCHAR(2000)</span>,
+  begin_date                    <span class="ty">DATE</span>,
+  end_date                      <span class="ty">DATE</span>,
+  <span class="cn">CONSTRAINT pk_assessment</span> <span class="kw">PRIMARY KEY</span> (<span class="pk-c">assessment_id</span>)
+);
+
+<span class="kw">CREATE TABLE</span> assessment_result (
+  <span class="pk-c">assessment_result_id</span>      <span class="ty">INT</span>          <span class="kw">NOT NULL</span>,
+  <span class="fk-c">assessment_id</span>             <span class="ty">INT</span>,                      <span class="cm">-- FK → assessment</span>
+  assessment_result_type_code <span class="ty">VARCHAR(20)</span>,             <span class="cm">-- discriminator</span>
+  <span class="cn">CONSTRAINT pk_asmt_result</span>  <span class="kw">PRIMARY KEY</span> (<span class="pk-c">assessment_result_id</span>),
+  <span class="cn">CONSTRAINT fk_ar_assessment</span> <span class="kw">FOREIGN KEY</span> (<span class="fk-c">assessment_id</span>)
+    <span class="kw">REFERENCES</span> assessment(<span class="pk-c">assessment_id</span>)
+);
+
+<span class="kw">CREATE TABLE</span> approval (
+  <span class="pk-c">assessment_result_id</span> <span class="ty">INT</span>         <span class="kw">NOT NULL</span>,
+  approval_status_code <span class="ty">VARCHAR(20)</span>,             <span class="cm">-- APR/DEC/REF</span>
+  <span class="fk-c">approved_by_party_id</span> <span class="ty">BIGINT</span>,                  <span class="cm">-- FK → party (the decision maker)</span>
+  approval_date        <span class="ty">DATE</span>,
+  <span class="cn">CONSTRAINT pk_appr</span>    <span class="kw">PRIMARY KEY</span> (<span class="pk-c">assessment_result_id</span>),
+  <span class="cn">CONSTRAINT fk_appr_ar</span> <span class="kw">FOREIGN KEY</span> (<span class="fk-c">assessment_result_id</span>)
+    <span class="kw">REFERENCES</span> assessment_result(<span class="pk-c">assessment_result_id</span>)
+);`},
+ ]
+},
+];
+
+// ─── SEARCH INDEX ────────────────────────────────────────────────────────────
+const searchIndex=[];
+DOMAINS.forEach(d=>{
+  d.entities_data.forEach(e=>{
+    searchIndex.push({domain:d.id,domainName:d.name,color:d.color,name:e.name,type:e.type,hint:`${e.fields.length} fields`});
+    e.fields.forEach(f=>{
+      searchIndex.push({domain:d.id,domainName:d.name,color:d.color,name:f.n,type:'field in '+e.name,hint:f.t+(f.note?' · '+f.note:'')});
+    });
+  });
+});
+
+// ─── RENDER FUNCTIONS ────────────────────────────────────────────────────────
+let activeTab={};
+
+function buildSidebar(){
+  const sb=document.getElementById('sidebar');
+  DOMAINS.forEach((d,i)=>{
+    const btn=document.createElement('button');
+    btn.className='domain-btn';
+    btn.id='btn-'+d.id;
+    btn.style.setProperty('--dc',d.color);
+    btn.innerHTML=`<span class="dot"></span>${d.name}<span class="cnt">${d.entities}</span>`;
+    btn.onclick=()=>showDomain(d.id);
+    sb.appendChild(btn);
+  });
+}
+
+function showHome(){
+  setActiveBtn('btn-home');
+  const c=document.getElementById('content');
+  c.innerHTML=`<div id="home">
+    <div class="hero-title">P&C Insurance<br/>Data Model <span>Explorer</span></div>
+    <p class="hero-sub">An interactive reference for all 10 domains — real use cases, entity schemas, SQL DDL, sample data, and relationship documentation in one place.</p>
+    <div class="home-stats">
+      <div class="hstat"><div class="hstat-n">10</div><div class="hstat-l">Domains</div></div>
+      <div class="hstat"><div class="hstat-n">~200</div><div class="hstat-l">Entities</div></div>
+      <div class="hstat"><div class="hstat-n">~500</div><div class="hstat-l">Relationships</div></div>
+      <div class="hstat"><div class="hstat-n">13</div><div class="hstat-l">Subject Areas</div></div>
+    </div>
+    <div class="story-section">
+      <div class="story-title">👩‍💼 The Story of Sarah Chen</div>
+      <div class="story-text">All 10 domains are illustrated through a single continuous scenario — <strong>Sarah Chen</strong>, a homeowner in Austin, TX. She applies for insurance → gets a quote → binds a policy → her home is hit by hail → she files a claim → it gets settled. Along the way we see credit checks, underwriting approvals, endorsements when she adds a second car, and ultimately a cancellation. Every domain adds a new chapter to the same story. Click any domain below to begin.</div>
+    </div>
+    <div class="home-grid">
+      ${DOMAINS.map(d=>`
+      <div class="home-card" onclick="showDomain('${d.id}')" style="border-top:3px solid ${d.color}">
+        <div class="hc-num">${d.num} · ${d.role}</div>
+        <div class="hc-name">${d.name}</div>
+        <div class="hc-count">${d.entities} entities</div>
+        <div class="hc-desc">${d.desc.substring(0,80)}…</div>
+      </div>`).join('')}
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px 24px">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--ink3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px">🔑 Legend</div>
+      <div style="display:flex;gap:24px;flex-wrap:wrap;font-size:12.5px;color:var(--ink2)">
+        <span style="display:flex;align-items:center;gap:6px"><span style="font-size:8px;font-weight:700;color:#15803d;border:1px solid #15803d;border-radius:3px;padding:0 4px">PK</span>Primary Key</span>
+        <span style="display:flex;align-items:center;gap:6px"><span style="font-size:8px;font-weight:700;color:#7c3aed;border:1px solid #7c3aed;border-radius:3px;padding:0 4px">FK</span>Foreign Key</span>
+        <span style="display:flex;align-items:center;gap:6px"><code style="font-family:var(--mono);font-size:11px;background:var(--bg3);padding:1px 5px;border-radius:3px">||──||</code>One-to-One</span>
+        <span style="display:flex;align-items:center;gap:6px"><code style="font-family:var(--mono);font-size:11px;background:var(--bg3);padding:1px 5px;border-radius:3px">||──0..*</code>One-to-Many</span>
+        <span style="display:flex;align-items:center;gap:6px"><code style="font-family:var(--mono);font-size:11px;background:var(--bg3);padding:1px 5px;border-radius:3px">0..*──0..*</code>Many-to-Many (via bridge)</span>
+        <span style="display:flex;align-items:center;gap:6px">⭐ = Most-referenced entity in the domain</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+function showDomain(id){
+  const d=DOMAINS.find(x=>x.id===id);
+  if(!d)return;
+  setActiveBtn('btn-'+id);
+  document.getElementById('content').style.setProperty('--dc',d.color);
+  const tab=activeTab[id]||'story';
+
+  const html=`<div class="domain-view">
+    <div class="domain-header">
+      <div class="domain-eyebrow">Domain ${d.num} · ${d.role}</div>
+      <h1 class="domain-title"><span class="accent">${d.name}</span></h1>
+      <p class="domain-desc">${d.desc}</p>
+      <div class="domain-pills">
+        <span class="pill">${d.entities} entities</span>
+        ${d.xlinks.map(x=>`<span class="pill">→ ${x.domain}</span>`).join('')}
+      </div>
+    </div>
+    <div class="tabs">
+      <button class="tab ${tab==='story'?'active':''}" onclick="switchTab('${id}','story',this)">📖 Use Case</button>
+      <button class="tab ${tab==='entities'?'active':''}" onclick="switchTab('${id}','entities',this)">🗂 Entities</button>
+      <button class="tab ${tab==='sql'?'active':''}" onclick="switchTab('${id}','sql',this)">🖥 SQL</button>
+      <button class="tab ${tab==='data'?'active':''}" onclick="switchTab('${id}','data',this)">📊 Sample Data</button>
+      <button class="tab ${tab==='rels'?'active':''}" onclick="switchTab('${id}','rels',this)">🔗 Relationships</button>
+    </div>
+    ${renderStoryPanel(d,tab==='story')}
+    ${renderEntitiesPanel(d,tab==='entities')}
+    ${renderSQLPanel(d,tab==='sql')}
+    ${renderDataPanel(d,tab==='data')}
+    ${renderRelsPanel(d,tab==='rels')}
+  </div>`;
+
+  document.getElementById('content').innerHTML=html;
+  document.getElementById('content').scrollTop=0;
+}
+
+function switchTab(domainId,tab,btn){
+  activeTab[domainId]=tab;
+  btn.closest('.tabs').querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+tab).classList.add('active');
+}
+
+function renderStoryPanel(d,active){
+  return `<div class="tab-panel ${active?'active':''}" id="panel-story">
+    <div class="usecase">
+      <div class="usecase-tag">📍 Real-world scenario</div>
+      <div class="usecase-text">${d.story}</div>
+    </div>
+    <div class="insights">${d.insights.map(i=>`
+      <div class="insight">
+        <div class="insight-icon">${i.icon}</div>
+        <div class="insight-title">${i.title}</div>
+        <div class="insight-desc">${i.desc}</div>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function renderEntitiesPanel(d,active){
+  const cards=d.entities_data.map(e=>`
+    <div class="entity-card" onclick="this.classList.toggle('expanded')">
+      <div class="ec-head">
+        <span class="ec-dot"></span>
+        <span class="ec-name">${e.name}</span>
+        <span class="ec-type">${e.type}</span>
+        <span class="ec-toggle">▾</span>
+      </div>
+      <div class="ec-fields">${e.fields.map(f=>`
+        <div class="ec-field">
+          ${f.pk?'<span class="badge-pk">PK</span>':''}
+          ${f.fk?'<span class="badge-fk">FK</span>':''}
+          <span class="ec-fn">${f.n}</span>
+          ${f.note?`<span style="font-size:9px;color:var(--ink3)">${f.note}</span>`:''}
+          <span class="ec-ft">${f.t}</span>
+        </div>`).join('')}
+      </div>
+    </div>`).join('');
+  return `<div class="tab-panel ${active?'active':''}" id="panel-entities">
+    <div style="font-size:12px;color:var(--ink3);margin-bottom:14px">Click any card to expand fields. <span class="badge-pk">PK</span> = Primary Key &nbsp; <span class="badge-fk">FK</span> = Foreign Key</div>
+    <div class="entity-grid">${cards}</div>
+  </div>`;
+}
+
+function renderSQLPanel(d,active){
+  const cards=(d.sql_tables||[]).map(t=>`
+    <div class="sql-card">
+      <div class="sql-head"><span style="color:var(--dc)">◆</span> ${t.name}</div>
+      <pre class="sql-code">${t.code}</pre>
+    </div>`).join('');
+  return `<div class="tab-panel ${active?'active':''}" id="panel-sql">
+    <div style="font-size:12px;color:var(--ink3);margin-bottom:14px">Key schemas for this domain. Colors: <span style="color:#1d4ed8;font-family:var(--mono);font-size:11px">KEYWORD</span> &nbsp; <span style="color:#b45309;font-family:var(--mono);font-size:11px">TYPE</span> &nbsp; <span style="color:#15803d;font-family:var(--mono);font-size:11px">PK</span> &nbsp; <span style="color:#7c3aed;font-family:var(--mono);font-size:11px">FK</span></div>
+    <div class="sql-section">${cards||'<div style="color:var(--ink3);font-size:13px;padding:20px">Full schema in the downloadable HTML reference.</div>'}</div>
+  </div>`;
+}
+
+function renderDataPanel(d,active){
+  const tables=(d.sample_tables||[]).map(t=>{
+    const rows=t.rows.map((r,ri)=>`<tr>${r.map((v,ci)=>{
+      let cls='';
+      if(ci===t.pk)cls='v-pk';
+      else if((t.fk||[]).includes(ci))cls='v-fk';
+      else if((t.hi||[]).includes(ci))cls='v-hi';
+      return `<td class="${cls}">${v===null?'<span class="v-null">null</span>':v}</td>`;
+    }).join('')}</tr>`).join('');
+    return `<div class="table-container">
+      <div class="table-caption">${t.caption}<span class="table-caption-note">${t.note||''}</span></div>
+      <div class="table-scroll">
+        <table class="dt">
+          <thead><tr>${t.cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`;
+  }).join('');
+  return `<div class="tab-panel ${active?'active':''}" id="panel-data">
+    <div style="font-size:12px;color:var(--ink3);margin-bottom:14px">
+      <span style="color:#15803d;font-family:var(--mono);font-size:10px;font-weight:700;border:1px solid #15803d;border-radius:3px;padding:0 3px">PK col</span>&nbsp;
+      <span style="color:#7c3aed;font-family:var(--mono);font-size:10px;font-weight:700;border:1px solid #7c3aed;border-radius:3px;padding:0 3px">FK col</span>&nbsp;
+      <span style="color:var(--dc);font-family:var(--mono);font-size:10px;font-weight:700">highlighted</span> = notable value in this row
+    </div>
+    <div class="data-section">${tables}</div>
+  </div>`;
+}
+
+function renderRelsPanel(d,active){
+  const rels=d.rels.map(r=>`
+    <div class="rel-item">
+      <div class="rel-from">
+        <span class="rel-ent">${r.from}</span>
+        <span class="rel-card-label">${r.card}</span>
+        <span class="rel-ent">${r.to}</span>
+      </div>
+      <div class="rel-desc">${r.desc}</div>
+    </div>`).join('');
+
+  const xlinks=d.xlinks.map(x=>`
+    <div class="xlink">
+      <div class="xlink-target"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${x.color}"></span>${x.domain}</div>
+      <div class="xlink-via">${x.via}</div>
+      <div class="xlink-why">${x.why}</div>
+    </div>`).join('');
+
+  return `<div class="tab-panel ${active?'active':''}" id="panel-rels">
+    <div class="rel-section">
+      <div class="rel-card">
+        <div class="rel-head"><span class="rel-dot"></span>Within-Domain Relationships</div>
+        <div class="rel-items">${rels}</div>
+      </div>
+    </div>
+    <div class="xlinks">
+      <div class="xlinks-title">Cross-Domain Foreign Key Connections</div>
+      <div class="xlink-grid">${xlinks}</div>
+    </div>
+  </div>`;
+}
+
+// ─── SIDEBAR ACTIVE STATE ────────────────────────────────────────────────────
+function setActiveBtn(id){
+  document.querySelectorAll('.domain-btn').forEach(b=>b.classList.remove('active'));
+  const btn=document.getElementById(id);
+  if(btn){
+    btn.classList.add('active');
+    const c=btn.style.getPropertyValue('--dc');
+    document.getElementById('content').style.setProperty('--dc',c||'#6366f1');
+  }
+}
+
+// ─── SEARCH ──────────────────────────────────────────────────────────────────
+const searchInput=document.getElementById('searchInput');
+const searchResults=document.getElementById('search-results');
+
+searchInput.addEventListener('input',()=>{
+  const q=searchInput.value.trim().toLowerCase();
+  if(!q){searchResults.style.display='none';return;}
+  const hits=searchIndex.filter(i=>i.name.toLowerCase().includes(q)||i.type.toLowerCase().includes(q)).slice(0,12);
+  if(!hits.length){
+    searchResults.style.display='block';
+    searchResults.innerHTML='<div class="sr-empty">No results for "'+searchInput.value+'"</div>';
+    return;
+  }
+  searchResults.style.display='block';
+  searchResults.innerHTML=hits.map(h=>`
+    <div class="sr-item" onclick="showDomain('${h.domain}');searchResults.style.display='none';searchInput.value=''">
+      <div class="sr-domain"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${h.color}"></span>${h.domainName}</div>
+      <div class="sr-name">${h.name}</div>
+      <div class="sr-hint">${h.type} · ${h.hint}</div>
+    </div>`).join('');
+});
+
+document.addEventListener('click',e=>{
+  if(!e.target.closest('#search'))searchResults.style.display='none';
+});
+
+searchInput.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){searchResults.style.display='none';searchInput.value='';}
+});
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+buildSidebar();
+showHome();
+</script>
+</body>
+</html>
