@@ -6,6 +6,11 @@
         "title": "P&C Insurance Data Model Explorer",
         "url": "/pc_insurance_explorer.html",
         "description": "Interactive tool for exploring property and casualty insurance data models"
+      },
+      {
+        "title": "Property & Casualty Data Model (PDF)",
+        "url": "https://publish.obsidian.md/kaas-published/0-Slipbox/_assets/PropertyCasualty-datamodel.pdf",
+        "description": "Comprehensive PDF reference for P&C insurance data modeling"
       }
     ]
   },
