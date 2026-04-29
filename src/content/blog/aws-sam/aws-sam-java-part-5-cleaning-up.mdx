@@ -1,0 +1,98 @@
+---
+title: 'AWS SAM with Java: Part 5 - Cleaning Up'
+description: 'Delete your AWS SAM application and all associated resources. Learn what sam delete handles automatically and what you need to clean up manually.'
+pubDate: 2024-09-28
+author: 'Amrit Adhikari'
+tags: ['AWS']
+series: 'AWS SAM with Java'
+seriesOrder: 5
+draft: false
+---
+
+import Alert from '../../../components/Alert.astro';
+
+When you are done experimenting or want to tear down your application, it is important to clean up all AWS resources to avoid unnecessary charges. Even idle resources like Lambda functions, API Gateways, and S3 buckets can accumulate costs over time. This guide walks you through the complete cleanup process.
+
+---
+
+## Using sam delete
+
+The `sam delete` command makes cleanup straightforward. It handles the CloudFormation stack, S3 artifacts, and ECR images all in one command.
+
+```bash
+# Delete dev
+sam delete --stack-name my-first-api-dev --region us-east-1
+
+# Delete prod
+sam delete --stack-name my-first-api-prod --region us-east-1
+```
+
+It will prompt you to confirm deleting the S3 bucket and artifacts. Say `y` to both.
+
+---
+
+## What sam delete Handles
+
+While `sam delete` takes care of most resources, it does not clean up resources you created manually outside of SAM.
+
+**sam delete handles:**
+
+- [x] CloudFormation stack
+- [x] Lambda functions
+- [x] API Gateway
+- [x] IAM execution roles
+- [x] S3 deployment artifacts and bucket
+
+**You still need to manually delete:**
+
+- [ ] SSM parameters → created with `aws ssm put-parameter`
+- [ ] GitHub Actions IAM role → created with `aws iam create-role`
+- [ ] OIDC provider → created with `aws iam create-open-id-connect-provider`
+- [ ] Lambda Power Tuning stack → its own separate stack
+
+---
+
+## Full Cleanup
+
+To completely remove everything, run `sam delete` for your stacks first, then manually delete the resources you created outside of SAM:
+
+```bash
+# 1. SAM handles the application stacks
+sam delete --stack-name my-first-api-dev --region us-east-1
+sam delete --stack-name my-first-api-prod --region us-east-1
+
+# 2. You handle the manual resources
+aws ssm delete-parameter --name "/my-first-api/dev/table-name"
+aws ssm delete-parameter --name "/my-first-api/dev/log-level"
+aws ssm delete-parameter --name "/my-first-api/prod/table-name"
+aws ssm delete-parameter --name "/my-first-api/prod/log-level"
+
+ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+aws iam detach-role-policy --role-name github-actions-sam-role --policy-arn arn:aws:iam::aws:policy/AWSCloudFormationFullAccess
+aws iam detach-role-policy --role-name github-actions-sam-role --policy-arn arn:aws:iam::aws:policy/AWSLambda_FullAccess
+aws iam detach-role-policy --role-name github-actions-sam-role --policy-arn arn:aws:iam::aws:policy/AmazonAPIGatewayAdministrator
+aws iam detach-role-policy --role-name github-actions-sam-role --policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess
+aws iam detach-role-policy --role-name github-actions-sam-role --policy-arn arn:aws:iam::aws:policy/IAMFullAccess
+aws iam detach-role-policy --role-name github-actions-sam-role --policy-arn arn:aws:iam::aws:policy/AmazonSSMReadOnlyAccess
+aws iam delete-role --role-name github-actions-sam-role
+
+aws iam delete-open-id-connect-provider \
+  --open-id-connect-provider-arn arn:aws:iam::${ACCOUNT_ID}:oidc-provider/token.actions.githubusercontent.com
+```
+
+---
+
+## Summary
+
+<Alert type="info">
+**Rule of thumb:** Anything defined in `template.yaml` is cleaned up by `sam delete`. Anything you created manually with `aws` CLI commands must be deleted manually.
+</Alert>
+
+---
+
+## Useful Resources
+
+- [Full source code](https://github.com/aa1588/my-first-api.git)
+- [AWS SAM Documentation](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-validate.html)
+- [AWS SAM CLI Java Examples](https://github.com/aws-samples/aws-sam-cli-java-examples.git)
+- [Building Java apps with SAM CLI](https://aws.amazon.com/blogs/compute/building-serverless-java-applications-with-the-aws-sam-cli/)
