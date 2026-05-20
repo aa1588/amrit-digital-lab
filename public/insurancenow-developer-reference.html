@@ -1,0 +1,2325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InsuranceNow Developer Reference Guide</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;500;600;700;800&family=Instrument+Sans:wght@400;500;600&display=swap');
+
+  :root {
+    --bg: #0a0e1a;
+    --bg2: #0f1528;
+    --bg3: #141c35;
+    --surface: #1a2340;
+    --surface2: #1f2b4a;
+    --border: #2a3a60;
+    --border2: #3a4f7a;
+    --accent: #4f9eff;
+    --accent2: #00d4aa;
+    --accent3: #ff6b6b;
+    --accent4: #ffc947;
+    --accent5: #b06eff;
+    --text: #e8eef8;
+    --text2: #a0b4d0;
+    --text3: #6a82a0;
+    --code-bg: #0d1220;
+    --tag-green: #00d4aa;
+    --tag-red: #ff6b6b;
+    --tag-blue: #4f9eff;
+    --tag-yellow: #ffc947;
+    --tag-purple: #b06eff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Instrument Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    font-size: 15px;
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    position: fixed;
+    left: 0; top: 0; bottom: 0;
+    width: 280px;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    z-index: 100;
+    padding: 0 0 40px 0;
+  }
+
+  .sidebar-header {
+    padding: 24px 20px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg3);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .sidebar-logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+  }
+
+  .sidebar-subtitle {
+    font-size: 11px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .nav-section {
+    padding: 16px 12px 4px;
+  }
+
+  .nav-section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text3);
+    padding: 0 8px;
+    margin-bottom: 6px;
+  }
+
+  .nav-link {
+    display: block;
+    padding: 7px 12px;
+    border-radius: 6px;
+    color: var(--text2);
+    text-decoration: none;
+    font-size: 13px;
+    transition: all 0.15s;
+    line-height: 1.3;
+  }
+
+  .nav-link:hover {
+    background: var(--surface);
+    color: var(--text);
+  }
+
+  .nav-link.active {
+    background: rgba(79,158,255,0.12);
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  .nav-link .nav-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text3);
+    margin-right: 6px;
+  }
+
+  /* MAIN CONTENT */
+  .main {
+    margin-left: 280px;
+    min-height: 100vh;
+    padding: 0 0 80px;
+  }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, var(--bg3) 0%, var(--bg2) 60%, #0a1428 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 60px 60px 50px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -80px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(79,158,255,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -100px; left: 200px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(0,212,170,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--accent);
+    background: rgba(79,158,255,0.1);
+    border: 1px solid rgba(79,158,255,0.3);
+    padding: 4px 10px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+  }
+
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 42px;
+    font-weight: 800;
+    line-height: 1.1;
+    color: var(--text);
+    margin-bottom: 14px;
+  }
+
+  .hero h1 span { color: var(--accent); }
+
+  .hero-desc {
+    font-size: 16px;
+    color: var(--text2);
+    max-width: 600px;
+    line-height: 1.6;
+  }
+
+  .hero-stats {
+    display: flex;
+    gap: 32px;
+    margin-top: 32px;
+  }
+
+  .hero-stat {
+    text-align: center;
+  }
+
+  .hero-stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--accent2);
+  }
+
+  .hero-stat-label {
+    font-size: 11px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 2px;
+  }
+
+  /* SECTIONS */
+  .section {
+    padding: 50px 60px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section:last-child { border-bottom: none; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+
+  .section-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .icon-blue { background: rgba(79,158,255,0.15); border: 1px solid rgba(79,158,255,0.3); }
+  .icon-green { background: rgba(0,212,170,0.15); border: 1px solid rgba(0,212,170,0.3); }
+  .icon-red { background: rgba(255,107,107,0.15); border: 1px solid rgba(255,107,107,0.3); }
+  .icon-yellow { background: rgba(255,201,71,0.15); border: 1px solid rgba(255,201,71,0.3); }
+  .icon-purple { background: rgba(176,110,255,0.15); border: 1px solid rgba(176,110,255,0.3); }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 2px;
+  }
+
+  h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    margin: 28px 0 12px;
+  }
+
+  h3 {
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent2);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 20px 0 8px;
+  }
+
+  p { color: var(--text2); margin-bottom: 12px; }
+
+  /* CODE BLOCKS */
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    overflow-x: auto;
+    margin: 14px 0;
+    position: relative;
+  }
+
+  pre::before {
+    content: attr(data-lang);
+    position: absolute;
+    top: 8px; right: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text3);
+  }
+
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text);
+  }
+
+  :not(pre) > code {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: var(--accent2);
+  }
+
+  /* SYNTAX COLORS */
+  .kw { color: #b06eff; }
+  .str { color: #00d4aa; }
+  .attr { color: #4f9eff; }
+  .val { color: #ffc947; }
+  .cm { color: #4a6080; font-style: italic; }
+  .tag { color: #ff9f7f; }
+  .fn { color: #4f9eff; }
+  .var { color: #e8eef8; }
+  .op { color: #ff6b6b; }
+
+  /* TABLES */
+  .table-wrap { overflow-x: auto; margin: 16px 0; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  thead tr {
+    background: var(--bg3);
+    border-bottom: 2px solid var(--border2);
+  }
+
+  th {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text3);
+    padding: 12px 16px;
+    text-align: left;
+  }
+
+  td {
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text2);
+    vertical-align: top;
+  }
+
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  td:first-child {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--accent2);
+    white-space: nowrap;
+  }
+
+  /* CARDS */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+    margin: 16px 0;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    transition: border-color 0.2s;
+  }
+
+  .card:hover { border-color: var(--border2); }
+
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-body { font-size: 13px; color: var(--text2); }
+
+  /* TAGS / BADGES */
+  .badge {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  .badge-blue { background: rgba(79,158,255,0.15); color: var(--tag-blue); border: 1px solid rgba(79,158,255,0.3); }
+  .badge-green { background: rgba(0,212,170,0.15); color: var(--tag-green); border: 1px solid rgba(0,212,170,0.3); }
+  .badge-red { background: rgba(255,107,107,0.15); color: var(--tag-red); border: 1px solid rgba(255,107,107,0.3); }
+  .badge-yellow { background: rgba(255,201,71,0.15); color: var(--tag-yellow); border: 1px solid rgba(255,201,71,0.3); }
+  .badge-purple { background: rgba(176,110,255,0.15); color: var(--tag-purple); border: 1px solid rgba(176,110,255,0.3); }
+
+  /* CALLOUTS */
+  .callout {
+    border-left: 3px solid;
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    margin: 16px 0;
+    font-size: 13px;
+  }
+
+  .callout-tip { border-color: var(--accent2); background: rgba(0,212,170,0.06); }
+  .callout-warn { border-color: var(--accent4); background: rgba(255,201,71,0.06); }
+  .callout-note { border-color: var(--accent); background: rgba(79,158,255,0.06); }
+  .callout-error { border-color: var(--accent3); background: rgba(255,107,107,0.06); }
+
+  .callout-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+  }
+
+  .callout-tip .callout-label { color: var(--accent2); }
+  .callout-warn .callout-label { color: var(--accent4); }
+  .callout-note .callout-label { color: var(--accent); }
+  .callout-error .callout-label { color: var(--accent3); }
+
+  .callout p { margin: 0; color: var(--text2); }
+
+  /* DECISION FLOWCHART */
+  .flow-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-size: 13px;
+    color: var(--text2);
+    position: relative;
+  }
+
+  .flow-box.highlight {
+    border-color: var(--accent);
+    background: rgba(79,158,255,0.08);
+    color: var(--text);
+  }
+
+  /* SCENARIO CARDS */
+  .scenario {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    margin: 24px 0;
+    overflow: hidden;
+  }
+
+  .scenario-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 24px;
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .scenario-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+    background: rgba(79,158,255,0.1);
+    border: 1px solid rgba(79,158,255,0.3);
+    padding: 3px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  .scenario-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .scenario-body { padding: 20px 24px; }
+
+  .requirement-box {
+    background: rgba(176,110,255,0.08);
+    border: 1px solid rgba(176,110,255,0.25);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 18px;
+    font-size: 13px;
+    color: var(--text);
+    font-style: italic;
+  }
+
+  .requirement-box::before {
+    content: '📋 REQUIREMENT';
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--tag-purple);
+    margin-bottom: 6px;
+    font-style: normal;
+  }
+
+  .thinking-box {
+    background: rgba(0,212,170,0.06);
+    border: 1px solid rgba(0,212,170,0.2);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 18px;
+    font-size: 13px;
+  }
+
+  .thinking-box::before {
+    content: '🧠 HOW TO THINK THROUGH IT';
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--tag-green);
+    margin-bottom: 8px;
+  }
+
+  .thinking-box ul { list-style: none; padding: 0; }
+  .thinking-box ul li {
+    color: var(--text2);
+    padding: 3px 0;
+    padding-left: 16px;
+    position: relative;
+  }
+  .thinking-box ul li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--accent2);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .file-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent4);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 18px 0 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .file-path {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text3);
+    background: var(--code-bg);
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    margin-bottom: 4px;
+    word-break: break-all;
+  }
+
+  .test-box {
+    background: rgba(255,201,71,0.06);
+    border: 1px solid rgba(255,201,71,0.2);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-top: 16px;
+    font-size: 13px;
+  }
+
+  .test-box::before {
+    content: '✅ HOW TO TEST';
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--tag-yellow);
+    margin-bottom: 8px;
+  }
+
+  .test-box ol { padding-left: 18px; color: var(--text2); }
+  .test-box ol li { padding: 2px 0; }
+
+  /* QUICK REF TABLE */
+  .qr-table { width: 100%; border-collapse: collapse; }
+  .qr-table td { padding: 9px 14px; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .qr-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .qr-table td:first-child { color: var(--text2); width: 40%; }
+  .qr-table td:last-child {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent2);
+  }
+  .qr-section-row td {
+    background: var(--bg3);
+    color: var(--text3);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--border2);
+  }
+
+  /* CHEATSHEET GRID */
+  .cheat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 16px 0;
+  }
+
+  .cheat-block {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .cheat-block-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text3);
+    padding: 10px 16px;
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .cheat-block pre {
+    margin: 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    padding: 14px 16px;
+  }
+
+  /* SEARCH */
+  .search-wrap {
+    padding: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .search-input {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    outline: none;
+  }
+
+  .search-input::placeholder { color: var(--text3); }
+  .search-input:focus { border-color: var(--accent); }
+
+  /* DIVIDER */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border2), transparent);
+    margin: 28px 0;
+  }
+
+  /* ANCHOR OFFSET */
+  [id] { scroll-margin-top: 20px; }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; }
+    .hero, .section { padding: 30px 24px; }
+    .cheat-grid { grid-template-columns: 1fr; }
+  }
+
+  /* PRINT */
+  @media print {
+    .sidebar { display: none; }
+    .main { margin-left: 0; }
+  }
+
+  .step-list { list-style: none; padding: 0; counter-reset: steps; }
+  .step-list li {
+    counter-increment: steps;
+    padding: 6px 0 6px 36px;
+    position: relative;
+    color: var(--text2);
+    font-size: 13px;
+  }
+  .step-list li::before {
+    content: counter(steps);
+    position: absolute;
+    left: 0;
+    width: 22px; height: 22px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--accent);
+    top: 5px;
+    text-align: center;
+    line-height: 22px;
+  }
+
+  strong { color: var(--text); font-weight: 600; }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin: 16px 0;
+  }
+
+  @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">InsuranceNow</div>
+    <div class="sidebar-subtitle">Developer Reference Guide</div>
+  </div>
+  <div class="search-wrap">
+    <input type="text" class="search-input" placeholder="Search guide..." oninput="filterNav(this.value)" />
+  </div>
+  <div class="nav-section">
+    <div class="nav-section-title">Foundation</div>
+    <a href="#decision-map" class="nav-link"><span class="nav-num">01</span>Decision Map</a>
+    <a href="#file-map" class="nav-link"><span class="nav-num">02</span>File Map</a>
+    <a href="#5-questions" class="nav-link"><span class="nav-num">03</span>5 Questions Framework</a>
+    <a href="#velocity-basics" class="nav-link"><span class="nav-num">04</span>Velocity Basics</a>
+    <a href="#model-beans" class="nav-link"><span class="nav-num">05</span>Model Bean Methods</a>
+    <a href="#renderers" class="nav-link"><span class="nav-num">06</span>Renderers Reference</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-section-title">Scenarios</div>
+    <a href="#s1" class="nav-link"><span class="nav-num">S1</span>Add Dropdown Value</a>
+    <a href="#s2" class="nav-link"><span class="nav-num">S2</span>New Screen Field</a>
+    <a href="#s3" class="nav-link"><span class="nav-num">S3</span>Validation Warning</a>
+    <a href="#s4" class="nav-link"><span class="nav-num">S4</span>Validation Error</a>
+    <a href="#s5" class="nav-link"><span class="nav-num">S5</span>Approval Rule</a>
+    <a href="#s6" class="nav-link"><span class="nav-num">S6</span>New Note Type</a>
+    <a href="#s7" class="nav-link"><span class="nav-num">S7</span>Auto-Triggered Task</a>
+    <a href="#s8" class="nav-link"><span class="nav-num">S8</span>Form Auto-Attach</a>
+    <a href="#s9" class="nav-link"><span class="nav-num">S9</span>Print Form Data</a>
+    <a href="#s10" class="nav-link"><span class="nav-num">S10</span>Cancel Reason</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-section-title">Quick Reference</div>
+    <a href="#quick-ref" class="nav-link"><span class="nav-num">QR</span>Full Cheat Sheet</a>
+    <a href="#error-types" class="nav-link"><span class="nav-num">ET</span>Error Types</a>
+    <a href="#pattern-guide" class="nav-link"><span class="nav-num">PG</span>Pattern Recognition</a>
+  </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-tag">Developer Reference v1.0</div>
+    <h1>InsuranceNow<br><span>Developer Guide</span></h1>
+    <p class="hero-desc">Your complete practical reference for implementing InsuranceNow configurations. Decision maps, file references, Velocity patterns, and real-world scenarios with solutions.</p>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-stat-num">10</div>
+        <div class="hero-stat-label">Scenarios</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">30+</div>
+        <div class="hero-stat-label">File References</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">50+</div>
+        <div class="hero-stat-label">Code Examples</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION: DECISION MAP -->
+  <div class="section" id="decision-map">
+    <div class="section-header">
+      <div class="section-icon icon-blue">🗺️</div>
+      <div>
+        <div class="section-title">The Master Decision Map</div>
+        <div class="section-num">SECTION 01 — Where to start with any requirement</div>
+      </div>
+    </div>
+
+    <div class="callout callout-note">
+      <div class="callout-label">Core Truth</div>
+      <p>Everything boils down to one question: <strong>"What is the business asking for, and what part of the system controls that?"</strong></p>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>If the requirement is about…</th>
+            <th>Category</th>
+            <th>Go to</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>New fields, dropdowns, tabs, labels, tiles on screen</td>
+            <td><span class="badge badge-blue">UI</span></td>
+            <td>list.xml / .html tile / tab.xml / sp-policy.xml</td>
+          </tr>
+          <tr>
+            <td>Who can add, edit, view, approve something</td>
+            <td><span class="badge badge-purple">Security</span></td>
+            <td>authority-set.xml + authority-role.xml</td>
+          </tr>
+          <tr>
+            <td>Blocking users, warning users, requiring approval</td>
+            <td><span class="badge badge-red">Rules</span></td>
+            <td>validation.vtl / approval.vtl</td>
+          </tr>
+          <tr>
+            <td>New forms, auto-attaching forms, printing data</td>
+            <td><span class="badge badge-green">Forms</span></td>
+            <td>form.xml / form-selection.vtl / section.vtl</td>
+          </tr>
+          <tr>
+            <td>Tasks, notifications, inbox items, workflow</td>
+            <td><span class="badge badge-yellow">Workflow</span></td>
+            <td>task.xml / review.vtl / TaskTemplateIdRef</td>
+          </tr>
+          <tr>
+            <td>Coverages, cancellation, AI types, questions, payment plans</td>
+            <td><span class="badge badge-green">Product</span></td>
+            <td>sub-type.xml / state.xml / ai.xml / question.xml</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SECTION: FILE MAP -->
+  <div class="section" id="file-map">
+    <div class="section-header">
+      <div class="section-icon icon-green">📁</div>
+      <div>
+        <div class="section-title">Complete File Map</div>
+        <div class="section-num">SECTION 02 — What file controls what</div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>What You Want to Do</th>
+            <th>File to Change</th>
+            <th>Location</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="qr-section-row"><td colspan="3">UI / SCREEN CHANGES</td></tr>
+          <tr>
+            <td>Add a dropdown value</td>
+            <td><code>list.xml</code></td>
+            <td>…/ca/v01_00_00/ or …/cw/v01_00_00/</td>
+          </tr>
+          <tr>
+            <td>Add a new field to screen</td>
+            <td><code>valuation.html</code> (or relevant .html tile)</td>
+            <td>…/homeowners/model/tileset/tile/</td>
+          </tr>
+          <tr>
+            <td>Store new field in database</td>
+            <td><code>sp-policy.xml</code> + <code>dto-sp-policy.xml</code></td>
+            <td>…/homeowners/model/bean/</td>
+          </tr>
+          <tr>
+            <td>Add a new navigation tab</td>
+            <td><code>tab.xml</code></td>
+            <td>…/iic/homeowners/ca/v01_00_00/</td>
+          </tr>
+          <tr>
+            <td>Add a new note type</td>
+            <td><code>note.xml</code></td>
+            <td>…/uw/quote/model/template/ or …/uw/app/model/template/</td>
+          </tr>
+          <tr>
+            <td>Add an attachment type</td>
+            <td><code>attachment.xml</code></td>
+            <td>…/uw/quote/model/template/</td>
+          </tr>
+          <tr>
+            <td>Register note/attachment to product</td>
+            <td><code>template.xml</code></td>
+            <td>…/homeowners/cw/v01_00_00/</td>
+          </tr>
+          <tr class="qr-section-row"><td colspan="3">SECURITY / AUTHORITY</td></tr>
+          <tr>
+            <td>Define a new permission</td>
+            <td><code>authority-set.xml</code></td>
+            <td>…/common/shared/model/template/</td>
+          </tr>
+          <tr>
+            <td>Set who gets the permission</td>
+            <td><code>authority-role.xml</code></td>
+            <td>…/common/shared/model/template/</td>
+          </tr>
+          <tr class="qr-section-row"><td colspan="3">BUSINESS RULES</td></tr>
+          <tr>
+            <td>Block user (ERROR)</td>
+            <td><code>validation.vtl</code></td>
+            <td>…/homeowners/ca/v01_00_00/rule/</td>
+          </tr>
+          <tr>
+            <td>Warn user (WARNING)</td>
+            <td><code>validation.vtl</code></td>
+            <td>…/homeowners/ca/v01_00_00/rule/</td>
+          </tr>
+          <tr>
+            <td>Require approval (APPROVAL)</td>
+            <td><code>approval.vtl</code></td>
+            <td>…/homeowners/cw/v01_00_00/rule/</td>
+          </tr>
+          <tr>
+            <td>Auto-attach forms based on data</td>
+            <td><code>form-selection.vtl</code></td>
+            <td>…/homeowners/ca/v01_00_00/rule/</td>
+          </tr>
+          <tr class="qr-section-row"><td colspan="3">FORMS &amp; DOCUMENTS</td></tr>
+          <tr>
+            <td>Register a form exists</td>
+            <td><code>form.xml</code></td>
+            <td>…/homeowners/cw/v01_00_00/</td>
+          </tr>
+          <tr>
+            <td>Define how form renders</td>
+            <td><code>form.xml</code></td>
+            <td>…/uw/policy/model/template/</td>
+          </tr>
+          <tr>
+            <td>Create form data trigger file</td>
+            <td><code>myform.vtl</code> (doc)</td>
+            <td>…/uw/policy/model/formset/doc/</td>
+          </tr>
+          <tr>
+            <td>Create form data mapping</td>
+            <td><code>myform.vtl</code> (section)</td>
+            <td>…/uw/policy/model/formset/section/</td>
+          </tr>
+          <tr class="qr-section-row"><td colspan="3">WORKFLOW / TASKS</td></tr>
+          <tr>
+            <td>Define a new task type</td>
+            <td><code>task.xml</code></td>
+            <td>…/uw/quote/model/template/ or …/uw/app/model/template/</td>
+          </tr>
+          <tr>
+            <td>Auto-create task on event</td>
+            <td><code>TaskTemplateIdRef</code> on attachment</td>
+            <td>attachment.xml</td>
+          </tr>
+          <tr>
+            <td>Change task name/description</td>
+            <td><code>task.xml</code></td>
+            <td>Find existing bean, edit Name and Description</td>
+          </tr>
+          <tr class="qr-section-row"><td colspan="3">PRODUCT CONFIGURATION</td></tr>
+          <tr>
+            <td>New coverage (UW policy)</td>
+            <td><code>sub-type.xml</code></td>
+            <td>…/homeowners/ca/v01_00_00/</td>
+          </tr>
+          <tr>
+            <td>New coverage (Claims)</td>
+            <td><code>line.xml</code></td>
+            <td>…/claims/…/homeowners/ca/v01_00_00/</td>
+          </tr>
+          <tr>
+            <td>Cancel / non-renewal reasons</td>
+            <td><code>state.xml</code></td>
+            <td>…/homeowners/ca/v01_00_00/</td>
+          </tr>
+          <tr>
+            <td>Additional interest types</td>
+            <td><code>ai.xml</code></td>
+            <td>…/homeowners/ca/v01_00_00/</td>
+          </tr>
+          <tr>
+            <td>Underwriting questions</td>
+            <td><code>question.xml</code></td>
+            <td>…/homeowners/ca/v01_00_00/</td>
+          </tr>
+          <tr>
+            <td>Payment plans</td>
+            <td><code>term.xml</code> + <code>.payplan.xml</code></td>
+            <td>…/ca/v01_00_00/ + …/ar/model/payplan/</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SECTION: 5 QUESTIONS -->
+  <div class="section" id="5-questions">
+    <div class="section-header">
+      <div class="section-icon icon-yellow">❓</div>
+      <div>
+        <div class="section-title">The 5 Questions Framework</div>
+        <div class="section-num">SECTION 03 — Ask these in order when a requirement arrives</div>
+      </div>
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title"><span class="badge badge-blue">Q1</span> New Data to Store?</div>
+        <div class="card-body">Does this require storing a new piece of information in the database that doesn't exist today?<br><br><strong>→ Yes:</strong> <code>sp-policy.xml</code> + <code>dto-sp-policy.xml</code> + <code>.html tile</code></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="badge badge-blue">Q2</span> Screen Change?</div>
+        <div class="card-body">Does the user need to see something differently — new field, new dropdown option, new tab, renamed label?<br><br><strong>→ Yes:</strong> <code>.html tile</code> / <code>tab.xml</code> / <code>list.xml</code></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="badge badge-red">Q3</span> Business Rule?</div>
+        <div class="card-body">Does the system need to stop, warn, or escalate based on data the user enters?<br><br><strong>→ Block:</strong> <code>validation.vtl</code> (ERROR)<br><strong>→ Warn:</strong> <code>validation.vtl</code> (WARNING)<br><strong>→ Escalate:</strong> <code>approval.vtl</code> (APPROVAL)</div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="badge badge-purple">Q4</span> Access Control?</div>
+        <div class="card-body">Should only certain roles be able to do something (add, edit, view, approve)?<br><br><strong>→ Yes:</strong> <code>authority-set.xml</code> (define) + <code>authority-role.xml</code> (assign values)</div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="badge badge-green">Q5</span> Product Config?</div>
+        <div class="card-body">Is this about coverages, cancel reasons, AI types, questions, or pay plans?<br><br><strong>→ Coverage:</strong> <code>sub-type.xml</code><br><strong>→ Cancel:</strong> <code>state.xml</code><br><strong>→ AI:</strong> <code>ai.xml</code><br><strong>→ Questions:</strong> <code>question.xml</code></div>
+      </div>
+    </div>
+
+    <div class="callout callout-tip">
+      <div class="callout-label">Golden Rule</div>
+      <p>Never start from scratch. Always find the closest existing example in the file, copy it, and modify it for your requirement.</p>
+    </div>
+  </div>
+
+  <!-- SECTION: VELOCITY BASICS -->
+  <div class="section" id="velocity-basics">
+    <div class="section-header">
+      <div class="section-icon icon-purple">⚡</div>
+      <div>
+        <div class="section-title">Velocity Basics</div>
+        <div class="section-num">SECTION 04 — The scripting language used in .vtl rule and form files</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <h3>References (all start with $)</h3>
+        <div class="cheat-block">
+          <div class="cheat-block-title">References</div>
+          <pre data-lang="VTL"><code><span class="cm">## Model Bean</span>
+<span class="var">$Application</span>
+
+<span class="cm">## Bean + method call</span>
+<span class="var">$Application</span>.<span class="fn">gets</span>(<span class="str">"ApplicationNumber"</span>)
+
+<span class="cm">## Renderer</span>
+<span class="var">$ValidationRenderer</span>
+
+<span class="cm">## Your own variable</span>
+<span class="var">$myPolicy</span>
+
+<span class="cm">## Safe (silent on error)</span>
+<span class="var">$!</span>insuredName
+
+<span class="cm">## Unsafe (prints error text)</span>
+<span class="var">$</span>insuredName</code></pre>
+        </div>
+
+        <h3>Directives (all start with #)</h3>
+        <div class="cheat-block">
+          <div class="cheat-block-title">Directives</div>
+          <pre data-lang="VTL"><code><span class="cm">## Set a variable</span>
+<span class="kw">#set</span>( <span class="var">$insured</span> = <span class="var">$Application</span>.<span class="fn">getBean</span>(<span class="str">"Insured"</span>) )
+
+<span class="cm">## If statement</span>
+<span class="kw">#if</span>( <span class="var">$value</span> == <span class="str">'Yes'</span> )
+  <span class="cm">## do something</span>
+<span class="kw">#elseif</span>( <span class="var">$value</span> == <span class="str">'No'</span> )
+  <span class="cm">## do something else</span>
+<span class="kw">#else</span>
+  <span class="cm">## fallback</span>
+<span class="kw">#end</span>
+
+<span class="cm">## Loop through a list</span>
+<span class="kw">#foreach</span>( <span class="var">$risk</span> <span class="kw">in</span> <span class="var">$risks</span> )
+  <span class="var">$risk</span>.<span class="fn">gets</span>(<span class="str">"Description"</span>)
+<span class="kw">#end</span>
+
+<span class="cm">## Single line comment</span>
+<span class="cm">## This won't appear in output
+
+## Multi-line comment</span>
+<span class="kw">#*</span>
+  This entire block
+  is a comment
+<span class="kw">*#</span></code></pre>
+        </div>
+      </div>
+
+      <div>
+        <h3>Operators</h3>
+        <div class="cheat-block">
+          <div class="cheat-block-title">Operators</div>
+          <pre data-lang="VTL"><code><span class="cm">## AND</span>
+<span class="var">$a</span> <span class="op">&&</span> <span class="var">$b</span>
+
+<span class="cm">## OR</span>
+<span class="var">$a</span> <span class="op">||</span> <span class="var">$b</span>
+
+<span class="cm">## Equals (use for strings)</span>
+<span class="var">$a</span>.<span class="fn">equals</span>(<span class="str">"value"</span>)
+
+<span class="cm">## Equals (case insensitive)</span>
+<span class="var">$a</span>.<span class="fn">equalsIgnoreCase</span>(<span class="str">"value"</span>)
+
+<span class="cm">## NOT</span>
+<span class="op">!</span><span class="var">$a</span>
+
+<span class="cm">## Empty check</span>
+<span class="var">$a</span>.<span class="fn">equals</span>(<span class="str">""</span>)
+
+<span class="cm">## Compare numbers (use StringRenderer!)</span>
+<span class="var">$StringRenderer</span>.<span class="fn">greaterThan</span>(<span class="var">$a</span>, <span class="str">"500000"</span>)
+<span class="var">$StringRenderer</span>.<span class="fn">lessThan</span>(<span class="var">$a</span>, <span class="str">"1000"</span>)</code></pre>
+        </div>
+
+        <h3>Coding Standards</h3>
+        <div class="cheat-block">
+          <div class="cheat-block-title">Standards</div>
+          <pre data-lang="VTL"><code><span class="cm">## Naming: beans = PascalCase</span>
+<span class="var">$BasicPolicy</span>, <span class="var">$InsuredName</span>
+
+<span class="cm">## Naming: your variables = camelCase</span>
+<span class="var">$myPolicy</span>, <span class="var">$riskBuilding</span>
+
+<span class="cm">## File names: lower-case-with-dashes</span>
+ca-homeowners-validation.vtl
+
+<span class="cm">## Reset loop variables before loop</span>
+<span class="kw">#set</span>( <span class="var">$limit</span> = <span class="str">""</span> )
+<span class="kw">#foreach</span>( <span class="var">$cov</span> <span class="kw">in</span> <span class="var">$coverages</span> )
+  <span class="cm">## process</span>
+<span class="kw">#end</span>
+
+<span class="cm">## Use ## instead of blank lines</span>
+<span class="cm">##</span>
+<span class="cm">##Check roof type</span>
+<span class="kw">#set</span>( <span class="var">$roof</span> = <span class="var">$building</span>.<span class="fn">gets</span>(<span class="str">"RoofCd"</span>) )</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION: MODEL BEAN METHODS -->
+  <div class="section" id="model-beans">
+    <div class="section-header">
+      <div class="section-icon icon-blue">🫘</div>
+      <div>
+        <div class="section-title">Model Bean Methods</div>
+        <div class="section-num">SECTION 05 — How to navigate and read data</div>
+      </div>
+    </div>
+
+    <div class="callout callout-note">
+      <div class="callout-label">Concept</div>
+      <p>Model Beans are the data objects in InsuranceNow. Think of them as a filing cabinet — beans are the drawers, and methods are the handles to open them. <strong>Hierarchy Search</strong> = searches entire tree. <strong>Child Search</strong> = searches only direct children.</p>
+    </div>
+
+    <div class="cheat-grid">
+      <div class="cheat-block">
+        <div class="cheat-block-title">Getting Field Values</div>
+        <pre data-lang="VTL"><code><span class="cm">## Get a string field value</span>
+<span class="var">$BasicPolicy</span>.<span class="fn">gets</span>(<span class="str">"PolicyNumber"</span>)
+
+<span class="cm">## Get with default if null</span>
+<span class="var">$BasicPolicy</span>.<span class="fn">gets</span>(<span class="str">"PolicyNumber"</span>, <span class="str">"Not Found"</span>)
+
+<span class="cm">## Get a date field</span>
+<span class="var">$BasicPolicy</span>.<span class="fn">getDate</span>(<span class="str">"EffectiveDt"</span>)
+
+<span class="cm">## Get an integer</span>
+<span class="var">$BasicPolicy</span>.<span class="fn">getValueInt</span>(<span class="str">"RenewedFromPolicyRef"</span>)</code></pre>
+      </div>
+
+      <div class="cheat-block">
+        <div class="cheat-block-title">Getting Single Beans</div>
+        <pre data-lang="VTL"><code><span class="cm">## Get first child bean by name</span>
+<span class="var">$Application</span>.<span class="fn">getBean</span>(<span class="str">"BasicPolicy"</span>)
+
+<span class="cm">## Get bean matching field value</span>
+<span class="var">$Policy</span>.<span class="fn">getBean</span>(<span class="str">"AI"</span>, <span class="str">"InterestTypeCd"</span>, <span class="str">"Mortgagee"</span>)
+
+<span class="cm">## Hierarchy search by field value</span>
+<span class="var">$Application</span>.<span class="fn">findBeanByFieldValue</span>(
+  <span class="str">"Building"</span>, <span class="str">"BldgNumber"</span>, <span class="str">"1"</span>)
+
+<span class="cm">## Get parent bean</span>
+<span class="var">$coverage</span>.<span class="fn">getParentBean</span>()</code></pre>
+      </div>
+
+      <div class="cheat-block">
+        <div class="cheat-block-title">Getting Multiple Beans</div>
+        <pre data-lang="VTL"><code><span class="cm">## Get all child beans by name</span>
+<span class="var">$Line</span>.<span class="fn">getBeans</span>(<span class="str">"Coverage"</span>)
+
+<span class="cm">## Get ALL descendants by name</span>
+<span class="var">$Application</span>.<span class="fn">getAllBeans</span>(<span class="str">"Risk"</span>)
+
+<span class="cm">## Find all matching field value</span>
+<span class="var">$Application</span>.<span class="fn">findBeansByFieldValue</span>(
+  <span class="str">"Risk"</span>, <span class="str">"Status"</span>, <span class="str">"Active"</span>)
+
+<span class="cm">## Get beans sorted</span>
+<span class="var">$Line</span>.<span class="fn">getBeansSorted</span>(
+  <span class="str">"Risk"</span>, <span class="str">"RiskNumber"</span>, <span class="str">"ascending"</span>)</code></pre>
+      </div>
+
+      <div class="cheat-block">
+        <div class="cheat-block-title">Common Data Paths</div>
+        <pre data-lang="VTL"><code><span class="cm">## Get Building from Application</span>
+<span class="kw">#set</span>( <span class="var">$risk</span> = <span class="var">$application</span>.<span class="fn">findBeanByFieldValue</span>(
+  <span class="str">"Risk"</span>, <span class="str">"Status"</span>, <span class="str">"Active"</span>) )
+<span class="kw">#set</span>( <span class="var">$building</span> = <span class="var">$risk</span>.<span class="fn">getBean</span>(<span class="str">"Building"</span>) )
+
+<span class="cm">## Get Question Reply</span>
+<span class="kw">#set</span>( <span class="var">$reply</span> = <span class="var">$application</span>.<span class="fn">getBean</span>(<span class="str">"QuestionReplies"</span>)
+  .<span class="fn">getBean</span>(<span class="str">"QuestionReply"</span>, <span class="str">"QuestionName"</span>, <span class="str">"MyQ"</span>) )
+<span class="kw">#set</span>( <span class="var">$answer</span> = <span class="var">$reply</span>.<span class="fn">gets</span>(<span class="str">"ReplyText"</span>) )
+
+<span class="cm">## Get Coverage A Limit</span>
+<span class="kw">#set</span>( <span class="var">$covA</span> = <span class="var">$application</span>.<span class="fn">getBean</span>(<span class="str">"Line"</span>)
+  .<span class="fn">getBean</span>(<span class="str">"Coverage"</span>, <span class="str">"CoverageCd"</span>, <span class="str">"CovA"</span>) )
+<span class="kw">#set</span>( <span class="var">$limit</span> = <span class="var">$covA</span>.<span class="fn">gets</span>(<span class="str">"Limit1"</span>) )</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION: RENDERERS -->
+  <div class="section" id="renderers">
+    <div class="section-header">
+      <div class="section-icon icon-green">🔧</div>
+      <div>
+        <div class="section-title">Renderers Quick Reference</div>
+        <div class="section-num">SECTION 06 — Pre-built Java tools you call from Velocity</div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Renderer</th>
+            <th>What it does</th>
+            <th>Most Used Methods</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>$ValidationRenderer</code></td>
+            <td>Throw errors, warnings, approvals</td>
+            <td><code>addValidationError($app, "Validation", "ERROR", "msg")</code></td>
+          </tr>
+          <tr>
+            <td><code>$UserRenderer</code></td>
+            <td>Check user authority attributes</td>
+            <td><code>getAuthorityAttributeValue($user, "AttrId", $todayDt)</code></td>
+          </tr>
+          <tr>
+            <td><code>$StringRenderer</code></td>
+            <td>Format and compare text/numbers</td>
+            <td><code>formatMoney</code>, <code>formatDate</code>, <code>greaterThan</code>, <code>lessThan</code>, <code>isTrue</code>, <code>addMoney</code></td>
+          </tr>
+          <tr>
+            <td><code>$NumberRenderer</code></td>
+            <td>Precise decimal math</td>
+            <td><code>addBigDecimal</code>, <code>subtractBigDecimal</code>, <code>multiplyBigDecimal</code>, <code>roundToScale</code></td>
+          </tr>
+          <tr>
+            <td><code>$DateRenderer</code></td>
+            <td>Date calculations and comparisons</td>
+            <td><code>greaterThan</code>, <code>lessThan</code>, <code>diffDays</code>, <code>advanceDate</code>, <code>getAge</code></td>
+          </tr>
+          <tr>
+            <td><code>$AddressRenderer</code></td>
+            <td>Format addresses</td>
+            <td><code>buildAddress($addr, "Mailing", 3, 32)</code></td>
+          </tr>
+          <tr>
+            <td><code>$CoverageRenderer</code></td>
+            <td>Check and manage coverages</td>
+            <td><code>isActive($application, "CovA")</code>, <code>clearSystemCoverages</code></td>
+          </tr>
+          <tr>
+            <td><code>$FormRenderer</code></td>
+            <td>Attach/remove forms</td>
+            <td><code>attachForm($app, "IHO-11")</code>, <code>clearSystemForms</code>, <code>deleteClearedSystemForms</code></td>
+          </tr>
+          <tr>
+            <td><code>$PrintRenderer</code></td>
+            <td>Control print output</td>
+            <td><code>setForm("my-form")</code>, <code>section("UWPolicy::formset::section::my.vtl")</code></td>
+          </tr>
+          <tr>
+            <td><code>$AIRenderer</code></td>
+            <td>Manage Additional Interests</td>
+            <td><code>getAdditionalInterest($app, "Mortgagee")</code>, <code>getActiveAdditionalInterests</code></td>
+          </tr>
+          <tr>
+            <td><code>$WorkflowRenderer</code></td>
+            <td>Manage tasks</td>
+            <td><code>createTask($data, "TaskId", $app)</code>, <code>updateTaskStatus</code></td>
+          </tr>
+          <tr>
+            <td><code>$BeanRenderer</code></td>
+            <td>Advanced bean searches</td>
+            <td><code>findBeanByFieldValueAndStatus</code>, <code>sortBeans</code></td>
+          </tr>
+          <tr>
+            <td><code>$ClaimRenderer</code></td>
+            <td>Basic claim info</td>
+            <td><code>getClaimNumber</code>, <code>getOpenClaimants</code>, <code>isAClaim</code>, <code>isALossNotice</code></td>
+          </tr>
+          <tr>
+            <td><code>$ClaimantTransactionRenderer</code></td>
+            <td>Claims financial details</td>
+            <td><code>getFeatures</code>, <code>hasFeature</code>, <code>getFeatureLimits</code>, <code>getReserves</code>, <code>sumPaidAmt</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="divider"></div>
+
+    <h2 id="error-types">Error Types Reference</h2>
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title"><span class="badge badge-red">ERROR</span></div>
+        <div class="card-body">
+          Blocks all processing. User cannot proceed until the error is fixed.<br><br>
+          <pre data-lang="VTL"><code><span class="var">$ValidationRenderer</span>.<span class="fn">addValidationError</span>(
+  <span class="var">$application</span>,
+  <span class="str">"Validation"</span>,
+  <span class="str">"ERROR"</span>,
+  <span class="str">"Year Built is required"</span>
+)</code></pre>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="badge badge-yellow">WARNING</span></div>
+        <div class="card-body">
+          Warns the user but allows processing to continue.<br><br>
+          <pre data-lang="VTL"><code><span class="var">$ValidationRenderer</span>.<span class="fn">addValidationError</span>(
+  <span class="var">$application</span>,
+  <span class="str">"Validation"</span>,
+  <span class="str">"WARNING"</span>,
+  <span class="str">"Property is older than 75 years"</span>
+)</code></pre>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="badge badge-purple">APPROVAL</span></div>
+        <div class="card-body">
+          Changes Issue button to Submit for Approval. Routes to underwriter.<br><br>
+          <pre data-lang="VTL"><code><span class="var">$ValidationRenderer</span>.<span class="fn">addValidationError</span>(
+  <span class="var">$application</span>,
+  <span class="str">"Approval"</span>,
+  <span class="str">"APPROVAL"</span>,
+  <span class="str">"Bungalows must be approved"</span>
+)</code></pre>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">File Location for Each Type</div>
+        <div class="card-body">
+          <table style="width:100%;font-size:12px;">
+            <tr><td style="color:var(--tag-red);padding:4px 0;border:none;">ERROR</td><td style="border:none;color:var(--text2);"><code>validation.vtl</code></td></tr>
+            <tr><td style="color:var(--tag-yellow);padding:4px 0;border:none;">WARNING</td><td style="border:none;color:var(--text2);"><code>validation.vtl</code></td></tr>
+            <tr><td style="color:var(--tag-purple);padding:4px 0;border:none;">APPROVAL</td><td style="border:none;color:var(--text2);"><code>approval.vtl</code></td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCENARIOS -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon icon-yellow">🎯</div>
+      <div>
+        <div class="section-title">Real-World Scenarios &amp; Solutions</div>
+        <div class="section-num">SECTIONS S1–S10 — Requirements with full worked solutions</div>
+      </div>
+    </div>
+
+    <!-- SCENARIO 1 -->
+    <div class="scenario" id="s1">
+      <div class="scenario-header">
+        <span class="scenario-num">SCENARIO 01</span>
+        <div class="scenario-title">Add a New Dropdown Value</div>
+        <span class="badge badge-blue">UI</span>
+      </div>
+      <div class="scenario-body">
+        <div class="requirement-box">
+          "We need to add 'Cedar Shake' as a new roof type option in the California Homeowners product."
+        </div>
+        <div class="thinking-box">
+          <ul>
+            <li>UI change — adding a value to a dropdown</li>
+            <li>CA-specific → use the CA folder's list.xml, not countrywide</li>
+            <li>Find existing <code>roof-type</code> coderef and add new option inside it</li>
+          </ul>
+        </div>
+        <div class="file-label">📄 FILE TO CHANGE</div>
+        <div class="file-path">custSTART/src/com/iscs/start/uw/common/product/model/template/iic/homeowners/ca/v01_00_00/list.xml</div>
+        <pre data-lang="XML"><code><span class="tag">&lt;coderef</span> <span class="attr">name</span>=<span class="str">"roof-type"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;options</span> <span class="attr">key</span>=<span class="str">"all"</span><span class="tag">&gt;</span>
+    <span class="cm">&lt;!-- existing options stay --&gt;</span>
+    <span class="tag">&lt;option</span> <span class="attr">name</span>=<span class="str">"Thatch"</span> <span class="attr">value</span>=<span class="str">"Thatch"</span><span class="tag">/&gt;</span>
+    <span class="tag">&lt;option</span> <span class="attr">name</span>=<span class="str">"Woodshake"</span> <span class="attr">value</span>=<span class="str">"Woodshake"</span><span class="tag">/&gt;</span>
+    <span class="tag">&lt;option</span> <span class="attr">name</span>=<span class="str">"Shingle"</span> <span class="attr">value</span>=<span class="str">"Shingle"</span><span class="tag">/&gt;</span>
+    <span class="tag">&lt;option</span> <span class="attr">name</span>=<span class="str">"Asphalt"</span> <span class="attr">value</span>=<span class="str">"Asphalt"</span><span class="tag">/&gt;</span>
+    <span class="cm">&lt;!-- NEW option --&gt;</span>
+    <span class="tag">&lt;option</span> <span class="attr">name</span>=<span class="str">"Cedar Shake"</span> <span class="attr">value</span>=<span class="str">"CedarShake"</span><span class="tag">/&gt;</span>
+  <span class="tag">&lt;/options&gt;</span>
+<span class="tag">&lt;/coderef&gt;</span></code></pre>
+        <div class="test-box">
+          <ol>
+            <li>Restart server</li>
+            <li>Open CA Homeowners quote → Dwelling tab</li>
+            <li>Check Roof Type dropdown — "Cedar Shake" should appear</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENARIO 2 -->
+    <div class="scenario" id="s2">
+      <div class="scenario-header">
+        <span class="scenario-num">SCENARIO 02</span>
+        <div class="scenario-title">Add a New Field to the Screen</div>
+        <span class="badge badge-blue">UI + Data Model</span>
+      </div>
+      <div class="scenario-body">
+        <div class="requirement-box">
+          "We need to capture whether the property has a home security system. Add a Yes/No dropdown called 'Security System' on the Dwelling tile, and store the answer."
+        </div>
+        <div class="thinking-box">
+          <ul>
+            <li>New data to store → sp-policy.xml + dto-sp-policy.xml</li>
+            <li>New field on screen → valuation.html tile</li>
+            <li>Yes/No dropdown already exists in system as UW::underwriting::yes-no::all</li>
+            <li>Restart required because data model changes need server restart</li>
+          </ul>
+        </div>
+
+        <div class="file-label">📄 FILE 1 OF 3 — Add to data model</div>
+        <div class="file-path">custSTART/src/com/iscs/start/homeowners/model/bean/sp-policy.xml</div>
+        <pre data-lang="XML"><code><span class="tag">&lt;Class</span> <span class="attr">name</span>=<span class="str">"Building"</span> <span class="attr">extends</span>=<span class="str">"Building"</span><span class="tag">&gt;</span>
+  <span class="cm">&lt;!-- existing fields stay untouched --&gt;</span>
+  <span class="tag">&lt;Field</span> <span class="attr">name</span>=<span class="str">"SecuritySystemInd"</span> <span class="attr">type</span>=<span class="str">"String"</span><span class="tag">&gt;</span>Security System Indicator<span class="tag">&lt;/Field&gt;</span>
+<span class="tag">&lt;/Class&gt;</span></code></pre>
+
+        <div class="file-label">📄 FILE 2 OF 3 — Add to DTO</div>
+        <div class="file-path">custSTART/src/com/iscs/start/homeowners/model/bean/dto-sp-policy.xml</div>
+        <pre data-lang="XML"><code><span class="tag">&lt;Class</span> <span class="attr">name</span>=<span class="str">"DTOBuilding"</span> <span class="attr">extends</span>=<span class="str">"DTOBuilding"</span><span class="tag">&gt;</span>
+  <span class="cm">&lt;!-- existing fields stay untouched --&gt;</span>
+  <span class="tag">&lt;Field</span> <span class="attr">name</span>=<span class="str">"SecuritySystemInd"</span> <span class="attr">type</span>=<span class="str">"String"</span><span class="tag">&gt;</span>Security System Indicator<span class="tag">&lt;/Field&gt;</span>
+<span class="tag">&lt;/Class&gt;</span></code></pre>
+
+        <div class="file-label">📄 FILE 3 OF 3 — Add field to screen</div>
+        <div class="file-path">custSTART/src/com/iscs/start/homeowners/model/tileset/tile/valuation.html</div>
+        <pre data-lang="HTML"><code><span class="tag">&lt;tr&gt;</span>
+  <span class="tag">&lt;td</span> <span class="attr">class</span>=<span class="str">"label"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;span&gt;</span>Security System<span class="tag">&lt;/span&gt;</span>
+  <span class="tag">&lt;/td&gt;</span>
+  <span class="tag">&lt;td&gt;</span>
+    <span class="tag">&lt;select</span> <span class="attr">data-bean</span>=<span class="str">"Building"</span>
+            <span class="attr">data-field</span>=<span class="str">"SecuritySystemInd"</span>
+            <span class="attr">data-list</span>=<span class="str">"UW::underwriting::yes-no::all"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;option</span> <span class="attr">value</span>=<span class="str">""</span><span class="tag">&gt;</span>Select...<span class="tag">&lt;/option&gt;</span>
+    <span class="tag">&lt;/select&gt;</span>
+  <span class="tag">&lt;/td&gt;</span>
+<span class="tag">&lt;/tr&gt;</span></code></pre>
+
+        <div class="callout callout-warn">
+          <div class="callout-label">Important</div>
+          <p><code>UW::underwriting::yes-no::all</code> is a standard Yes/No list already in the system. You don't need to create it.</p>
+        </div>
+        <div class="test-box">
+          <ol>
+            <li>Restart server (model bean changes ALWAYS require restart)</li>
+            <li>Open CA Homeowners quote → Dwelling tab</li>
+            <li>Verify "Security System" dropdown appears</li>
+            <li>Select "Yes" → Save → Re-open → Verify it saved correctly</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENARIO 3 -->
+    <div class="scenario" id="s3">
+      <div class="scenario-header">
+        <span class="scenario-num">SCENARIO 03</span>
+        <div class="scenario-title">Validation Warning Rule</div>
+        <span class="badge badge-yellow">Rules — WARNING</span>
+      </div>
+      <div class="scenario-body">
+        <div class="requirement-box">
+          "If the Year Built is before 1950, show a WARNING saying 'Property is older than 75 years — inspection may be required.' The agent should still be able to issue the policy."
+        </div>
+        <div class="thinking-box">
+          <ul>
+            <li>WARNING → user can continue → validation.vtl</li>
+            <li>Get Year Built field from Building bean</li>
+            <li>Use StringRenderer.lessThan to compare numbers (never use &lt; directly on strings)</li>
+            <li>Check the field isn't empty first before comparing</li>
+          </ul>
+        </div>
+        <div class="file-label">📄 FILE TO CHANGE</div>
+        <div class="file-path">custSTART/src/com/iscs/start/uw/common/product/model/template/iic/homeowners/ca/v01_00_00/rule/validation.vtl</div>
+        <pre data-lang="VTL"><code><span class="cm">##Check for old property</span>
+<span class="kw">#set</span>( <span class="var">$risk</span> = <span class="var">$application</span>.<span class="fn">findBeanByFieldValue</span>(<span class="str">"Risk"</span>, <span class="str">"Status"</span>, <span class="str">"Active"</span>) )
+<span class="kw">#set</span>( <span class="var">$building</span> = <span class="var">$risk</span>.<span class="fn">getBean</span>(<span class="str">"Building"</span>) )
+<span class="kw">#set</span>( <span class="var">$yearBuilt</span> = <span class="var">$building</span>.<span class="fn">gets</span>(<span class="str">"YearBuilt"</span>) )
+
+<span class="kw">#if</span>( !<span class="var">$yearBuilt</span>.<span class="fn">equals</span>(<span class="str">""</span>) )
+  <span class="kw">#if</span>( <span class="var">$StringRenderer</span>.<span class="fn">lessThan</span>(<span class="var">$yearBuilt</span>, <span class="str">"1950"</span>) )
+    <span class="var">$ValidationRenderer</span>.<span class="fn">addValidationError</span>(<span class="var">$application</span>, <span class="str">"Validation"</span>, <span class="str">"WARNING"</span>,
+      <span class="str">"Property is older than 75 years — inspection may be required"</span>)
+  <span class="kw">#end</span>
+<span class="kw">#end</span></code></pre>
+        <div class="test-box">
+          <ol>
+            <li>Restart server</li>
+            <li>Open CA Homeowners quote → Enter Year Built = 1940 → Save</li>
+            <li>Verify orange WARNING appears at top of screen</li>
+            <li>Verify you can still click Issue (WARNING doesn't block)</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENARIO 4 -->
+    <div class="scenario" id="s4">
+      <div class="scenario-header">
+        <span class="scenario-num">SCENARIO 04</span>
+        <div class="scenario-title">Validation Error — Block User</div>
+        <span class="badge badge-red">Rules — ERROR</span>
+      </div>
+      <div class="scenario-body">
+        <div class="requirement-box">
+          "If the applicant selects 'Thatch' as the roof type, show an ERROR and prevent issuing the policy. Message: 'Thatch roofs are not eligible for coverage.'"
+        </div>
+        <div class="thinking-box">
+          <ul>
+            <li>ERROR → blocks completely → validation.vtl</li>
+            <li>Use equalsIgnoreCase to avoid case sensitivity issues</li>
+            <li>The value in data will be the value= attribute from list.xml, not the display name</li>
+          </ul>
+        </div>
+        <div class="file-label">📄 FILE TO CHANGE</div>
+        <div class="file-path">custSTART/src/com/iscs/start/uw/common/product/model/template/iic/homeowners/ca/v01_00_00/rule/validation.vtl</div>
+        <pre data-lang="VTL"><code><span class="cm">##Check for ineligible roof type</span>
+<span class="kw">#set</span>( <span class="var">$risk</span> = <span class="var">$application</span>.<span class="fn">findBeanByFieldValue</span>(<span class="str">"Risk"</span>, <span class="str">"Status"</span>, <span class="str">"Active"</span>) )
+<span class="kw">#set</span>( <span class="var">$building</span> = <span class="var">$risk</span>.<span class="fn">getBean</span>(<span class="str">"Building"</span>) )
+<span class="kw">#set</span>( <span class="var">$roofType</span> = <span class="var">$building</span>.<span class="fn">gets</span>(<span class="str">"RoofCd"</span>) )
+
+<span class="kw">#if</span>( <span class="var">$roofType</span>.<span class="fn">equalsIgnoreCase</span>(<span class="str">"Thatch"</span>) )
+  <span class="var">$ValidationRenderer</span>.<span class="fn">addValidationError</span>(<span class="var">$application</span>, <span class="str">"Validation"</span>, <span class="str">"ERROR"</span>,
+    <span class="str">"Thatch roofs are not eligible for coverage"</span>)
+<span class="kw">#end</span></code></pre>
+        <div class="callout callout-tip">
+          <div class="callout-label">Tip</div>
+          <p>The value stored in the database is the <code>value=</code> attribute from list.xml, NOT the display <code>name=</code>. So if your list has <code>value="Thatch"</code>, compare against "Thatch" not "Cedar Shake".</p>
+        </div>
+        <div class="test-box">
+          <ol>
+            <li>Restart server</li>
+            <li>Open CA Homeowners quote → Select Roof Type = Thatch → Save</li>
+            <li>Verify RED ERROR appears</li>
+            <li>Verify you CANNOT click Issue — button is blocked</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENARIO 5 -->
+    <div class="scenario" id="s5">
+      <div class="scenario-header">
+        <span class="scenario-num">SCENARIO 05</span>
+        <div class="scenario-title">Approval Rule with Authority Check</div>
+        <span class="badge badge-purple">Rules — APPROVAL + Security</span>
+      </div>
+      <div class="scenario-body">
+        <div class="requirement-box">
+          "If Coverage A is over $500,000, the policy must be submitted for underwriter approval. But if the agent has the 'ApproveLargeHome' authority attribute set to Yes, they can issue it directly."
+        </div>
+        <div class="thinking-box">
+          <ul>
+            <li>APPROVAL rule → approval.vtl</li>
+            <li>Need new authority attribute → authority-set.xml</li>
+            <li>Set values per role → authority-role.xml</li>
+            <li>Both conditions must be true: CovA &gt; 500000 AND user does NOT have authority</li>
+          </ul>
+        </div>
+
+        <div class="file-label">📄 FILE 1 OF 3 — Define the authority attribute</div>
+        <div class="file-path">custSTART/src/com/iscs/start/common/shared/model/template/authority-set.xml</div>
+        <pre data-lang="XML"><code><span class="cm">&lt;!-- Add inside PolicyApprovals AuthorityAttributeSet --&gt;</span>
+<span class="tag">&lt;AuthorityAttribute</span> <span class="attr">id</span>=<span class="str">'ApproveLargeHome'</span>
+  <span class="attr">Name</span>=<span class="str">'Approve Large Home Coverage A'</span>
+  <span class="attr">Description</span>=<span class="str">'Allow user to issue policies with Coverage A over $500,000'</span>
+  <span class="attr">AttributeTypeCd</span>=<span class="str">'Rule'</span>
+  <span class="attr">DataTypeCd</span>=<span class="str">'YesNo'</span>
+  <span class="attr">DefaultValue</span>=<span class="str">'No'</span><span class="tag">/&gt;</span></code></pre>
+
+        <div class="file-label">📄 FILE 2 OF 3 — Assign role values</div>
+        <div class="file-path">custSTART/src/com/iscs/start/common/shared/model/template/authority-role.xml</div>
+        <pre data-lang="XML"><code><span class="cm">&lt;!-- Inside PolicyAgent AuthorityRoleSet for PolicyApprovals --&gt;</span>
+<span class="tag">&lt;AuthorityRoleAttribute</span> <span class="attr">AuthorityAttributeIdRef</span>=<span class="str">'ApproveLargeHome'</span> <span class="attr">Value</span>=<span class="str">'No'</span><span class="tag">/&gt;</span>
+
+<span class="cm">&lt;!-- Inside PolicyUnderwriter AuthorityRoleSet for PolicyApprovals --&gt;</span>
+<span class="tag">&lt;AuthorityRoleAttribute</span> <span class="attr">AuthorityAttributeIdRef</span>=<span class="str">'ApproveLargeHome'</span> <span class="attr">Value</span>=<span class="str">'Yes'</span><span class="tag">/&gt;</span></code></pre>
+
+        <div class="file-label">📄 FILE 3 OF 3 — Write the approval rule</div>
+        <div class="file-path">custSTART/src/com/iscs/start/uw/common/product/model/template/iic/homeowners/cw/v01_00_00/rule/approval.vtl</div>
+        <pre data-lang="VTL"><code><span class="cm">## At TOP of file — declare authority attribute</span>
+<span class="kw">#set</span>( <span class="var">$approveLargeHome</span> = <span class="var">$UserRenderer</span>.<span class="fn">getAuthorityAttributeValue</span>(
+  <span class="var">$user</span>, <span class="str">"ApproveLargeHome"</span>, <span class="var">$todayDt</span>) )
+
+<span class="cm">##</span>
+<span class="cm">##Check for large Coverage A</span>
+<span class="kw">#set</span>( <span class="var">$covA</span> = <span class="var">$application</span>.<span class="fn">getBean</span>(<span class="str">"Line"</span>).<span class="fn">getBean</span>(<span class="str">"Coverage"</span>, <span class="str">"CoverageCd"</span>, <span class="str">"CovA"</span>) )
+<span class="kw">#set</span>( <span class="var">$covALimit</span> = <span class="var">$covA</span>.<span class="fn">gets</span>(<span class="str">"Limit1"</span>) )
+
+<span class="kw">#if</span>( !<span class="var">$covALimit</span>.<span class="fn">equals</span>(<span class="str">""</span>) )
+  <span class="kw">#if</span>( <span class="var">$StringRenderer</span>.<span class="fn">greaterThan</span>(<span class="var">$covALimit</span>, <span class="str">"500000"</span>)
+       <span class="op">&&</span> <span class="var">$approveLargeHome</span>.<span class="fn">equalsIgnoreCase</span>(<span class="str">"No"</span>) )
+    <span class="var">$ValidationRenderer</span>.<span class="fn">addValidationError</span>(<span class="var">$application</span>, <span class="str">"Approval"</span>, <span class="str">"APPROVAL"</span>,
+      <span class="str">"Coverage A over $500,000 requires underwriter approval"</span>)
+  <span class="kw">#end</span>
+<span class="kw">#end</span></code></pre>
+        <div class="test-box">
+          <ol>
+            <li>Restart server</li>
+            <li>Log in as agent → Create quote → Set CovA = $600,000 → Try to issue</li>
+            <li>Verify "Submit for Approval" button appears instead of "Issue"</li>
+            <li>Log in as underwriter → Approve it</li>
+            <li>Log back as agent → Verify policy can now be issued</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENARIO 6 -->
+    <div class="scenario" id="s6">
+      <div class="scenario-header">
+        <span class="scenario-num">SCENARIO 06</span>
+        <div class="scenario-title">New Note Type with Security</div>
+        <span class="badge badge-purple">Template + Security</span>
+      </div>
+      <div class="scenario-body">
+        <div class="requirement-box">
+          "Add a new note type called 'Underwriting Decision' on both Quote and Application. Only underwriters can add it, but agents can view it. No attachments allowed."
+        </div>
+        <div class="thinking-box">
+          <ul>
+            <li>New note type → note.xml in BOTH quote and app folders</li>
+            <li>Register in template.xml so product includes it</li>
+            <li>Security values reference authority attributes (Add and View)</li>
+            <li>Must define those authority attributes in authority-set.xml and assign in authority-role.xml</li>
+          </ul>
+        </div>
+
+        <div class="file-label">📄 FILE 1 — Quote note.xml</div>
+        <div class="file-path">custSTART/src/com/iscs/start/uw/quote/model/template/note.xml</div>
+        <pre data-lang="XML"><code><span class="tag">&lt;NoteTemplate</span> <span class="attr">id</span>=<span class="str">'QuoteUWDecisionNote0001'</span> <span class="attr">Name</span>=<span class="str">'Underwriting Decision'</span>
+  <span class="attr">PriorityCd</span>=<span class="str">'2'</span> <span class="attr">CategoryCd</span>=<span class="str">'General'</span>
+  <span class="attr">Description</span>=<span class="str">'Underwriting Decision for $!InsuredName.gets("CommercialName")'</span>
+  <span class="attr">StickyInd</span>=<span class="str">'No'</span> <span class="attr">AttachmentCd</span>=<span class="str">'Prohibited'</span> <span class="attr">DeactivationDt</span>=<span class="str">'29991231'</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;SecurityAttributes&gt;</span>
+    <span class="tag">&lt;SecurityAttribute</span> <span class="attr">TypeCd</span>=<span class="str">'Add'</span>  <span class="attr">Value</span>=<span class="str">'UWDecisionNote-Add'</span><span class="tag">/&gt;</span>
+    <span class="tag">&lt;SecurityAttribute</span> <span class="attr">TypeCd</span>=<span class="str">'Edit'</span> <span class="attr">Value</span>=<span class="str">'No'</span><span class="tag">/&gt;</span>
+    <span class="tag">&lt;SecurityAttribute</span> <span class="attr">TypeCd</span>=<span class="str">'View'</span> <span class="attr">Value</span>=<span class="str">'UWDecisionNote-View'</span><span class="tag">/&gt;</span>
+    <span class="tag">&lt;SecurityAttribute</span> <span class="attr">TypeCd</span>=<span class="str">'Delete'</span> <span class="attr">Value</span>=<span class="str">'No'</span><span class="tag">/&gt;</span>
+  <span class="tag">&lt;/SecurityAttributes&gt;</span>
+  <span class="tag">&lt;TagTemplate</span> <span class="attr">id</span>=<span class="str">'Underwriting'</span> <span class="attr">Name</span>=<span class="str">'Underwriting'</span> <span class="attr">AttachmentMethodCd</span>=<span class="str">'Optional'</span><span class="tag">/&gt;</span>
+<span class="tag">&lt;/NoteTemplate&gt;</span></code></pre>
+
+        <div class="file-label">📄 FILE 2 — App note.xml (same but different id)</div>
+        <div class="file-path">custSTART/src/com/iscs/start/uw/app/model/template/note.xml</div>
+        <pre data-lang="XML"><code><span class="cm">&lt;!-- Same content but id = 'ApplicationUWDecisionNote0001' --&gt;</span>
+<span class="tag">&lt;NoteTemplate</span> <span class="attr">id</span>=<span class="str">'ApplicationUWDecisionNote0001'</span> <span class="attr">Name</span>=<span class="str">'Underwriting Decision'</span>
+  <span class="attr">PriorityCd</span>=<span class="str">'2'</span> <span class="attr">CategoryCd</span>=<span class="str">'General'</span>
+  <span class="attr">Description</span>=<span class="str">'Underwriting Decision for $!InsuredName.gets("CommercialName")'</span>
+  <span class="attr">StickyInd</span>=<span class="str">'No'</span> <span class="attr">AttachmentCd</span>=<span class="str">'Prohibited'</span> <span class="attr">DeactivationDt</span>=<span class="str">'29991231'</span><span class="tag">&gt;</span>
+  <span class="cm">&lt;!-- Same SecurityAttributes as above --&gt;</span>
+<span class="tag">&lt;/NoteTemplate&gt;</span></code></pre>
+
+        <div class="file-label">📄 FILE 3 — Register in template.xml</div>
+        <div class="file-path">custSTART/src/com/iscs/start/uw/common/product/model/template/iic/homeowners/cw/v01_00_00/template.xml</div>
+        <pre data-lang="XML"><code><span class="tag">&lt;ProductTemplateFilter</span> <span class="attr">FilterTypeCd</span>=<span class="str">'Include'</span> <span class="attr">TemplateCd</span>=<span class="str">'QuoteUWDecisionNote0001'</span><span class="tag">/&gt;</span>
+<span class="tag">&lt;ProductTemplateFilter</span> <span class="attr">FilterTypeCd</span>=<span class="str">'Include'</span> <span class="attr">TemplateCd</span>=<span class="str">'ApplicationUWDecisionNote0001'</span><span class="tag">/&gt;</span></code></pre>
+
+        <div class="file-label">📄 FILE 4 — Define authority attributes</div>
+        <div class="file-path">custSTART/src/com/iscs/start/common/shared/model/template/authority-set.xml</div>
+        <pre data-lang="XML"><code><span class="cm">&lt;!-- Inside NoteSecurity AuthorityAttributeSet --&gt;</span>
+<span class="tag">&lt;AuthorityAttribute</span> <span class="attr">id</span>=<span class="str">'UWDecisionNote-Add'</span>
+  <span class="attr">Name</span>=<span class="str">'Add UW Decision Notes'</span>
+  <span class="attr">Description</span>=<span class="str">'Can add Underwriting Decision notes'</span>
+  <span class="attr">AttributeTypeCd</span>=<span class="str">'Edit'</span> <span class="attr">DataTypeCd</span>=<span class="str">'YesNo'</span> <span class="attr">DefaultValue</span>=<span class="str">'No'</span><span class="tag">/&gt;</span>
+
+<span class="tag">&lt;AuthorityAttribute</span> <span class="attr">id</span>=<span class="str">'UWDecisionNote-View'</span>
+  <span class="attr">Name</span>=<span class="str">'View UW Decision Notes'</span>
+  <span class="attr">Description</span>=<span class="str">'Can view Underwriting Decision notes'</span>
+  <span class="attr">AttributeTypeCd</span>=<span class="str">'Edit'</span> <span class="attr">DataTypeCd</span>=<span class="str">'YesNo'</span> <span class="attr">DefaultValue</span>=<span class="str">'No'</span><span class="tag">/&gt;</span></code></pre>
+
+        <div class="file-label">📄 FILE 5 — Set values per role</div>
+        <div class="file-path">custSTART/src/com/iscs/start/common/shared/model/template/authority-role.xml</div>
+        <pre data-lang="XML"><code><span class="cm">&lt;!-- Inside PolicyAgent AuthorityRoleSet for NoteSecurity --&gt;</span>
+<span class="tag">&lt;AuthorityRoleAttribute</span> <span class="attr">AuthorityAttributeIdRef</span>=<span class="str">'UWDecisionNote-Add'</span>  <span class="attr">Value</span>=<span class="str">'No'</span><span class="tag">/&gt;</span>
+<span class="tag">&lt;AuthorityRoleAttribute</span> <span class="attr">AuthorityAttributeIdRef</span>=<span class="str">'UWDecisionNote-View'</span> <span class="attr">Value</span>=<span class="str">'Yes'</span><span class="tag">/&gt;</span>
+
+<span class="cm">&lt;!-- Inside PolicyUnderwriter AuthorityRoleSet for NoteSecurity --&gt;</span>
+<span class="tag">&lt;AuthorityRoleAttribute</span> <span class="attr">AuthorityAttributeIdRef</span>=<span class="str">'UWDecisionNote-Add'</span>  <span class="attr">Value</span>=<span class="str">'Yes'</span><span class="tag">/&gt;</span>
+<span class="tag">&lt;AuthorityRoleAttribute</span> <span class="attr">AuthorityAttributeIdRef</span>=<span class="str">'UWDecisionNote-View'</span> <span class="attr">Value</span>=<span class="str">'Yes'</span><span class="tag">/&gt;</span></code></pre>
+      </div>
+    </div>
+
+    <!-- SCENARIO 7 -->
+    <div class="scenario" id="s7">
+      <div class="scenario-header">
+        <span class="scenario-num">SCENARIO 07</span>
+        <div class="scenario-title">Auto-Triggered Task on Attachment</div>
+        <span class="badge badge-yellow">Workflow</span>
+      </div>
+      <div class="scenario-body">
+        <div class="requirement-box">
+          "When an agent adds a 'Security System' attachment to a quote, automatically create a task called 'Review Security System Documentation' and assign it to the underwriting group."
+        </div>
+        <div class="thinking-box">
+          <ul>
+            <li>New task type → task.xml (quote folder)</li>
+            <li>Auto-trigger on attachment → add TaskTemplateIdRef to the attachment template</li>
+            <li>No vtl rule needed — the link between attachment and task is declarative in XML</li>
+          </ul>
+        </div>
+
+        <div class="file-label">📄 FILE 1 — Define the task in task.xml</div>
+        <div class="file-path">custSTART/src/com/iscs/start/uw/quote/model/template/task.xml</div>
+        <pre data-lang="XML"><code><span class="tag">&lt;TaskTemplate</span>
+  <span class="attr">id</span>=<span class="str">'QuoteTask-ReviewSecuritySystem'</span>
+  <span class="attr">Name</span>=<span class="str">'Review Security System Documentation'</span>
+  <span class="attr">Priority</span>=<span class="str">'1'</span>
+  <span class="attr">PriorityOverrideInd</span>=<span class="str">'No'</span>
+  <span class="attr">Description</span>=<span class="str">'Review Security System documentation for $!InsuredName.gets("CommercialName")'</span>
+  <span class="attr">DescriptionOverrideInd</span>=<span class="str">'No'</span>
+  <span class="attr">DefaultOwner</span>=<span class="str">'%LicensedProduct%'</span>
+  <span class="attr">DefaultOwnerCd</span>=<span class="str">'User'</span>
+  <span class="attr">WorkDtDays</span>=<span class="str">'3'</span>
+  <span class="attr">WorkDtOverrideInd</span>=<span class="str">'No'</span>
+  <span class="attr">Text</span>=<span class="str">'Please review the attached Security System documentation'</span>
+  <span class="attr">CriticalDtDays</span>=<span class="str">'7'</span>
+  <span class="attr">CriticalDtBusinessInd</span>=<span class="str">'Yes'</span>
+  <span class="attr">CriticalDtInd</span>=<span class="str">'Yes'</span>
+  <span class="attr">WorkRequiredInd</span>=<span class="str">'Yes'</span>
+  <span class="attr">DeactivationDt</span>=<span class="str">'29991231'</span>
+  <span class="attr">TaskTypeCd</span>=<span class="str">'Automatic'</span>
+  <span class="attr">Category</span>=<span class="str">'Underwriting'</span><span class="tag">&gt;</span>
+<span class="tag">&lt;/TaskTemplate&gt;</span></code></pre>
+
+        <div class="file-label">📄 FILE 2 — Link task to attachment via TaskTemplateIdRef</div>
+        <div class="file-path">custSTART/src/com/iscs/start/uw/quote/model/template/attachment.xml</div>
+        <pre data-lang="XML"><code><span class="tag">&lt;AttachmentTemplate</span> <span class="attr">id</span>=<span class="str">'XSecuritySystemAttachment0001'</span>
+  <span class="attr">Name</span>=<span class="str">'Security System'</span>
+  <span class="attr">CategoryCd</span>=<span class="str">'General'</span>
+  <span class="attr">Description</span>=<span class="str">'Security System Documentation'</span>
+  <span class="attr">TaskTemplateIdRef</span>=<span class="str">'QuoteTask-ReviewSecuritySystem'</span>
+  <span class="attr">DeactivationDt</span>=<span class="str">'29991231'</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;SecurityAttributes&gt;</span>
+    <span class="tag">&lt;SecurityAttribute</span> <span class="attr">TypeCd</span>=<span class="str">'Add'</span>    <span class="attr">Value</span>=<span class="str">'Yes'</span><span class="tag">/&gt;</span>
+    <span class="tag">&lt;SecurityAttribute</span> <span class="attr">TypeCd</span>=<span class="str">'Edit'</span>   <span class="attr">Value</span>=<span class="str">'Yes'</span><span class="tag">/&gt;</span>
+    <span class="tag">&lt;SecurityAttribute</span> <span class="attr">TypeCd</span>=<span class="str">'View'</span>   <span class="attr">Value</span>=<span class="str">'Yes'</span><span class="tag">/&gt;</span>
+    <span class="tag">&lt;SecurityAttribute</span> <span class="attr">TypeCd</span>=<span class="str">'Delete'</span> <span class="attr">Value</span>=<span class="str">'No'</span><span class="tag">/&gt;</span>
+  <span class="tag">&lt;/SecurityAttributes&gt;</span>
+<span class="tag">&lt;/AttachmentTemplate&gt;</span></code></pre>
+
+        <div class="callout callout-tip">
+          <div class="callout-label">Key Insight</div>
+          <p><code>TaskTemplateIdRef</code> on the attachment template is what wires the auto-trigger. When a user adds this attachment type, the system automatically creates the linked task. No vtl code needed.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENARIO 8 -->
+    <div class="scenario" id="s8">
+      <div class="scenario-header">
+        <span class="scenario-num">SCENARIO 08</span>
+        <div class="scenario-title">Form Auto-Attach Based on Data</div>
+        <span class="badge badge-green">Forms</span>
+      </div>
+      <div class="scenario-body">
+        <div class="requirement-box">
+          "Form IHO-75 should automatically attach to every CA Homeowners policy that has an in-ground pool (SwimmingPool question = Yes AND PoolType = In-Ground)."
+        </div>
+        <div class="thinking-box">
+          <ul>
+            <li>Auto-attach based on data conditions → form-selection.vtl</li>
+            <li>Need to read Question replies for two questions</li>
+            <li>Both conditions must be true (AND logic)</li>
+            <li>Add inside the &lt;Errors&gt; block, after existing form attachments</li>
+          </ul>
+        </div>
+        <div class="file-label">📄 FILE TO CHANGE</div>
+        <div class="file-path">custSTART/src/com/iscs/start/uw/common/product/model/template/iic/homeowners/ca/v01_00_00/rule/ca-homeowners-rule-form-selection.vtl</div>
+        <pre data-lang="VTL"><code><span class="cm">## Add this INSIDE the &lt;Errors&gt; block</span>
+<span class="cm">##</span>
+<span class="cm">##Attach IHO-75 for In-Ground Pool</span>
+<span class="kw">#set</span>( <span class="var">$swimmingPoolReply</span> = <span class="var">$application</span>.<span class="fn">getBean</span>(<span class="str">"QuestionReplies"</span>)
+  .<span class="fn">getBean</span>(<span class="str">"QuestionReply"</span>, <span class="str">"QuestionName"</span>, <span class="str">"SwimmingPool"</span>) )
+<span class="kw">#set</span>( <span class="var">$poolTypeReply</span> = <span class="var">$application</span>.<span class="fn">getBean</span>(<span class="str">"QuestionReplies"</span>)
+  .<span class="fn">getBean</span>(<span class="str">"QuestionReply"</span>, <span class="str">"QuestionName"</span>, <span class="str">"PoolType"</span>) )
+
+<span class="kw">#if</span>( <span class="var">$swimmingPoolReply</span>.<span class="fn">gets</span>(<span class="str">"ReplyText"</span>).<span class="fn">equalsIgnoreCase</span>(<span class="str">"Yes"</span>)
+     <span class="op">&&</span> <span class="var">$poolTypeReply</span>.<span class="fn">gets</span>(<span class="str">"ReplyText"</span>).<span class="fn">equalsIgnoreCase</span>(<span class="str">"In-Ground"</span>) )
+  <span class="var">$FormRenderer</span>.<span class="fn">attachForm</span>(<span class="var">$application</span>, <span class="str">"IHO-75"</span>)
+<span class="kw">#end</span></code></pre>
+        <div class="callout callout-note">
+          <div class="callout-label">The Full Form Selection Pattern</div>
+          <p>Form selection files always follow this pattern: <strong>1)</strong> Clear all system forms. <strong>2)</strong> Always-attach forms. <strong>3)</strong> Conditionally attach forms. <strong>4)</strong> Delete cleared forms not reattached.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENARIO 9 -->
+    <div class="scenario" id="s9">
+      <div class="scenario-header">
+        <span class="scenario-num">SCENARIO 09</span>
+        <div class="scenario-title">Print Data on a Form</div>
+        <span class="badge badge-green">Forms — Print</span>
+      </div>
+      <div class="scenario-body">
+        <div class="requirement-box">
+          "When IHO-75 prints, it should show: Policy Number, Insured Name, Pool Type, and whether there is a diving board."
+        </div>
+        <div class="thinking-box">
+          <ul>
+            <li>Print data → create doc.vtl and section.vtl files</li>
+            <li>Doc file = declares form and calls section</li>
+            <li>Section file = pulls data from beans and maps to form fields</li>
+            <li>XML tag names must EXACTLY match field names in the .xatw Adobe form file</li>
+          </ul>
+        </div>
+
+        <div class="file-label">📄 FILE 1 OF 2 — Doc file (trigger)</div>
+        <div class="file-path">custSTART/src/com/iscs/start/uw/policy/model/formset/doc/iho-75.vtl</div>
+        <pre data-lang="VTL"><code><span class="tag">&lt;Document</span> <span class="attr">Template</span> <span class="attr">Name</span>=<span class="str">"iho-75"</span><span class="tag">/&gt;</span>
+<span class="var">$!</span><span class="var">PrintRenderer</span>.<span class="fn">section</span>(<span class="str">"UWPolicy::formset::section::iho-75.vtl"</span>)</code></pre>
+
+        <div class="file-label">📄 FILE 2 OF 2 — Section file (data mapping)</div>
+        <div class="file-path">custSTART/src/com/iscs/start/uw/policy/model/formset/section/iho-75.vtl</div>
+        <pre data-lang="VTL"><code><span class="cm">##IHO-75 Pool Coverage Form Section File</span>
+<span class="cm">##</span>
+<span class="cm">##Get policy data</span>
+<span class="kw">#set</span>( <span class="var">$policyNumber</span> = <span class="var">$BasicPolicy</span>.<span class="fn">gets</span>(<span class="str">"PolicyDisplayNumber"</span>) )
+<span class="kw">#set</span>( <span class="var">$insuredName</span>  = <span class="var">$InsuredName</span>.<span class="fn">gets</span>(<span class="str">"CommercialName"</span>) )
+<span class="cm">##</span>
+<span class="cm">##Get question reply values</span>
+<span class="kw">#set</span>( <span class="var">$poolTypeReply</span> = <span class="var">$Policy</span>.<span class="fn">getBean</span>(<span class="str">"QuestionReplies"</span>)
+  .<span class="fn">getBean</span>(<span class="str">"QuestionReply"</span>, <span class="str">"QuestionName"</span>, <span class="str">"PoolType"</span>) )
+<span class="kw">#set</span>( <span class="var">$divingBoardReply</span> = <span class="var">$Policy</span>.<span class="fn">getBean</span>(<span class="str">"QuestionReplies"</span>)
+  .<span class="fn">getBean</span>(<span class="str">"QuestionReply"</span>, <span class="str">"QuestionName"</span>, <span class="str">"DivingBoard"</span>) )
+<span class="cm">##</span>
+<span class="kw">#set</span>( <span class="var">$poolType</span>    = <span class="var">$poolTypeReply</span>.<span class="fn">gets</span>(<span class="str">"ReplyText"</span>) )
+<span class="kw">#set</span>( <span class="var">$divingBoard</span> = <span class="var">$divingBoardReply</span>.<span class="fn">gets</span>(<span class="str">"ReplyText"</span>) )
+<span class="cm">##</span>
+<span class="cm">##Map to form field names (must match .xatw field names exactly)</span>
+<span class="tag">&lt;iho75&gt;</span>
+  <span class="tag">&lt;POLICY_NUMBER&gt;</span><span class="var">$policyNumber</span><span class="tag">&lt;/POLICY_NUMBER&gt;</span>
+  <span class="tag">&lt;INSURED_NAME&gt;</span><span class="var">$insuredName</span><span class="tag">&lt;/INSURED_NAME&gt;</span>
+  <span class="tag">&lt;POOL_TYPE&gt;</span><span class="var">$poolType</span><span class="tag">&lt;/POOL_TYPE&gt;</span>
+  <span class="tag">&lt;DIVING_BOARD&gt;</span><span class="var">$divingBoard</span><span class="tag">&lt;/DIVING_BOARD&gt;</span>
+<span class="tag">&lt;/iho75&gt;</span></code></pre>
+        <div class="callout callout-warn">
+          <div class="callout-label">Critical</div>
+          <p>The XML tag names like <code>&lt;POLICY_NUMBER&gt;</code> must <strong>exactly match</strong> the field names defined in the Adobe <code>.xatw</code> form template file. Open the .xatw file to verify the field names before writing your section file.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENARIO 10 -->
+    <div class="scenario" id="s10">
+      <div class="scenario-header">
+        <span class="scenario-num">SCENARIO 10</span>
+        <div class="scenario-title">New Cancellation Reason</div>
+        <span class="badge badge-green">Product Config</span>
+      </div>
+      <div class="scenario-body">
+        <div class="requirement-box">
+          "Add a new cancellation reason: 'Property deemed uninsurable after inspection'. Applies both inside and outside UW period. Company-initiated, 30-day notice, pro-rata return premium."
+        </div>
+        <div class="thinking-box">
+          <ul>
+            <li>Cancel reason → state.xml</li>
+            <li>Need TWO beans: one for InUWPeriodInd=Yes, one for InUWPeriodInd=No</li>
+            <li>Company-initiated → RequestedByCd="Company"</li>
+            <li>Pro-rata → ProRateInd="Yes", ShortRateInd="No", PureFlatInd="No"</li>
+          </ul>
+        </div>
+        <div class="file-label">📄 FILE TO CHANGE</div>
+        <div class="file-path">custSTART/src/com/iscs/start/uw/common/product/model/template/iic/homeowners/ca/v01_00_00/state.xml</div>
+        <pre data-lang="XML"><code><span class="cm">&lt;!-- Add BOTH beans inside &lt;ProductCancelReasons&gt; --&gt;</span>
+
+<span class="cm">&lt;!-- During UW Period --&gt;</span>
+<span class="tag">&lt;ProductCancelReason</span>
+  <span class="attr">InUWPeriodInd</span>=<span class="str">"Yes"</span>
+  <span class="attr">ReasonCd</span>=<span class="str">"UninsurableAfterInspection"</span>
+  <span class="attr">ReasonDesc</span>=<span class="str">"Property deemed uninsurable after inspection"</span>
+  <span class="attr">Days</span>=<span class="str">"30"</span>
+  <span class="attr">FormRef</span>=<span class="str">"CXNotice"</span>
+  <span class="attr">MailProofCd</span>=<span class="str">"Post Office"</span>
+  <span class="attr">ProRateInd</span>=<span class="str">"Yes"</span>
+  <span class="attr">ShortRateInd</span>=<span class="str">"No"</span>
+  <span class="attr">PureFlatInd</span>=<span class="str">"No"</span>
+  <span class="attr">RequestedByCd</span>=<span class="str">"Company"</span>
+  <span class="attr">NSFInd</span>=<span class="str">"No"</span>
+  <span class="attr">DocumentTypeCd</span>=<span class="str">"Cancellation Notice"</span><span class="tag">/&gt;</span>
+
+<span class="cm">&lt;!-- Outside UW Period --&gt;</span>
+<span class="tag">&lt;ProductCancelReason</span>
+  <span class="attr">InUWPeriodInd</span>=<span class="str">"No"</span>
+  <span class="attr">ReasonCd</span>=<span class="str">"UninsurableAfterInspection"</span>
+  <span class="attr">ReasonDesc</span>=<span class="str">"Property deemed uninsurable after inspection"</span>
+  <span class="attr">Days</span>=<span class="str">"30"</span>
+  <span class="attr">FormRef</span>=<span class="str">"CXNotice"</span>
+  <span class="attr">MailProofCd</span>=<span class="str">"Post Office"</span>
+  <span class="attr">ProRateInd</span>=<span class="str">"Yes"</span>
+  <span class="attr">ShortRateInd</span>=<span class="str">"No"</span>
+  <span class="attr">PureFlatInd</span>=<span class="str">"No"</span>
+  <span class="attr">RequestedByCd</span>=<span class="str">"Company"</span>
+  <span class="attr">NSFInd</span>=<span class="str">"No"</span>
+  <span class="attr">DocumentTypeCd</span>=<span class="str">"Cancellation Notice"</span><span class="tag">/&gt;</span></code></pre>
+        <div class="test-box">
+          <ol>
+            <li>Restart server</li>
+            <li>Log in as admin → Open a bound CA Homeowners policy</li>
+            <li>Go to Actions → Cancel Policy</li>
+            <li>Verify "Property deemed uninsurable after inspection" appears in the dropdown</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION: PATTERN GUIDE -->
+  <div class="section" id="pattern-guide">
+    <div class="section-header">
+      <div class="section-icon icon-red">🔍</div>
+      <div>
+        <div class="section-title">Pattern Recognition Guide</div>
+        <div class="section-num">QUICK REFERENCE — Clue words to file types</div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Requirement Clue Words</th>
+            <th>Category</th>
+            <th>Files</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>"add option", "new value in dropdown"</td>
+            <td><span class="badge badge-blue">UI</span></td>
+            <td><code>list.xml</code></td>
+          </tr>
+          <tr>
+            <td>"capture", "collect", "new field"</td>
+            <td><span class="badge badge-blue">UI + Data</span></td>
+            <td><code>sp-policy</code> + <code>dto-sp-policy</code> + <code>.html</code></td>
+          </tr>
+          <tr>
+            <td>"show", "display", "tab", "section"</td>
+            <td><span class="badge badge-blue">UI</span></td>
+            <td><code>.html tile</code> / <code>tab.xml</code></td>
+          </tr>
+          <tr>
+            <td>"only X can", "permission", "access"</td>
+            <td><span class="badge badge-purple">Security</span></td>
+            <td><code>authority-set.xml</code> + <code>authority-role.xml</code></td>
+          </tr>
+          <tr>
+            <td>"must not", "cannot", "invalid", "required"</td>
+            <td><span class="badge badge-red">Rules — ERROR</span></td>
+            <td><code>validation.vtl</code></td>
+          </tr>
+          <tr>
+            <td>"should", "recommend", "advise"</td>
+            <td><span class="badge badge-yellow">Rules — WARNING</span></td>
+            <td><code>validation.vtl</code></td>
+          </tr>
+          <tr>
+            <td>"requires approval", "submit for review"</td>
+            <td><span class="badge badge-purple">Rules — APPROVAL</span></td>
+            <td><code>approval.vtl</code> + <code>authority-set/role</code></td>
+          </tr>
+          <tr>
+            <td>"automatically attach", "auto-include form"</td>
+            <td><span class="badge badge-green">Forms</span></td>
+            <td><code>form-selection.vtl</code></td>
+          </tr>
+          <tr>
+            <td>"new form", "new document", "print"</td>
+            <td><span class="badge badge-green">Forms</span></td>
+            <td><code>form.xml</code> + <code>doc.vtl</code> + <code>section.vtl</code></td>
+          </tr>
+          <tr>
+            <td>"task", "inbox item", "notification"</td>
+            <td><span class="badge badge-yellow">Workflow</span></td>
+            <td><code>task.xml</code></td>
+          </tr>
+          <tr>
+            <td>"automatically create task", "trigger task"</td>
+            <td><span class="badge badge-yellow">Workflow</span></td>
+            <td><code>TaskTemplateIdRef</code> in attachment.xml</td>
+          </tr>
+          <tr>
+            <td>"new coverage", "add coverage"</td>
+            <td><span class="badge badge-green">Product</span></td>
+            <td><code>sub-type.xml</code> (UW) + <code>line.xml</code> (Claims)</td>
+          </tr>
+          <tr>
+            <td>"cancel reason", "cancellation"</td>
+            <td><span class="badge badge-green">Product</span></td>
+            <td><code>state.xml</code></td>
+          </tr>
+          <tr>
+            <td>"additional interest", "mortgagee", "loss payee"</td>
+            <td><span class="badge badge-green">Product</span></td>
+            <td><code>ai.xml</code></td>
+          </tr>
+          <tr>
+            <td>"question", "ask user", "collect answer"</td>
+            <td><span class="badge badge-green">Product</span></td>
+            <td><code>question.xml</code></td>
+          </tr>
+          <tr>
+            <td>"payment plan", "installment", "billing"</td>
+            <td><span class="badge badge-green">Product</span></td>
+            <td><code>term.xml</code> + <code>.payplan.xml</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SECTION: QUICK REF -->
+  <div class="section" id="quick-ref">
+    <div class="section-header">
+      <div class="section-icon icon-green">📋</div>
+      <div>
+        <div class="section-title">Velocity Cheat Sheet</div>
+        <div class="section-num">QUICK REFERENCE — Copy-paste ready patterns</div>
+      </div>
+    </div>
+
+    <div class="cheat-grid">
+      <div class="cheat-block">
+        <div class="cheat-block-title">Get Data — Common Patterns</div>
+        <pre data-lang="VTL"><code><span class="cm">## Policy number</span>
+<span class="var">$BasicPolicy</span>.<span class="fn">gets</span>(<span class="str">"PolicyDisplayNumber"</span>)
+
+<span class="cm">## Insured name</span>
+<span class="var">$InsuredName</span>.<span class="fn">gets</span>(<span class="str">"CommercialName"</span>)
+
+<span class="cm">## Effective date</span>
+<span class="var">$BasicPolicy</span>.<span class="fn">gets</span>(<span class="str">"EffectiveDt"</span>)
+
+<span class="cm">## Building bean</span>
+<span class="kw">#set</span>( <span class="var">$risk</span> = <span class="var">$application</span>.<span class="fn">findBeanByFieldValue</span>(
+  <span class="str">"Risk"</span>, <span class="str">"Status"</span>, <span class="str">"Active"</span>) )
+<span class="kw">#set</span>( <span class="var">$building</span> = <span class="var">$risk</span>.<span class="fn">getBean</span>(<span class="str">"Building"</span>) )
+<span class="var">$building</span>.<span class="fn">gets</span>(<span class="str">"ConstructionCd"</span>)
+
+<span class="cm">## Coverage A limit</span>
+<span class="kw">#set</span>( <span class="var">$covA</span> = <span class="var">$application</span>.<span class="fn">getBean</span>(<span class="str">"Line"</span>)
+  .<span class="fn">getBean</span>(<span class="str">"Coverage"</span>, <span class="str">"CoverageCd"</span>, <span class="str">"CovA"</span>) )
+<span class="var">$covA</span>.<span class="fn">gets</span>(<span class="str">"Limit1"</span>)
+
+<span class="cm">## Question reply</span>
+<span class="kw">#set</span>( <span class="var">$reply</span> = <span class="var">$application</span>.<span class="fn">getBean</span>(<span class="str">"QuestionReplies"</span>)
+  .<span class="fn">getBean</span>(<span class="str">"QuestionReply"</span>, <span class="str">"QuestionName"</span>, <span class="str">"MyQ"</span>) )
+<span class="var">$reply</span>.<span class="fn">gets</span>(<span class="str">"ReplyText"</span>)</code></pre>
+      </div>
+
+      <div class="cheat-block">
+        <div class="cheat-block-title">Validation Errors</div>
+        <pre data-lang="VTL"><code><span class="cm">## Block — ERROR</span>
+<span class="var">$ValidationRenderer</span>.<span class="fn">addValidationError</span>(
+  <span class="var">$application</span>,
+  <span class="str">"Validation"</span>,
+  <span class="str">"ERROR"</span>,
+  <span class="str">"Your error message here"</span>)
+
+<span class="cm">## Warn — WARNING</span>
+<span class="var">$ValidationRenderer</span>.<span class="fn">addValidationError</span>(
+  <span class="var">$application</span>,
+  <span class="str">"Validation"</span>,
+  <span class="str">"WARNING"</span>,
+  <span class="str">"Your warning message here"</span>)
+
+<span class="cm">## Escalate — APPROVAL</span>
+<span class="var">$ValidationRenderer</span>.<span class="fn">addValidationError</span>(
+  <span class="var">$application</span>,
+  <span class="str">"Approval"</span>,
+  <span class="str">"APPROVAL"</span>,
+  <span class="str">"Your approval message here"</span>)
+
+<span class="cm">## Claim validation (use $claim not $application)</span>
+<span class="var">$ValidationRenderer</span>.<span class="fn">addValidationError</span>(
+  <span class="var">$claim</span>,
+  <span class="str">"Validation"</span>,
+  <span class="str">"ERROR"</span>,
+  <span class="str">"Claim error message"</span>)</code></pre>
+      </div>
+
+      <div class="cheat-block">
+        <div class="cheat-block-title">Authority Checks</div>
+        <pre data-lang="VTL"><code><span class="cm">## UW rules — use UserRenderer</span>
+<span class="kw">#set</span>( <span class="var">$myAttr</span> = <span class="var">$UserRenderer</span>
+  .<span class="fn">getAuthorityAttributeValue</span>(
+    <span class="var">$user</span>,
+    <span class="str">"MyAttributeId"</span>,
+    <span class="var">$todayDt</span>) )
+
+<span class="kw">#if</span>( <span class="var">$myAttr</span>.<span class="fn">equalsIgnoreCase</span>(<span class="str">"No"</span>) )
+  <span class="var">$ValidationRenderer</span>.<span class="fn">addValidationError</span>(...)
+<span class="kw">#end</span>
+
+<span class="cm">## Claims rules — use ClaimProductRenderer</span>
+<span class="kw">#set</span>( <span class="var">$myAttr</span> = <span class="var">$ClaimProductRenderer</span>
+  .<span class="fn">getAuthorityAttributeValue</span>(
+    <span class="var">$claim</span>.<span class="fn">gets</span>(<span class="str">"ProductVersionIdRef"</span>),
+    <span class="str">"MyAttributeId"</span>,
+    <span class="var">$user</span>,
+    <span class="var">$todayDt</span>) )
+
+<span class="cm">## Currency authority (e.g. HOMaxCoverageA)</span>
+<span class="kw">#set</span>( <span class="var">$maxAmt</span> = <span class="var">$UserRenderer</span>
+  .<span class="fn">getAuthorityAttributeValue</span>(
+    <span class="var">$user</span>, <span class="str">"HOMaxCoverageA"</span>, <span class="var">$todayDt</span>) )
+<span class="kw">#if</span>( <span class="var">$StringRenderer</span>.<span class="fn">greaterThan</span>(<span class="var">$actual</span>, <span class="var">$maxAmt</span>) )
+  <span class="cm">## requires approval</span>
+<span class="kw">#end</span></code></pre>
+      </div>
+
+      <div class="cheat-block">
+        <div class="cheat-block-title">Form Selection Pattern</div>
+        <pre data-lang="VTL"><code><span class="cm">## Standard form selection file structure</span>
+<span class="kw">#set</span>( <span class="var">$application</span> = <span class="var">$bean</span> )
+
+<span class="cm">## Step 1: Clear all system forms</span>
+<span class="var">$FormRenderer</span>.<span class="fn">clearSystemForms</span>(<span class="var">$application</span>)
+
+<span class="tag">&lt;Errors&gt;</span>
+
+<span class="cm">## Step 2: Always-attach forms</span>
+<span class="var">$FormRenderer</span>.<span class="fn">attachForm</span>(<span class="var">$application</span>, <span class="str">"IHO-BASIC"</span>)
+
+<span class="cm">## Step 3: Conditionally attach</span>
+<span class="kw">#if</span>( <span class="var">$CoverageRenderer</span>.<span class="fn">isActive</span>(<span class="var">$application</span>, <span class="str">"SPP"</span>) )
+  <span class="var">$FormRenderer</span>.<span class="fn">attachForm</span>(<span class="var">$application</span>, <span class="str">"IHO-61"</span>)
+<span class="kw">#end</span>
+
+<span class="cm">## Check Additional Interest</span>
+<span class="kw">#set</span>( <span class="var">$ai</span> = <span class="var">$AIRenderer</span>.<span class="fn">getAdditionalInterest</span>(
+  <span class="var">$application</span>, <span class="str">"Mortgagee"</span>) )
+<span class="kw">#if</span>( <span class="var">$ai</span>.<span class="fn">gets</span>(<span class="str">"InterestTypeCd"</span>).<span class="fn">equals</span>(<span class="str">"Mortgagee"</span>) )
+  <span class="var">$FormRenderer</span>.<span class="fn">attachForm</span>(<span class="var">$application</span>, <span class="str">"438BFUHO"</span>)
+<span class="kw">#end</span>
+
+<span class="tag">&lt;/Errors&gt;</span>
+
+<span class="cm">## Step 4: Delete cleared unattached forms</span>
+<span class="var">$FormRenderer</span>.<span class="fn">deleteClearedSystemForms</span>(<span class="var">$application</span>)</code></pre>
+      </div>
+
+      <div class="cheat-block">
+        <div class="cheat-block-title">String & Number Comparisons</div>
+        <pre data-lang="VTL"><code><span class="cm">## Compare numbers (always use StringRenderer)</span>
+<span class="var">$StringRenderer</span>.<span class="fn">greaterThan</span>(<span class="var">$val</span>, <span class="str">"500000"</span>)
+<span class="var">$StringRenderer</span>.<span class="fn">lessThan</span>(<span class="var">$val</span>, <span class="str">"1000"</span>)
+<span class="var">$StringRenderer</span>.<span class="fn">greaterThanEqual</span>(<span class="var">$val</span>, <span class="str">"0"</span>)
+
+<span class="cm">## Check Yes/No field</span>
+<span class="var">$StringRenderer</span>.<span class="fn">isTrue</span>(<span class="var">$building</span>.<span class="fn">gets</span>(<span class="str">"SwimmingPoolInd"</span>))
+
+<span class="cm">## Format as money</span>
+<span class="var">$!</span><span class="var">StringRenderer</span>.<span class="fn">formatMoney</span>(<span class="var">$amt</span>, <span class="kw">true</span>)
+
+<span class="cm">## Math with money values</span>
+<span class="kw">#set</span>( <span class="var">$total</span> = <span class="var">$StringRenderer</span>.<span class="fn">addMoney</span>(<span class="var">$prem1</span>, <span class="var">$prem2</span>) )
+
+<span class="cm">## Compare dates</span>
+<span class="var">$DateRenderer</span>.<span class="fn">greaterThan</span>(<span class="var">$lossDt</span>, <span class="var">$effectiveDt</span>)
+<span class="var">$DateRenderer</span>.<span class="fn">lessThan</span>(<span class="var">$todayDt</span>, <span class="var">$lossDt</span>)
+<span class="var">$DateRenderer</span>.<span class="fn">diffDays</span>(<span class="var">$date1</span>, <span class="var">$date2</span>)
+
+<span class="cm">## Advance a date</span>
+<span class="kw">#set</span>( <span class="var">$future</span> = <span class="var">$DateRenderer</span>.<span class="fn">advanceDate</span>(<span class="var">$todayDt</span>, <span class="str">"30"</span>) )</code></pre>
+      </div>
+
+      <div class="cheat-block">
+        <div class="cheat-block-title">Print Section — Data Mapping</div>
+        <pre data-lang="VTL"><code><span class="cm">## Standard section file template</span>
+<span class="cm">##Get data</span>
+<span class="kw">#set</span>( <span class="var">$policyNum</span> = <span class="var">$BasicPolicy</span>.<span class="fn">gets</span>(<span class="str">"PolicyDisplayNumber"</span>) )
+<span class="kw">#set</span>( <span class="var">$insName</span>   = <span class="var">$InsuredName</span>.<span class="fn">gets</span>(<span class="str">"CommercialName"</span>) )
+<span class="kw">#set</span>( <span class="var">$effDt</span>    = <span class="var">$BasicPolicy</span>.<span class="fn">gets</span>(<span class="str">"EffectiveDt"</span>) )
+<span class="kw">#set</span>( <span class="var">$insAddr</span>  = <span class="var">$Insured</span>.<span class="fn">findBeanByFieldValue</span>(
+  <span class="str">"Addr"</span>, <span class="str">"AddrTypeCd"</span>, <span class="str">"InsuredMailingAddr"</span>) )
+<span class="cm">##</span>
+<span class="cm">##Map to form fields</span>
+<span class="tag">&lt;Pane_1&gt;</span>
+  <span class="tag">&lt;POLICY_NUMBER&gt;</span><span class="var">$policyNum</span><span class="tag">&lt;/POLICY_NUMBER&gt;</span>
+  <span class="tag">&lt;INSURED_NAME&gt;</span><span class="var">$insName</span><span class="tag">&lt;/INSURED_NAME&gt;</span>
+  <span class="tag">&lt;LETTER_DATE&gt;</span><span class="var">$effDt</span><span class="tag">&lt;/LETTER_DATE&gt;</span>
+  <span class="tag">&lt;INSURED_ADDR&gt;</span>
+    <span class="var">$!</span><span class="var">AddressRenderer</span>.<span class="fn">buildAddress</span>(<span class="var">$insAddr</span>, <span class="str">"Mailing"</span>, <span class="val">3</span>, <span class="val">32</span>)
+  <span class="tag">&lt;/INSURED_ADDR&gt;</span>
+<span class="tag">&lt;/Pane_1&gt;</span></code></pre>
+      </div>
+    </div>
+
+    <div class="callout callout-tip" style="margin-top:24px;">
+      <div class="callout-label">When You're Stuck — 3 Steps</div>
+      <p><strong>1. Identify the category</strong> — What TYPE of change is this? (UI / Security / Rule / Form / Task / Product)<br>
+      <strong>2. Find the file</strong> — Use the file map above to identify which file(s) need to change.<br>
+      <strong>3. Find an example</strong> — Look at what already exists in that file. Copy the closest existing example, then modify it. <em>Never start from scratch.</em></p>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  // Active nav link on scroll
+  const sections = document.querySelectorAll('[id]');
+  const navLinks = document.querySelectorAll('.nav-link');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(link => link.classList.remove('active'));
+        const active = document.querySelector(`.nav-link[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+
+  // Search nav
+  function filterNav(query) {
+    const q = query.toLowerCase();
+    navLinks.forEach(link => {
+      const text = link.textContent.toLowerCase();
+      link.style.display = !q || text.includes(q) ? '' : 'none';
+    });
+  }
+</script>
+</body>
+</html>
